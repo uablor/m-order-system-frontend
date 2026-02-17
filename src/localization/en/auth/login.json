@@ -1,0 +1,9 @@
+{
+  "title": "Login",
+  "username": "Username",
+  "password": "Password",
+  "submit": "Login",
+  "registerLink": "Don't have an account? Register",
+  "success": "Login success"
+}
+

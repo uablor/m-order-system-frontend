@@ -1,0 +1,149 @@
+{
+  "breadcrumbs": {
+    "home": "ໜ້າຫຼັກ"
+  },
+  "dashboard": {
+    "overviewTitle": "ແຜງສະຫຼຸບພາບລວມ",
+    "overviewSubtitle": "ຍິນດີຕ້ອນຮັບກັບມາ. ນີ້ແມ່ນຂໍ້ມູນຄວາມເຄື່ອນໄຫວໃນຮ້ານຂອງທ່ານມື້ນີ້.",
+    "cards": {
+      "totalSalesToday": {
+        "title": "ຍອດຂາຍລວມມື້ນີ້",
+        "compare": "ທຽບກັບມື້ວານ"
+      },
+      "totalOrders": {
+        "title": "ອໍເດີທັງໝົດ",
+        "compare": "ທຽບກັບອາທິດກ່ອນ"
+      },
+      "outstanding": {
+        "title": "ຍອດຄ້າງຊຳລະ",
+        "compare": "ລາຍການເກີນກຳນົດ"
+      }
+    },
+    "revenue": {
+      "title": "ສະຖິຕິລາຍໄດ້",
+      "subtitle": "ການຕິດຕາມຍອດຂາຍລາຍອາທິດ",
+      "modes": {
+        "weekly": "ລາຍອາທິດ",
+        "monthly": "ລາຍເດືອນ"
+      },
+      "days": {
+        "mon": "ຈ.",
+        "tue": "ອ.",
+        "wed": "ພ.",
+        "thu": "ພຫ.",
+        "fri": "ສຸ.",
+        "sat": "ສ.",
+        "sun": "ອາ.",
+        "w1": "ອ1",
+        "w2": "ອ2",
+        "w3": "ອ3",
+        "w4": "ອ4"
+      }
+    },
+    "quick": {
+      "title": "ສະຫຼຸບດ່ວນ",
+      "newCustomers": { "title": "ລູກຄ້າໃໝ່", "subtitle": "ມື້ນີ້" },
+      "payments": { "title": "ຊຳລະເງິນສຳເລັດ", "subtitle": "ມື້ນີ້" },
+      "pendingNotify": { "title": "ລໍຖ້າແຈ້ງຂອງຖຶງ", "subtitle": "ຄ້າງຢູ່" }
+    },
+    "latestOrders": {
+      "title": "ອໍເດີລ່າສຸດ",
+      "viewAll": "ເບິ່ງອໍເດີທັງໝົດ"
+    },
+    "table": {
+      "orderCode": "ອໍເດີ",
+      "status": "ສະຖານະ",
+      "total": "ຍອດລວມ",
+      "actions": "ການຈັດການ"
+    },
+    "status": {
+      "success": "ສຳເລັດແລ້ວ",
+      "processing": "ກຳລັງດຳເນີນ"
+    }
+  },
+  "customers": {
+    "breadcrumb": "ລູກຄ້າ/ຕົວແທນ",
+    "title": "ລາຍຊື່ລູກຄ້າແລະຕົວແທນ",
+    "subtitle": "ຈັດການຂໍ້ມູນລູກຄ້າ, ຊ່ອງທາງຂົນສົ່ງ, ແລະຮູບແບບການຊຳລະເງິນ.",
+    "searchPlaceholder": "ຄົ້ນຫາຊື່ລູກຄ້າ, ເບີໂທ",
+    "addButton": "ເພີ່ມລູກຄ້າໃໝ່",
+    "table": {
+      "customer": "ລູກຄ້າ",
+      "address": "ທີ່ຢູ່ຂົນສົ່ງ",
+      "pay": "ການຈ່າຍ",
+      "contact": "ຕິດຕໍ່",
+      "status": "ສະຖານະ",
+      "manage": "ຈັດການ"
+    },
+    "payment": { "origin": "ຕົ້ນທາງ", "destination": "ປາຍທາງ" },
+    "status": { "active": "ໃຊ້ງານ", "inactive": "ປິດໃຊ້ງານ" }
+  },
+  "orders": {
+    "breadcrumb": "ຈັດການອໍເດີ",
+    "title": "ຈັດການອໍເດີ",
+    "subtitle": "ລົງສະຕ໊ອກແລະສ້າງອໍເດີໃຫ້ລູກຄ້າ.",
+    "tabs": {
+      "single": "ລົງສະຕ໊ອກ (ແບບເດີຍວ)",
+      "group": "ລົງສະຕ໊ອກ (ແບບກຸ່ມ)"
+    },
+    "panels": {
+      "customerProduct": "ຂໍ້ມູນລູກຄ້າແລະສິນຄ້າ",
+      "currency": "ຕັ້ງຄ່າສະກຸນເງິນ",
+      "priceDetails": "ລາຍລະອຽດລາຄາ",
+      "mainProduct": "ຂໍ້ມູນສິນຄ້າຫຼັກ",
+      "customerList": "ລາຍຊື່ລູກຄ້າ (ເລືອກຫຼາຍຄົນ)",
+      "today": "ລາຍການມື້ນີ້"
+    },
+    "form": {
+      "searchCustomer": "ຄົ້ນຫາລູກຄ້າ (ຊື່ / ເບີໂທ / ID)",
+      "searchCustomerPlaceholder": "ພິມຊື່ ຫຼື ເບີໂທເພື່ອຄົ້ນຫາ...",
+      "orderCode": "ລະຫັດອໍເດີ",
+      "orderCodeAuto": "ລະບົບຈະສ້າງໃຫ້ອັດຕະໂນມັດ",
+      "sku": "SKU / ລະຫັດສິນຄ້າ",
+      "skuPlaceholder": "ລະບຸ SKU",
+      "qty": "ຈຳນວນ",
+      "upload": "ອັບໂຫຼດຮູບສິນຄ້າ",
+      "uploadHint1": "ກົດເພື່ອເລືອກໄຟລ໌ ຫຼື ລາກຮູບມາວາງບ່ອນນີ້",
+      "uploadHint2": "ຮອງຮັບ .png .jpg",
+      "sellForeignTitle": "ຂາຍເປັນເງິນຕາຕ່າງປະເທດ",
+      "sellForeignSubtitle": "ເປີດເພື່ອຄຳນວນຕົ້ນທຶນຈາກ CNY ເປັນ THB",
+      "exchangeRateLabel": "ອັດຕາແລກປ່ຽນປັດຈຸບັນ",
+      "pricePerPiece": "ລາຄາຕໍ່ຊິ້ນ (THB)",
+      "basePriceThb": "ລາຄາພື້ນຖານ (THB)",
+      "totalAuto": "ລາຄາລວມ (Auto)",
+      "costCny": "ຕົ້ນທຶນ (CNY)",
+      "shippingThb": "ຄ່າສົ່ງ (THB)",
+      "defaultShippingThb": "ຄ່າສົ່ງພື້ນຖານ (THB)",
+      "discountThb": "ສ່ວນຫຼຸດ (THB)",
+      "depositThb": "ມັດຈຳ (THB)"
+    },
+    "remaining": {
+      "title": "ຍອດຄົງເຫຼືອສຸດທິ"
+    },
+    "buttons": {
+      "saveOrder": "ບັນທຶກອໍເດີ",
+      "addRow": "ເພີ່ມແຖວລູກຄ້າ",
+      "saveAll": "ບັນທຶກອໍເດີທັງໝົດ"
+    },
+    "groupColumns": {
+      "customer": "ລູກຄ້າ / ຄົ້ນຫາ",
+      "qty": "ຈຳນວນ",
+      "discount": "ສ່ວນຫຼຸດ",
+      "deposit": "ມັດຈຳ",
+      "remaining": "ຍອດຄົງເຫຼືອ",
+      "delete": "ລົບ"
+    },
+    "todayTable": {
+      "item": "ລາຍການ",
+      "total": "ຍອດລວມ",
+      "status": "ສະຖານະ",
+      "manage": "ຈັດການ"
+    },
+    "todayStatus": {
+      "arrived": "ຂອງຖຶງແລ້ວ",
+      "notArrived": "ຍັງບໍ່ຖຶງ"
+    },
+    "countAll": "ທັງໝົດ {count} ລາຍການ"
+  }
+}
+

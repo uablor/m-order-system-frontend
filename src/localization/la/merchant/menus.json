@@ -1,0 +1,14 @@
+{
+  "dashboard": "ແດຊບອດ",
+  "customerManagement": "ການຈັດການລູກຄ້າ",
+  "customerList": "ລາຍການລູກຄ້າ",
+  "addCustomer": "ເພີ່ມລູກຄ້າ",
+  "stockOrder": "ສະຕ໊ອກ / ອໍເດີ",
+  "manageStock": "ຈັດການສະຕ໊ອກ",
+  "createOrder": "ສ້າງອໍເດີ",
+  "itemArrived": "ຂອງຖຶງແລ້ວ",
+  "notifyArrival": "ແຈ້ງເຄື່ອງຖຶງ",
+  "payment": "ການຊຳລະເງິນ",
+  "reports": "ລາຍງານ"
+}
+

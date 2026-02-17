@@ -1,0 +1,16 @@
+{
+  "notFound": "404 - ບໍ່ພົບໜ້າ",
+  "backHome": "ກັບໄປໜ້າຫຼັກ",
+  "appName": "M-Order System",
+  "add": "ເພີ່ມ",
+  "edit": "ແກ້ໄຂ",
+  "delete": "ລຶບ",
+  "save": "ບັນທຶກ",
+  "cancel": "ຍົກເລີກ",
+  "search": "ຄົ້ນຫາ",
+  "actions": "ຈັດການ",
+  "status": "ສະຖານະ",
+  "date": "ວັນທີ",
+  "amount": "ຈຳນວນເງິນ"
+}
+

@@ -1,0 +1,16 @@
+{
+  "notFound": "404 - ไม่พบหน้า",
+  "backHome": "กลับหน้าหลัก",
+  "appName": "M-Order System",
+  "add": "เพิ่ม",
+  "edit": "แก้ไข",
+  "delete": "ลบ",
+  "save": "บันทึก",
+  "cancel": "ยกเลิก",
+  "search": "ค้นหา",
+  "actions": "การจัดการ",
+  "status": "สถานะ",
+  "date": "วันที่",
+  "amount": "จำนวนเงิน"
+}
+

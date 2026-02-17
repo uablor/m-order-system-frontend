@@ -1,0 +1,14 @@
+{
+  "dashboard": "Dashboard",
+  "customerManagement": "Customer Management",
+  "customerList": "Customer List",
+  "addCustomer": "Add Customer",
+  "stockOrder": "Stock / Order",
+  "manageStock": "Manage Stock",
+  "createOrder": "Create Order",
+  "itemArrived": "Items Arrived",
+  "notifyArrival": "Notify Arrival",
+  "payment": "Payment",
+  "reports": "Reports"
+}
+

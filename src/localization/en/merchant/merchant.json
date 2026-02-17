@@ -1,0 +1,149 @@
+{
+  "breadcrumbs": {
+    "home": "Home"
+  },
+  "dashboard": {
+    "overviewTitle": "Overview dashboard",
+    "overviewSubtitle": "Welcome back. Here is your store activity today.",
+    "cards": {
+      "totalSalesToday": {
+        "title": "Total sales today",
+        "compare": "vs yesterday"
+      },
+      "totalOrders": {
+        "title": "Total orders",
+        "compare": "vs last week"
+      },
+      "outstanding": {
+        "title": "Outstanding balance",
+        "compare": "overdue items"
+      }
+    },
+    "revenue": {
+      "title": "Revenue statistics",
+      "subtitle": "Weekly sales tracking",
+      "modes": {
+        "weekly": "Weekly",
+        "monthly": "Monthly"
+      },
+      "days": {
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "sun": "Sun",
+        "w1": "W1",
+        "w2": "W2",
+        "w3": "W3",
+        "w4": "W4"
+      }
+    },
+    "quick": {
+      "title": "Quick summary",
+      "newCustomers": { "title": "New customers", "subtitle": "Today" },
+      "payments": { "title": "Successful payments", "subtitle": "Today" },
+      "pendingNotify": { "title": "Pending arrival notify", "subtitle": "Pending" }
+    },
+    "latestOrders": {
+      "title": "Latest orders",
+      "viewAll": "View all orders"
+    },
+    "table": {
+      "orderCode": "Order",
+      "status": "Status",
+      "total": "Total",
+      "actions": "Actions"
+    },
+    "status": {
+      "success": "Completed",
+      "processing": "Processing"
+    }
+  },
+  "customers": {
+    "breadcrumb": "Customers & Agents",
+    "title": "Customers and Agents",
+    "subtitle": "Manage customer data, shipping channels, and payment methods.",
+    "searchPlaceholder": "Search customer name, phone",
+    "addButton": "Add new customer",
+    "table": {
+      "customer": "Customer",
+      "address": "Shipping address",
+      "pay": "Payment",
+      "contact": "Contact",
+      "status": "Status",
+      "manage": "Manage"
+    },
+    "payment": { "origin": "Origin", "destination": "Destination" },
+    "status": { "active": "ACTIVE", "inactive": "INACTIVE" }
+  },
+  "orders": {
+    "breadcrumb": "Manage orders",
+    "title": "Manage orders",
+    "subtitle": "Stock items and create orders for customers.",
+    "tabs": {
+      "single": "Stock (single)",
+      "group": "Stock (group)"
+    },
+    "panels": {
+      "customerProduct": "Customer & product info",
+      "currency": "Currency settings",
+      "priceDetails": "Price details",
+      "mainProduct": "Main product info",
+      "customerList": "Customer list (multi-select)",
+      "today": "Added today"
+    },
+    "form": {
+      "searchCustomer": "Search customer (name / phone / ID)",
+      "searchCustomerPlaceholder": "Type name or phone to search...",
+      "orderCode": "Order code",
+      "orderCodeAuto": "Auto-generated",
+      "sku": "SKU / Product code",
+      "skuPlaceholder": "Enter SKU",
+      "qty": "Quantity",
+      "upload": "Upload product image",
+      "uploadHint1": "Click to choose file or drag image here",
+      "uploadHint2": "Supports .png .jpg",
+      "sellForeignTitle": "Sell as foreign currency",
+      "sellForeignSubtitle": "Enable to calculate cost from CNY to THB",
+      "exchangeRateLabel": "Current exchange rate",
+      "pricePerPiece": "Price per item (THB)",
+      "basePriceThb": "Base price (THB)",
+      "totalAuto": "Total price (Auto)",
+      "costCny": "Cost (CNY)",
+      "shippingThb": "Shipping (THB)",
+      "defaultShippingThb": "Default shipping (THB)",
+      "discountThb": "Discount (THB)",
+      "depositThb": "Deposit (THB)"
+    },
+    "remaining": {
+      "title": "Remaining (net)"
+    },
+    "buttons": {
+      "saveOrder": "Save order",
+      "addRow": "Add customer row",
+      "saveAll": "Save all orders"
+    },
+    "groupColumns": {
+      "customer": "Customer / Search",
+      "qty": "Qty",
+      "discount": "Discount",
+      "deposit": "Deposit",
+      "remaining": "Remaining",
+      "delete": "Delete"
+    },
+    "todayTable": {
+      "item": "Item",
+      "total": "Total",
+      "status": "Status",
+      "manage": "Manage"
+    },
+    "todayStatus": {
+      "arrived": "Arrived",
+      "notArrived": "Not arrived"
+    },
+    "countAll": "All {count} items"
+  }
+}
+

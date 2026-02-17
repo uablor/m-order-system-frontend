@@ -1,0 +1,12 @@
+{
+  "dashboard": "แดชบอร์ด",
+  "merchantManagement": "จัดการผู้ค้าส่ง",
+  "merchantList": "รายการผู้ค้าส่ง",
+  "merchantDetails": "รายละเอียดผู้ค้าส่ง",
+  "addMerchant": "เพิ่มผู้ค้าส่ง",
+  "reports": "รายงาน",
+  "merchantReports": "รายงานผู้ค้าส่ง",
+  "notifications": "การแจ้งเตือน",
+  "settings": "ตั้งค่า"
+}
+

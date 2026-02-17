@@ -1,0 +1,149 @@
+{
+  "breadcrumbs": {
+    "home": "หน้าหลัก"
+  },
+  "dashboard": {
+    "overviewTitle": "หน้าแดชบอร์ดสรุปภาพรวม",
+    "overviewSubtitle": "ยินดีต้อนรับกลับมา นี่คือข้อมูลความเคลื่อนไหวในร้านค้าของคุณวันนี้",
+    "cards": {
+      "totalSalesToday": {
+        "title": "ยอดขายรวมวันนี้",
+        "compare": "เทียบกับเมื่อวาน"
+      },
+      "totalOrders": {
+        "title": "ออเดอร์ทั้งหมด",
+        "compare": "เทียบกับสัปดาห์ที่แล้ว"
+      },
+      "outstanding": {
+        "title": "ยอดค้างชำระ",
+        "compare": "รายการเกินกำหนด"
+      }
+    },
+    "revenue": {
+      "title": "สถิติรายได้",
+      "subtitle": "การติดตามยอดขายรายสัปดาห์",
+      "modes": {
+        "weekly": "รายสัปดาห์",
+        "monthly": "รายเดือน"
+      },
+      "days": {
+        "mon": "จ.",
+        "tue": "อ.",
+        "wed": "พ.",
+        "thu": "พฤ.",
+        "fri": "ศ.",
+        "sat": "ส.",
+        "sun": "อา.",
+        "w1": "ส1",
+        "w2": "ส2",
+        "w3": "ส3",
+        "w4": "ส4"
+      }
+    },
+    "quick": {
+      "title": "สรุปด่วน",
+      "newCustomers": { "title": "ลูกค้าใหม่", "subtitle": "วันนี้" },
+      "payments": { "title": "ชำระเงินสำเร็จ", "subtitle": "วันนี้" },
+      "pendingNotify": { "title": "รอแจ้งของถึง", "subtitle": "คงค้าง" }
+    },
+    "latestOrders": {
+      "title": "ออเดอร์ล่าสุด",
+      "viewAll": "ดูออเดอร์ทั้งหมด"
+    },
+    "table": {
+      "orderCode": "รหัสออเดอร์",
+      "status": "สถานะ",
+      "total": "ยอดรวม",
+      "actions": "การกระทำ"
+    },
+    "status": {
+      "success": "สำเร็จแล้ว",
+      "processing": "กำลังจัดการ"
+    }
+  },
+  "customers": {
+    "breadcrumb": "ลูกค้าและตัวแทน",
+    "title": "รายชื่อลูกค้าและตัวแทน",
+    "subtitle": "จัดการข้อมูลลูกค้า ช่องทางการขนส่ง และรูปแบบการชำระเงิน",
+    "searchPlaceholder": "ค้นหาชื่อลูกค้า, เบอร์โทรศัพท์",
+    "addButton": "เพิ่มลูกค้าใหม่",
+    "table": {
+      "customer": "ชื่อลูกค้า",
+      "address": "ที่อยู่ขนส่ง",
+      "pay": "รูปแบบการจ่าย",
+      "contact": "ช่องทางติดต่อ",
+      "status": "สถานะ",
+      "manage": "การจัดการ"
+    },
+    "payment": { "origin": "ต้นทาง", "destination": "ปลายทาง" },
+    "status": { "active": "ACTIVE", "inactive": "INACTIVE" }
+  },
+  "orders": {
+    "breadcrumb": "จัดการออเดอร์",
+    "title": "จัดการออเดอร์",
+    "subtitle": "ลงสต๊อกสินค้า และสร้างออเดอร์ให้ลูกค้า",
+    "tabs": {
+      "single": "ลงสต๊อก (แบบเดี่ยว)",
+      "group": "ลงสต๊อก (แบบกลุ่ม)"
+    },
+    "panels": {
+      "customerProduct": "ข้อมูลลูกค้าและสินค้า",
+      "currency": "ตั้งค่าสกุลเงิน",
+      "priceDetails": "รายละเอียดราคา",
+      "mainProduct": "ข้อมูลสินค้าหลัก",
+      "customerList": "รายการลูกค้า (เลือกหลายคน)",
+      "today": "รายการที่ลงในวันนี้"
+    },
+    "form": {
+      "searchCustomer": "ค้นหาลูกค้า (ชื่อ / เบอร์โทร / ID)",
+      "searchCustomerPlaceholder": "พิมพ์ชื่อหรือเบอร์โทรเพื่อค้นหา...",
+      "orderCode": "รหัสออเดอร์",
+      "orderCodeAuto": "ระบบจะสร้างให้อัตโนมัติ",
+      "sku": "SKU / รหัสสินค้า",
+      "skuPlaceholder": "ระบุ SKU",
+      "qty": "จำนวน (ชิ้น)",
+      "upload": "อัปโหลดรูปสินค้า",
+      "uploadHint1": "คลิกเพื่อเลือกไฟล์ หรือ ลากรูปมาวางที่นี่",
+      "uploadHint2": "รองรับไฟล์ .png .jpg",
+      "sellForeignTitle": "ขายเป็นเงินตรา (Foreign Currency)",
+      "sellForeignSubtitle": "เปิดเพื่อคำนวณต้นทุนจาก CNY เป็น THB",
+      "exchangeRateLabel": "อัตราแลกเปลี่ยนปัจจุบัน",
+      "pricePerPiece": "ราคาขายต่อชิ้น (THB)",
+      "basePriceThb": "ราคาขายพื้นฐาน (THB)",
+      "totalAuto": "ราคาขายรวม (Auto)",
+      "costCny": "ต้นทุนในบัตร (CNY)",
+      "shippingThb": "ค่าส่ง (THB)",
+      "defaultShippingThb": "ค่าส่งพื้นฐาน (THB)",
+      "discountThb": "ส่วนลด (THB)",
+      "depositThb": "มัดจำแล้ว (THB)"
+    },
+    "remaining": {
+      "title": "ยอดคงเหลือสุทธิ (REMAINING)"
+    },
+    "buttons": {
+      "saveOrder": "บันทึกออเดอร์",
+      "addRow": "เพิ่มแถวลูกค้า",
+      "saveAll": "บันทึกออเดอร์ทั้งหมด"
+    },
+    "groupColumns": {
+      "customer": "ชื่อลูกค้า / ค้นหา",
+      "qty": "จำนวน (ชิ้น)",
+      "discount": "ส่วนลด (THB)",
+      "deposit": "มัดจำ (THB)",
+      "remaining": "ยอดคงเหลือ",
+      "delete": "ลบ"
+    },
+    "todayTable": {
+      "item": "รูปสินค้า",
+      "total": "ยอดรวม",
+      "status": "สถานะ",
+      "manage": "จัดการ"
+    },
+    "todayStatus": {
+      "arrived": "ของถึงแล้ว",
+      "notArrived": "ยังไม่ถึง"
+    },
+    "countAll": "ทั้งหมด {count} รายการ"
+  }
+}
+

@@ -1,0 +1,14 @@
+{
+  "dashboard": "แดชบอร์ด",
+  "customerManagement": "จัดการลูกค้า",
+  "customerList": "รายการลูกค้า",
+  "addCustomer": "เพิ่มลูกค้า",
+  "stockOrder": "สต๊อก / ออเดอร์",
+  "manageStock": "จัดการสต๊อก",
+  "createOrder": "สร้างออเดอร์",
+  "itemArrived": "ของถึงแล้ว",
+  "notifyArrival": "แจ้งเครื่องถึง",
+  "payment": "การชำระเงิน",
+  "reports": "รายงาน"
+}
+

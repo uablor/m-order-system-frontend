@@ -1,0 +1,10 @@
+{
+  "title": "Register",
+  "email": "Email",
+  "username": "Username",
+  "password": "Password",
+  "confirmPassword": "Confirm Password",
+  "submit": "Register",
+  "loginLink": "Already have an account? Login"
+}
+

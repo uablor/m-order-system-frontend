@@ -1,0 +1,17 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome to the Dashboard",
+  "description": "This is your main dashboard page",
+  "logout": "Logout",
+  "menu": {
+    "dashboard": "Dashboard",
+    "customers": "Customers/Agents",
+    "stockOrder": "Stock Orders",
+    "arrived": "Items Arrived",
+    "notifyArrival": "Notify Arrival",
+    "payment": "Payment",
+    "reports": "Reports",
+    "settings": "Settings"
+  }
+}
+
