@@ -1,0 +1,43 @@
+{
+  "title": "Access Control",
+  "roles": {
+    "title": "Roles",
+    "create": "Create Role",
+    "edit": "Edit Role",
+    "roleName": "Role Name",
+    "description": "Description",
+    "confirmDelete": "Are you sure you want to delete this role?",
+    "createSuccess": "Role created successfully!",
+    "updateSuccess": "Role updated successfully!",
+    "deleteSuccess": "Role deleted successfully!"
+  },
+  "permissions": {
+    "title": "Permissions",
+    "create": "Create Permission",
+    "edit": "Edit Permission",
+    "permissionCode": "Permission Code",
+    "description": "Description",
+    "generate": "Generate",
+    "confirmDelete": "Are you sure you want to delete this permission?",
+    "createSuccess": "Permission created successfully!",
+    "updateSuccess": "Permission updated successfully!",
+    "deleteSuccess": "Permission deleted successfully!",
+    "generateSuccess": "Permissions generated successfully!"
+  },
+  "rolePermissions": {
+    "title": "Role Permissions",
+    "selectRole": "Select role",
+    "assign": "Assign Permission",
+    "permission": "Permission",
+    "assignedList": "Assigned permissions",
+    "confirmUnassign": "Remove this permission from role?",
+    "assignSuccess": "Permission assigned successfully!",
+    "unassignSuccess": "Permission unassigned successfully!"
+  },
+  "validation": {
+    "required": "This field is required",
+    "max100": "Maximum 100 characters",
+    "max500": "Maximum 500 characters"
+  }
+}
+

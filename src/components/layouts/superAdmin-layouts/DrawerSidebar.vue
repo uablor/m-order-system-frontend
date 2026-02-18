@@ -25,11 +25,17 @@ const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
 
-const selectedKeys = ref<string[]>([route.path.split('/').pop() || 'dashboard']);
+const getSuperAdminKey = (path: string) => {
+  const parts = path.split('/');
+  // /super-admin/<key>/...
+  return parts[2] || 'dashboard';
+};
+
+const selectedKeys = ref<string[]>([getSuperAdminKey(route.path)]);
 const menuItems = computed(() => getMenuItems(t));
 
 watch(() => route.path, (newPath) => {
-  selectedKeys.value = [newPath.split('/').pop() || 'dashboard'];
+  selectedKeys.value = [getSuperAdminKey(newPath)];
 });
 
 const handleMenuClick = (info: any) => {

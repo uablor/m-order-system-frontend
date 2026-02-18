@@ -1,0 +1,43 @@
+{
+  "title": "ຈັດການສິດທິ",
+  "roles": {
+    "title": "ບົດບາດ (Roles)",
+    "create": "ສ້າງບົດບາດ",
+    "edit": "ແກ້ໄຂບົດບາດ",
+    "roleName": "ຊື່ບົດບາດ",
+    "description": "ລາຍລະອຽດ",
+    "confirmDelete": "ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລຶບບົດບາດນີ້?",
+    "createSuccess": "ສ້າງບົດບາດສຳເລັດ!",
+    "updateSuccess": "ອັບເດດບົດບາດສຳເລັດ!",
+    "deleteSuccess": "ລຶບບົດບາດສຳເລັດ!"
+  },
+  "permissions": {
+    "title": "ສິດທິ (Permissions)",
+    "create": "ສ້າງສິດທິ",
+    "edit": "ແກ້ໄຂສິດທິ",
+    "permissionCode": "Permission Code",
+    "description": "ລາຍລະອຽດ",
+    "generate": "ສ້າງອັດຕະໂນມັດ",
+    "confirmDelete": "ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລຶບສິດທິນີ້?",
+    "createSuccess": "ສ້າງສິດທິສຳເລັດ!",
+    "updateSuccess": "ອັບເດດສິດທິສຳເລັດ!",
+    "deleteSuccess": "ລຶບສິດທິສຳເລັດ!",
+    "generateSuccess": "ສ້າງສິດທິອັດຕະໂນມັດສຳເລັດ!"
+  },
+  "rolePermissions": {
+    "title": "ກຳນົດສິດໃຫ້ບົດບາດ",
+    "selectRole": "ເລືອກບົດບາດ",
+    "assign": "ເພີ່ມສິດໃຫ້ບົດບາດ",
+    "permission": "ສິດທິ",
+    "assignedList": "ລາຍການສິດທິທີ່ມີ",
+    "confirmUnassign": "ຈະລຶບສິດນີ້ອອກຈາກບົດບາດບໍ?",
+    "assignSuccess": "ເພີ່ມສິດສຳເລັດ!",
+    "unassignSuccess": "ລຶບສິດອອກສຳເລັດ!"
+  },
+  "validation": {
+    "required": "ຈຳເປັນຕ້ອງໃສ່",
+    "max100": "ສູງສຸດ 100 ຕົວອັກສອນ",
+    "max500": "ສູງສຸດ 500 ຕົວອັກສອນ"
+  }
+}
+

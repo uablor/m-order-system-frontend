@@ -76,7 +76,40 @@
       "manage": "Manage"
     },
     "payment": { "origin": "Origin", "destination": "Destination" },
-    "status": { "active": "ACTIVE", "inactive": "INACTIVE" }
+    "status": { "active": "ACTIVE", "inactive": "INACTIVE" },
+    "modal": {
+      "createTitle": "Create customer",
+      "editTitle": "Edit customer"
+    },
+    "form": {
+      "customerName": "Customer name",
+      "customerNameRequired": "Customer name is required",
+      "customerType": "Type",
+      "customerTypeRequired": "Customer type is required",
+      "type": { "customer": "Customer", "agent": "Agent" },
+      "shippingAddress": "Shipping address",
+      "shippingProvider": "Shipping provider",
+      "shippingSource": "Shipping source",
+      "shippingDestination": "Shipping destination",
+      "paymentTerms": "Payment terms",
+      "contactPhone": "Phone",
+      "contactFacebook": "Facebook",
+      "contactWhatsapp": "WhatsApp",
+      "contactLine": "Line",
+      "preferredContactMethod": "Preferred contact",
+      "uniqueToken": "Customer code (token)",
+      "uniqueTokenHint": "Leave empty to auto-generate",
+      "isActive": "Active",
+      "max50": "Maximum 50 characters",
+      "max100": "Maximum 100 characters",
+      "max255": "Maximum 255 characters"
+    },
+    "confirmDelete": "Delete this customer?",
+    "toast": {
+      "createSuccess": "Customer created successfully!",
+      "updateSuccess": "Customer updated successfully!",
+      "deleteSuccess": "Customer deleted successfully!"
+    }
   },
   "orders": {
     "breadcrumb": "Manage orders",

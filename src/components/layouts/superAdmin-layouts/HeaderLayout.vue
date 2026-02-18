@@ -48,7 +48,7 @@
                    <UserOutlined />
                  </template>
                </a-avatar>
-               <span class="username">{{ username }}</span>
+              <span class="username">{{ username }}</span>
             
              </a-button>
              <template #overlay>
@@ -113,7 +113,7 @@ const { locale, t } = useI18n();
 const authStore = useAuthStore();
 
 const currentLocale = computed(() => locale.value);
-const username = computed(() => authStore.user?.username || 'Admin');
+const username = computed(() => authStore.user?.fullName || authStore.user?.email || 'Admin');
 const pageTitle = computed(() => {
   const path = route.path.split('/')[1] || 'dashboard';
   return t(`dashboard.menu.${path}`) || t('dashboard.title');
@@ -126,7 +126,8 @@ const handleLanguageChange = ({ key }: { key: string }) => {
 };
 
 const handleLogout = () => {
-  authStore.logout();
+  // ล็อกเอาท์ฝั่ง UI: เคลียร์ token/user แล้วเด้งไปหน้า login
+  authStore.clearAuth();
   message.success('Logged out successfully');
   router.push('/login');
 };

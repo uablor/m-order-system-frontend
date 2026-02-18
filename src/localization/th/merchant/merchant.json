@@ -76,7 +76,40 @@
       "manage": "การจัดการ"
     },
     "payment": { "origin": "ต้นทาง", "destination": "ปลายทาง" },
-    "status": { "active": "ACTIVE", "inactive": "INACTIVE" }
+    "status": { "active": "ACTIVE", "inactive": "INACTIVE" },
+    "modal": {
+      "createTitle": "สร้างลูกค้า",
+      "editTitle": "แก้ไขลูกค้า"
+    },
+    "form": {
+      "customerName": "ชื่อลูกค้า",
+      "customerNameRequired": "กรุณาใส่ชื่อลูกค้า",
+      "customerType": "ประเภท",
+      "customerTypeRequired": "กรุณาเลือกประเภท",
+      "type": { "customer": "ลูกค้า", "agent": "ตัวแทน" },
+      "shippingAddress": "ที่อยู่ขนส่ง",
+      "shippingProvider": "ผู้ให้บริการขนส่ง",
+      "shippingSource": "ต้นทางขนส่ง",
+      "shippingDestination": "ปลายทางขนส่ง",
+      "paymentTerms": "เงื่อนไขการจ่าย",
+      "contactPhone": "เบอร์โทร",
+      "contactFacebook": "Facebook",
+      "contactWhatsapp": "WhatsApp",
+      "contactLine": "Line",
+      "preferredContactMethod": "ช่องทางติดต่อที่ต้องการ",
+      "uniqueToken": "รหัสลูกค้า (token)",
+      "uniqueTokenHint": "เว้นว่างเพื่อให้ระบบสร้างให้อัตโนมัติ",
+      "isActive": "เปิดใช้งาน",
+      "max50": "สูงสุด 50 ตัวอักษร",
+      "max100": "สูงสุด 100 ตัวอักษร",
+      "max255": "สูงสุด 255 ตัวอักษร"
+    },
+    "confirmDelete": "ลบลูกค้านี้หรือไม่?",
+    "toast": {
+      "createSuccess": "สร้างลูกค้าสำเร็จ!",
+      "updateSuccess": "อัปเดตลูกค้าสำเร็จ!",
+      "deleteSuccess": "ลบลูกค้าสำเร็จ!"
+    }
   },
   "orders": {
     "breadcrumb": "จัดการออเดอร์",

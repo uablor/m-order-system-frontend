@@ -76,7 +76,40 @@
       "manage": "ຈັດການ"
     },
     "payment": { "origin": "ຕົ້ນທາງ", "destination": "ປາຍທາງ" },
-    "status": { "active": "ໃຊ້ງານ", "inactive": "ປິດໃຊ້ງານ" }
+    "status": { "active": "ໃຊ້ງານ", "inactive": "ປິດໃຊ້ງານ" },
+    "modal": {
+      "createTitle": "ສ້າງລູກຄ້າ",
+      "editTitle": "ແກ້ໄຂລູກຄ້າ"
+    },
+    "form": {
+      "customerName": "ຊື່ລູກຄ້າ",
+      "customerNameRequired": "ກະລຸນາໃສ່ຊື່ລູກຄ້າ",
+      "customerType": "ປະເພດ",
+      "customerTypeRequired": "ກະລຸນາເລືອກປະເພດ",
+      "type": { "customer": "ລູກຄ້າ", "agent": "ຕົວແທນ" },
+      "shippingAddress": "ທີ່ຢູ່ຂົນສົ່ງ",
+      "shippingProvider": "ຜູ້ໃຫ້ບໍລິການຂົນສົ່ງ",
+      "shippingSource": "ຕົ້ນທາງຂົນສົ່ງ",
+      "shippingDestination": "ປາຍທາງຂົນສົ່ງ",
+      "paymentTerms": "ເງື່ອນໄຂການຈ່າຍ",
+      "contactPhone": "ເບີໂທ",
+      "contactFacebook": "Facebook",
+      "contactWhatsapp": "WhatsApp",
+      "contactLine": "Line",
+      "preferredContactMethod": "ຊ່ອງທາງຕິດຕໍ່ທີ່ມັກ",
+      "uniqueToken": "ລະຫັດລູກຄ້າ (token)",
+      "uniqueTokenHint": "ປ່ອຍວ່າງເພື່ອໃຫ້ລະບົບສ້າງໃຫ້",
+      "isActive": "ເປີດໃຊ້ງານ",
+      "max50": "ສູງສຸດ 50 ຕົວອັກສອນ",
+      "max100": "ສູງສຸດ 100 ຕົວອັກສອນ",
+      "max255": "ສູງສຸດ 255 ຕົວອັກສອນ"
+    },
+    "confirmDelete": "ລຶບລູກຄ້ານີ້ບໍ?",
+    "toast": {
+      "createSuccess": "ສ້າງລູກຄ້າສຳເລັດ!",
+      "updateSuccess": "ອັບເດດລູກຄ້າສຳເລັດ!",
+      "deleteSuccess": "ລຶບລູກຄ້າສຳເລັດ!"
+    }
   },
   "orders": {
     "breadcrumb": "ຈັດການອໍເດີ",

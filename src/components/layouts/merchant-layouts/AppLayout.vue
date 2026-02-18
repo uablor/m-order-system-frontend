@@ -4,7 +4,6 @@
       <HeaderWithLayoutSwitcher
         :collapsed="collapsed"
         :page-title="pageTitle"
-        current-layout="merchant"
         @toggle-sidebar="toggleSidebar"
       />
       <a-layout-content class="content">

@@ -17,10 +17,11 @@
           allow-clear
           class="search-input"
           :placeholder="$t('merchant.customers.searchPlaceholder')"
+          @pressEnter="triggerSearch"
         >
           <template #prefix><SearchOutlined /></template>
         </a-input>
-        <a-button type="primary" class="add-btn sm:shrink-0" @click="() => {}">
+        <a-button type="primary" class="add-btn sm:shrink-0" @click="openCreatePage">
           <template #icon><UserAddOutlined /></template>
           {{ $t('merchant.customers.addButton') }}
         </a-button>
@@ -33,9 +34,11 @@
         v-if="!isMobile"
         :columns="columns"
         :data-source="filteredCustomers"
-        :pagination="{ pageSize: 8 }"
+        :pagination="paginationConfig"
         row-key="id"
         size="middle"
+        :loading="loading"
+        @change="handleTableChange"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'customer'">
@@ -75,8 +78,10 @@
 
           <template v-else-if="column.key === 'actions'">
             <div class="flex items-center justify-end gap-2">
-              <a-button type="text" class="icon-action" @click="() => {}"><EditOutlined /></a-button>
-              <a-button type="text" danger class="icon-action" @click="() => {}"><DeleteOutlined /></a-button>
+              <a-button type="text" class="icon-action" @click="openEditPage(record.__raw)"><EditOutlined /></a-button>
+              <a-popconfirm :title="$t('merchant.customers.confirmDelete')" @confirm="confirmDelete(record.__raw)">
+                <a-button type="text" danger class="icon-action"><DeleteOutlined /></a-button>
+              </a-popconfirm>
             </div>
           </template>
         </template>
@@ -130,8 +135,10 @@
                 <div class="info-item last">
                   <div class="info-label">{{ $t('merchant.customers.table.manage') }}</div>
                   <div class="info-actions">
-                    <a-button type="text" class="icon-action" @click="() => {}"><EditOutlined /></a-button>
-                    <a-button type="text" danger class="icon-action" @click="() => {}"><DeleteOutlined /></a-button>
+                    <a-button type="text" class="icon-action" @click="openEditPage(c.__raw)"><EditOutlined /></a-button>
+                    <a-popconfirm :title="$t('merchant.customers.confirmDelete')" @confirm="confirmDelete(c.__raw)">
+                      <a-button type="text" danger class="icon-action"><DeleteOutlined /></a-button>
+                    </a-popconfirm>
                   </div>
                 </div>
               </div>
@@ -140,13 +147,13 @@
         </a-collapse>
       </div>
     </a-card>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { mockCustomers } from '../../../shared/mock';
 import { useIsMobile } from '../../../shared/composables/useIsMobile';
 import {
   SearchOutlined,
@@ -156,10 +163,25 @@ import {
   EditOutlined,
   DeleteOutlined,
 } from '@ant-design/icons-vue';
+import type { TablePaginationConfig } from 'ant-design-vue';
+import type { Customer } from '@/domain/entities/user.entity';
+import { useMerchantCustomers } from '@/presentation/composables/merchant/useMerchantCustomers';
+import { useRouter } from 'vue-router';
 
 const q = ref('');
 const { t } = useI18n();
 const { isMobile } = useIsMobile();
+const router = useRouter();
+
+const {
+  loading,
+  customers,
+  pagination,
+  fetchCustomers,
+  searchCustomers,
+  changePage,
+  deleteCustomer,
+} = useMerchantCustomers();
 
 const columns = computed(() => ([
   { title: t('merchant.customers.table.customer'), key: 'customer' },
@@ -170,9 +192,9 @@ const columns = computed(() => ([
   { title: t('merchant.customers.table.manage'), key: 'actions', width: 120, align: 'right' as const },
 ]));
 
-const uiCustomers = computed(() => mockCustomers.map((c, idx) => {
+const uiCustomers = computed(() => (customers.value || []).map((c: Customer, idx: number) => {
   const colors = ['#2563eb', '#f97316', '#ec4899', '#22c55e', '#a855f7'];
-  const avatarText = (c.name || 'C')
+  const avatarText = (c.customerName || 'C')
     .trim()
     .split(/\s+/)
     .slice(0, 2)
@@ -181,13 +203,18 @@ const uiCustomers = computed(() => mockCustomers.map((c, idx) => {
     .toUpperCase();
 
   return {
-    ...c,
-    code: `CUST-${String(c.id).padStart(3, '0')}`,
-    shipTag: idx % 3 === 0 ? 'HAL' : idx % 3 === 1 ? 'ANS' : 'Mixay',
-    address: idx % 3 === 0 ? 'กรุงเทพฯ - คลองเตย' : idx % 3 === 1 ? 'นนทบุรี - ปากเกร็ด' : 'ขอนแก่น - เมือง',
-    paymentMethod: idx % 2 === 0 ? t('merchant.customers.payment.origin') : t('merchant.customers.payment.destination'),
+    // สำหรับ UI layer
+    id: c.id,
+    name: c.customerName,
+    code: c.uniqueToken,
+    shipTag: c.shippingProvider || '-',
+    address: c.shippingAddress || '-',
+    paymentMethod: c.paymentTerms || '-',
+    contactPhone: c.contactPhone || '-',
+    status: c.isActive ? 'active' : 'inactive',
     avatarColor: colors[idx % colors.length],
     avatarText: avatarText || 'C',
+    __raw: c,
   };
 }));
 
@@ -199,6 +226,50 @@ const filteredCustomers = computed(() => {
     String(c.contactPhone).toLowerCase().includes(needle) ||
     String(c.code).toLowerCase().includes(needle)
   );
+});
+
+const paginationConfig = computed<TablePaginationConfig>(() => ({
+  current: pagination.value.page,
+  pageSize: pagination.value.limit,
+  total: pagination.value.total,
+  showSizeChanger: true,
+  pageSizeOptions: ['8', '16', '24', '50'],
+}));
+
+const handleTableChange = (p: TablePaginationConfig) => {
+  if (p.current && p.pageSize) {
+    changePage(p.current, p.pageSize);
+  }
+};
+
+const openCreatePage = () => {
+  router.push('/merchant/customers/create');
+};
+
+const openEditPage = (customer: Customer) => {
+  router.push(`/merchant/customers/${customer.id}/edit`);
+};
+
+const confirmDelete = async (customer: Customer) => {
+  await deleteCustomer(customer.id);
+};
+
+// Search: debounce เรียก backend
+let searchTimer: number | undefined;
+const triggerSearch = () => {
+  window.clearTimeout(searchTimer);
+  searchCustomers(q.value);
+};
+
+watch(q, () => {
+  window.clearTimeout(searchTimer);
+  searchTimer = window.setTimeout(() => {
+    searchCustomers(q.value);
+  }, 450);
+});
+
+onMounted(async () => {
+  await fetchCustomers();
 });
 </script>
 

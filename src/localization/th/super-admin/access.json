@@ -1,0 +1,43 @@
+{
+  "title": "จัดการสิทธิ์",
+  "roles": {
+    "title": "บทบาท (Roles)",
+    "create": "สร้างบทบาท",
+    "edit": "แก้ไขบทบาท",
+    "roleName": "ชื่อบทบาท",
+    "description": "รายละเอียด",
+    "confirmDelete": "คุณแน่ใจหรือไม่ว่าต้องการลบบทบาทนี้?",
+    "createSuccess": "สร้างบทบาทสำเร็จ!",
+    "updateSuccess": "อัปเดตบทบาทสำเร็จ!",
+    "deleteSuccess": "ลบบทบาทสำเร็จ!"
+  },
+  "permissions": {
+    "title": "สิทธิ์ (Permissions)",
+    "create": "สร้างสิทธิ์",
+    "edit": "แก้ไขสิทธิ์",
+    "permissionCode": "Permission Code",
+    "description": "รายละเอียด",
+    "generate": "สร้างอัตโนมัติ",
+    "confirmDelete": "คุณแน่ใจหรือไม่ว่าต้องการลบสิทธิ์นี้?",
+    "createSuccess": "สร้างสิทธิ์สำเร็จ!",
+    "updateSuccess": "อัปเดตสิทธิ์สำเร็จ!",
+    "deleteSuccess": "ลบสิทธิ์สำเร็จ!",
+    "generateSuccess": "สร้างสิทธิ์อัตโนมัติสำเร็จ!"
+  },
+  "rolePermissions": {
+    "title": "กำหนดสิทธิ์ให้บทบาท",
+    "selectRole": "เลือกบทบาท",
+    "assign": "เพิ่มสิทธิ์ให้บทบาท",
+    "permission": "สิทธิ์",
+    "assignedList": "รายการสิทธิ์ที่มี",
+    "confirmUnassign": "ต้องการลบสิทธิ์นี้ออกจากบทบาทหรือไม่?",
+    "assignSuccess": "เพิ่มสิทธิ์สำเร็จ!",
+    "unassignSuccess": "ลบสิทธิ์ออกสำเร็จ!"
+  },
+  "validation": {
+    "required": "จำเป็นต้องกรอก",
+    "max100": "สูงสุด 100 ตัวอักษร",
+    "max500": "สูงสุด 500 ตัวอักษร"
+  }
+}
+

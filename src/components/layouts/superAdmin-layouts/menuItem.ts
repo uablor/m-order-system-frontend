@@ -1,8 +1,6 @@
 import {
-  DashboardOutlined,
+  UserOutlined,
   ShopOutlined,
-  FileTextOutlined,
-  NotificationOutlined,
   SettingOutlined,
 } from '@ant-design/icons-vue';
 
@@ -14,9 +12,9 @@ export interface MenuItem {
 }
 
 export const getMenuItems = (t: any): MenuItem[] => [
-  { key: 'dashboard', icon: DashboardOutlined, label: t('menus.superAdmin.dashboard'), path: '/super-admin/dashboard' },
+
+  { key: 'users', icon: UserOutlined, label: t('menus.superAdmin.users'), path: '/super-admin/users' },
   { key: 'merchants', icon: ShopOutlined, label: t('menus.superAdmin.merchantManagement'), path: '/super-admin/merchants' },
-  { key: 'reports', icon: FileTextOutlined, label: t('menus.superAdmin.reports'), path: '/super-admin/reports' },
-  { key: 'notifications', icon: NotificationOutlined, label: t('menus.superAdmin.notifications'), path: '/super-admin/notifications' },
+  
   { key: 'settings', icon: SettingOutlined, label: t('menus.superAdmin.settings'), path: '/super-admin/settings' },
 ];

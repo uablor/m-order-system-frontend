@@ -1,273 +1,240 @@
 # M-Order System Frontend
 
-A modern order management system built with Vue 3, TypeScript, and Ant Design Vue.
+Frontend application for M-Order System built with Vue 3 + TypeScript + Ant Design Vue.
 
 ## 🚀 Features
 
-- ✅ **Vue 3** with Composition API
-- ✅ **TypeScript** for type safety
-- ✅ **Ant Design Vue** for beautiful UI components
-- ✅ **Pinia** for state management
-- ✅ **Vue Router** for navigation
-- ✅ **Vue i18n** for multi-language support (English & Lao)
-- ✅ **Responsive Design** for mobile and desktop
+- ✅ **Authentication System**: Login with JWT token, role-based access control
+- ✅ **Multi-language Support**: English, Lao, Thai (i18n)
+- ✅ **Responsive Design**: Mobile-friendly layout และ components
+- ✅ **Clean Architecture**: Domain-driven design with layers (presentation, application, domain, infrastructure)
+- ✅ **TypeScript**: Type-safe development
+- ✅ **Pinia**: State management
+- ✅ **Vue Router**: Client-side routing with guards
+- ✅ **Ant Design Vue**: UI component library
+- ✅ **Axios**: HTTP client with interceptors
+
+## 📦 Tech Stack
+
+- **Framework**: Vue 3 (Composition API)
+- **Language**: TypeScript
+- **UI Library**: Ant Design Vue 4.x
+- **State Management**: Pinia
+- **Routing**: Vue Router 5.x
+- **HTTP Client**: Axios
+- **i18n**: Vue I18n 11.x
+- **Build Tool**: Vite
+- **CSS**: Tailwind CSS 4.x
+- **Date Utility**: Day.js
+
+## 🛠️ Installation
+
+```bash
+# Install pnpm if not already installed
+npm install -g pnpm
+
+# Install dependencies
+pnpm install
+```
+
+## ⚙️ Configuration
+
+สร้างไฟล์ `.env` ที่ root directory:
+
+```env
+# API Base URL
+VITE_API_BASE_URL=http://localhost:3000
+```
+
+## 🚀 Development
+
+```bash
+# Start development server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Preview production build
+pnpm preview
+```
 
 ## 📁 Project Structure
 
 ```
 src/
-├── components/
-│   └── layouts/
-│       └── superAdmin-layouts/     # Admin dashboard layout
-│           ├── AppLayout.vue       # Main layout wrapper
-│           ├── HeaderLayout.vue    # Header with language switcher
-│           ├── SidebarLayout.vue   # Sidebar navigation
-│           ├── FooterLayout.vue    # Footer
-│           └── menuItem.ts         # Menu configuration
-├── views/
-│   ├── auth/
-│   │   ├── LoginPage.vue          # Login page
-│   │   └── RegisterPage.vue       # Registration page
-│   └── dashboard/
-│       └── DashboardPage.vue      # Main dashboard
-├── store/
-│   └── auth.store.ts              # Authentication store (Pinia)
-├── router/
-│   └── index.ts                   # Vue Router configuration
-├── localization/
-│   ├── en/                        # English translations
-│   │   ├── login.json
-│   │   ├── register.json
-│   │   ├── dashboard.json
-│   │   └── index.ts
-│   ├── la/                        # Lao translations
-│   │   ├── login.json
-│   │   ├── register.json
-│   │   ├── dashboard.json
-│   │   └── index.ts
-│   ├── index.ts                   # Export all languages
-│   └── i18n.config.ts             # i18n configuration
-├── App.vue                        # Root component
-├── main.ts                        # Application entry point
-└── style.css                      # Global styles
+├── application/           # Application layer
+│   └── dto/              # Data Transfer Objects
+├── common/               # Common configurations
+│   └── axios.config.ts   # Axios interceptors
+├── components/           # Reusable components
+│   ├── Base/             # Base components (Table, Form, etc.)
+│   ├── layouts/          # Layout components (by role)
+│   └── ui/               # UI components
+├── domain/               # Domain layer
+│   └── entities/         # Domain entities
+├── infrastructure/       # Infrastructure layer
+│   ├── apis/             # API client
+│   └── repositories/     # Data repositories
+├── localization/         # i18n translations (en, la, th)
+├── presentation/         # Presentation layer
+│   ├── components/       # Feature-specific components
+│   └── views/            # Page components
+├── router/               # Vue Router configuration
+├── shared/               # Shared utilities
+│   ├── composables/      # Vue composables
+│   ├── constants/        # Constants (API endpoints, etc.)
+│   ├── types/            # TypeScript types
+│   └── utils/            # Utility functions
+├── store/                # Pinia stores
+├── App.vue               # Root component
+└── main.ts               # Application entry point
 ```
 
-## 🎯 Menu Items (Sidebar)
+## 🔐 Authentication Flow
 
-The dashboard includes the following menu items:
+1. User logs in with email + password
+2. Backend returns JWT token + user data
+3. Token is stored in localStorage
+4. Token is automatically added to all API requests via Axios interceptor
+5. Router guards check authentication and role before navigating
+6. If token is expired (401), user is redirected to login page
 
-1. **Dashboard** (ແດຊບອດ) - Main overview
-2. **Customers/Agents** (ລູກຄ້າ/ຕົວແທນ) - Customer management
-3. **Stock Orders** (ສະຕ໊ອກອໍເດີ) - Order inventory
-4. **Items Arrived** (ຂອງຖຶງແລ້ວ) - Received items
-5. **Notify Arrival** (ແຈ້ງເຄື່ອງຖຶງ) - Arrival notifications
-6. **Payment** (ການຊຳລະເງິນ) - Payment management
-7. **Reports** (ລາຍງານ) - Analytics and reports
-8. **Settings** (ຕັ້ງຄ່າ) - System settings
+## 🌍 i18n (Internationalization)
 
-## 🛠️ Installation & Setup
+รองรับ 3 ภาษา:
+- **English (en)**
+- **Lao (la)** - Default
+- **Thai (th)**
 
-### Prerequisites
+เปลี่ยนภาษาได้ที่หน้า Login หรือใน Header
 
-- Node.js (v18 or higher)
-- pnpm (v8 or higher)
+## 👥 User Roles
 
-### Install Dependencies
+- **SUPER_ADMIN**: Full access to system
+- **ADMIN**: Admin access
+- **ADMIN_MERCHANT**: Merchant admin
+- **EMPLOYEE_MERCHANT**: Merchant employee
+- **CUSTOMER**: Customer access
+
+## 📄 API Integration
+
+### Endpoints
+
+Backend API Base URL: `http://localhost:3000`
+
+**Authentication:**
+- `POST /auth/login` - Login
+- `GET /auth/me` - Get current user
+
+**Users:**
+- `GET /users` - List users (with pagination)
+- `POST /users` - Create user
+- `PATCH /users/:id` - Update user
+- `DELETE /users/:id` - Delete user
+
+**Roles:**
+- `GET /roles` - List roles
+- `POST /roles` - Create role
+- `PATCH /roles/:id` - Update role
+- `DELETE /roles/:id` - Delete role
+
+**Permissions:**
+- `GET /permissions` - List permissions
+- `POST /permissions` - Create permission
+- `POST /permissions/generate` - Generate from controllers
+- `PATCH /permissions/:id` - Update permission
+- `DELETE /permissions/:id` - Delete permission
+
+**Role Permissions:**
+- `POST /role-permissions/assign` - Assign permission to role
+- `DELETE /role-permissions/:roleId/:permissionId` - Unassign
+- `GET /role-permissions/role/:roleId` - Get by role
+
+ดู `BACKEND_API_ANALYSIS.md` สำหรับรายละเอียดเพิ่มเติม
+
+## ✅ Implemented Features
+
+### Super Admin
+- ✅ Dashboard
+- ✅ **Users Management** (CRUD with pagination, search)
+- 🚧 Roles Management (TODO)
+- 🚧 Permissions Management (TODO)
+- 🚧 Role Permissions Management (TODO)
+- ⏳ Merchants Management (existing UI)
+- ⏳ Reports (existing UI)
+- ⏳ Notifications (existing UI)
+- ⏳ Settings (existing UI)
+
+### Merchant
+- ⏳ Dashboard (existing UI)
+- ⏳ Customers (existing UI)
+- ⏳ Stock Orders (existing UI)
+- ⏳ Item Arrived (existing UI)
+- ⏳ Notify Arrival (existing UI)
+- ⏳ Payment (existing UI)
+- ⏳ Reports (existing UI)
+
+### Customer
+- ⏳ Item Arrived (existing UI)
+- ⏳ Messages (existing UI)
+
+## 🎯 Next Steps
+
+1. สร้าง Roles, Permissions, Role Permissions pages (ตาม pattern ของ Users Page)
+2. เชื่อม API ของ Merchants, Orders, Arrivals, Notifications
+3. ปรับปรุง Dashboard ให้แสดงข้อมูลจริง
+4. เพิ่ม unit tests
+5. เพิ่ม E2E tests
+
+## 📚 Documentation
+
+- [INTEGRATION_STATUS.md](INTEGRATION_STATUS.md) - รายละเอียดสถานะการพัฒนา
+- [BACKEND_API_ANALYSIS.md](../m-order-system-back/BACKEND_API_ANALYSIS.md) - รายละเอียด Backend API
+
+## 🐛 Troubleshooting
+
+### Backend Connection Error
+
+```
+ERR_CONNECTION_REFUSED at http://localhost:3000
+```
+
+**Solution**: ตรวจสอบว่า backend server กำลัง running อยู่
+
+```bash
+cd ../m-order-system-back
+pnpm start
+```
+
+### Token Expired
+
+ถ้า token หมดอายุ จะ redirect ไปหน้า login อัตโนมัติ
+
+### pnpm store error
 
 ```bash
 pnpm install
 ```
 
-### Run Development Server
+หรือถ้ายังไม่ได้ ลองลบ node_modules แล้ว install ใหม่:
 
 ```bash
-pnpm dev
+rm -rf node_modules
+pnpm install
 ```
-
-The application will be available at `http://localhost:5173`
-
-### Build for Production
-
-```bash
-pnpm build
-```
-
-### Preview Production Build
-
-```bash
-pnpm preview
-```
-
-## 🌐 Multi-Language Support
-
-The application supports two languages:
-
-- **English (en)**
-- **Lao (la)**
-
-Users can switch languages using the language switcher in the header (globe icon).
-
-Language preference is saved in `localStorage` and persists across sessions.
-
-## 🔐 Authentication Flow
-
-### Login
-1. Navigate to `/login`
-2. Enter username and password
-3. Click "Sign In"
-4. Redirected to `/dashboard` on success
-
-### Register
-1. Navigate to `/register`
-2. Enter email, username, and password
-3. Click "Create Account"
-4. Redirected to `/dashboard` on success
-
-### Logout
-1. Click user avatar in header
-2. Select "Logout" from dropdown
-3. Redirected to `/login`
-
-**Note:** Authentication is currently mocked with `console.log`. The token is stored in `localStorage` for demonstration purposes. Replace with actual API calls when integrating with backend.
-
-## 📄 Pages & Routes
-
-| Route | Component | Description |
-|-------|-----------|-------------|
-| `/` | - | Redirects to `/login` |
-| `/login` | LoginPage.vue | User login |
-| `/register` | RegisterPage.vue | User registration |
-| `/dashboard` | DashboardPage.vue | Main dashboard (requires auth) |
-
-## 🎨 UI Components
-
-### Layout Components
-
-- **AppLayout**: Main layout wrapper with sidebar, header, content, and footer
-- **HeaderLayout**: Top navigation bar with language switcher, notifications, and user menu
-- **SidebarLayout**: Collapsible sidebar with menu items
-- **FooterLayout**: Footer with copyright and links
-
-### Page Components
-
-- **LoginPage**: Login form with validation
-- **RegisterPage**: Registration form with password confirmation
-- **DashboardPage**: Dashboard with statistics, tables, and notifications
-
-## 🔧 Configuration
-
-### Router Guards
-
-The router includes navigation guards to protect authenticated routes:
-
-```typescript
-router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('access_token');
-  
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/login'); // Redirect to login if not authenticated
-  } else if (to.meta.skipAuth && isAuthenticated) {
-    next('/dashboard'); // Redirect to dashboard if already authenticated
-  } else {
-    next(); // Allow navigation
-  }
-});
-```
-
-### i18n Configuration
-
-Language configuration is in `src/localization/i18n.config.ts`:
-
-```typescript
-export const i18n = createI18n({
-  legacy: false,
-  locale: savedLocale, // Default language from localStorage
-  fallbackLocale: 'la', // Fallback to Lao
-  messages: {
-    en: messages.en,
-    la: messages.la,
-  },
-  // Number formats for currency
-  numberFormats: {
-    en: { currency: { style: 'currency', currency: 'USD' } },
-    la: { currency: { style: 'currency', currency: 'LAK' } },
-  }
-});
-```
-
-## 📝 Adding New Features
-
-### Adding a New Page
-
-1. Create component in `src/views/`
-2. Add route in `src/router/index.ts`
-3. Add menu item in `src/components/layouts/superAdmin-layouts/menuItem.ts`
-4. Add translations in `src/localization/en/` and `src/localization/la/`
-
-### Adding Translations
-
-1. Add keys to JSON files in `src/localization/en/` and `src/localization/la/`
-2. Use in components: `{{ $t('key.path') }}`
-3. Or in script: `const { t } = useI18n(); t('key.path')`
-
-### Example:
-
-```vue
-<template>
-  <h1>{{ $t('dashboard.welcome') }}</h1>
-</template>
-
-<script setup lang="ts">
-import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
-console.log(t('dashboard.title'));
-</script>
-```
-
-## 🎯 Next Steps
-
-### Backend Integration
-
-Replace mock authentication with real API calls:
-
-1. Create API service in `src/services/`
-2. Update `auth.store.ts` to use real API
-3. Add axios or fetch for HTTP requests
-4. Handle errors and loading states
-
-### Add More Pages
-
-The menu items are configured but routes need to be created:
-
-- Customers/Agents page
-- Stock Orders page
-- Items Arrived page
-- Notify Arrival page
-- Payment page
-- Reports page
-- Settings page
-
-### Enhanced Features
-
-- Form validation with more rules
-- Error handling and user feedback
-- Loading states for async operations
-- Pagination for tables
-- Search and filter functionality
-- Real-time notifications
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a pull request
+1. สร้าง feature branch จาก `main`
+2. Commit changes
+3. Push to branch
+4. Create Pull Request
 
-## 📧 Support
+## 📝 License
 
-For questions or issues, please contact: support@m-order.com
+MIT License
 
 ---
 
-**Built with ❤️ using Vue 3 + TypeScript + Ant Design Vue**
+Made with ❤️ by M-Order System Team

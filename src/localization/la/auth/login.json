@@ -1,9 +1,15 @@
 {
   "title": "ເຂົ້າລະບົບ",
+  "email": "ອີເມວ",
   "username": "ຊື່ຜູ້ໃຊ້",
   "password": "ລະຫັດຜ່ານ",
-  "submit": "ເຂົ້າລະບົບ",
-  "registerLink": "ຍັງບໍ່ມີບັນຊີ? ລົງທະບຽນ",
-  "success": "ເຂົ້າລະບົບສຳເລັດ"
+  "loginButton": "ເຂົ້າລະບົບ",
+  "loggingIn": "ກຳລັງເຂົ້າລະບົບ",
+  "noAccount": "ຍັງບໍ່ມີບັນຊີ?",
+  "registerLink": "ລົງທະບຽນ",
+  "emailRequired": "ກະລຸນາປ້ອນອີເມວ!",
+  "emailInvalid": "ກະລຸນາປ້ອນອີເມວທີ່ຖືກຕ້ອງ!",
+  "passwordRequired": "ກະລຸນາປ້ອນລະຫັດຜ່ານ!",
+  "success": "ເຂົ້າລະບົບສຳເລັດ!"
 }
 

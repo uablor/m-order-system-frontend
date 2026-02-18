@@ -1,10 +1,70 @@
 <template>
-  <SuperAdminLayout>
-    <MerchantTable />
-  </SuperAdminLayout>
+  <div class="merchants-page">
+    <MerchantTable
+      :merchants="merchants"
+      :loading="loading"
+      :pagination="pagination"
+      @create="goCreate"
+      @edit="goEdit"
+      @delete="confirmDelete"
+      @search="handleSearch"
+      @page-change="handlePageChange"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
-import SuperAdminLayout from '../../../components/layouts/superAdmin-layouts/AppLayout.vue';
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import MerchantTable from '../../components/super-admin/MerchantTable.vue';
+import { useSuperAdminMerchants } from '@/presentation/composables/super-admin/useSuperAdminMerchants';
+
+const router = useRouter();
+const {
+  loading,
+  merchants,
+  pagination,
+  fetchMerchants,
+  deleteMerchant,
+  searchMerchants,
+  changePage,
+} = useSuperAdminMerchants();
+
+const goCreate = () => router.push('/super-admin/merchants/create');
+const goEdit = (merchant: import('@/domain/entities/user.entity').Merchant) => {
+  try {
+    localStorage.setItem('sa:last-edit-merchant', JSON.stringify(merchant));
+  } catch {
+    // ignore
+  }
+  router.push(`/super-admin/merchants/${merchant.id}/edit`);
+};
+
+const confirmDelete = async (merchant: import('@/domain/entities/user.entity').Merchant) => {
+  await deleteMerchant(merchant.id);
+};
+
+const handleSearch = async (searchText: string) => {
+  await searchMerchants(searchText);
+};
+
+const handlePageChange = async (page: number, pageSize: number) => {
+  await changePage(page, pageSize);
+};
+
+onMounted(async () => {
+  await fetchMerchants();
+});
 </script>
+
+<style scoped>
+.merchants-page {
+  padding: 24px;
+}
+
+@media (max-width: 768px) {
+  .merchants-page {
+    padding: 16px;
+  }
+}
+</style>

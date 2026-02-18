@@ -1,10 +1,9 @@
 <template>
   <a-layout class="app-layout">
-    <a-layout :style="{ marginRight: contentMarginRight, transition: 'margin-right 0.2s' }">
+    <a-layout :style="{ marginRight: '0px' }">
       <HeaderWithLayoutSwitcher
         :collapsed="collapsed"
         :page-title="pageTitle"
-        current-layout="superAdmin"
         @toggle-sidebar="toggleSidebar"
       />
       <a-layout-content class="content">
@@ -14,23 +13,9 @@
       </a-layout-content>
       <FooterLayout />
     </a-layout>
-    <SidebarLayout
-      v-if="!isMobile"
-      :collapsed="collapsed"
-      @update:collapsed="collapsed = $event"
-    />
 
-    <a-drawer
-      v-else
-      placement="right"
-      :open="!collapsed"
-      :width="260"
-      :closable="false"
-      :body-style="{ padding: '0', background: '#001529' }"
-      @close="collapsed = true"
-    >
-      <DrawerSidebar @navigate="collapsed = true" />
-    </a-drawer>
+    <!-- Super Admin mobile bottom navigation -->
+    <SuperAdminBottomNav v-if="isMobile" />
   </a-layout>
 </template>
 
@@ -38,11 +23,10 @@
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import SidebarLayout from './SidebarLayout.vue';
-import DrawerSidebar from './DrawerSidebar.vue';
 import HeaderWithLayoutSwitcher from '../shared/HeaderWithLayoutSwitcher.vue';
 import FooterLayout from '../shared/FooterLayout.vue';
 import { useIsMobile } from '../../../shared/composables/useIsMobile';
+import SuperAdminBottomNav from './SuperAdminBottomNav.vue';
 
 const collapsed = ref(false);
 const route = useRoute();
@@ -50,25 +34,20 @@ const { t } = useI18n();
 const { isMobile } = useIsMobile();
 
 watch(isMobile, (val) => {
-  if (val) collapsed.value = true;
-});
-
-const contentMarginRight = computed(() => {
-  if (isMobile.value) return '0px';
-  return collapsed.value ? '80px' : '250px';
+  // superadmin: ใช้ collapsed เป็นสถานะเปิด/ปิด "เมนูใน header (mobile drawer)"
+  if (val) collapsed.value = true; // drawer closed by default
 });
 
 const pathToMenuKey: Record<string, string> = {
-  dashboard: 'dashboard',
   merchants: 'merchantManagement',
-  reports: 'reports',
-  notifications: 'notifications',
+  users: 'users',
   settings: 'settings',
 };
 const pageTitle = computed(() => {
-  const pathKey = route.path.split('/').pop() || 'dashboard';
+  const parts = route.path.split('/');
+  const pathKey = parts[2] || 'merchants';
   const menuKey = pathToMenuKey[pathKey] || pathKey;
-  return t(`menus.superAdmin.${menuKey}`) || t('menus.superAdmin.dashboard');
+  return t(`menus.superAdmin.${menuKey}`) || t('menus.superAdmin.merchantManagement');
 });
 
 const toggleSidebar = () => { collapsed.value = !collapsed.value; };
@@ -96,6 +75,7 @@ const toggleSidebar = () => { collapsed.value = !collapsed.value; };
   .content {
     margin: 16px 8px;
     padding: 16px;
+    padding-bottom: 96px; /* กันโดน bottom nav บัง */
   }
 }
 </style>

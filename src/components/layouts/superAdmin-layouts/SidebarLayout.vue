@@ -56,13 +56,18 @@ const collapsed = computed({
   set: (val) => emit('update:collapsed', val),
 });
 
-const selectedKeys = ref<string[]>([route.path.split('/').pop() || 'dashboard']);
+const getSuperAdminKey = (path: string) => {
+  const parts = path.split('/');
+  return parts[2] || 'dashboard';
+};
+
+const selectedKeys = ref<string[]>([getSuperAdminKey(route.path)]);
 const menuItems = computed(() => getMenuItems(t));
 
 watch(
   () => route.path,
   (newPath) => {
-    selectedKeys.value = [newPath.split('/').pop() || 'dashboard'];
+    selectedKeys.value = [getSuperAdminKey(newPath)];
   }
 );
 

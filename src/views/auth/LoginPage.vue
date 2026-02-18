@@ -1,57 +1,35 @@
 <template>
-  <div class="login-container">
-    <a-card class="login-card" :title="$t('login.title')">
-      <a-form
-        :model="formState"
-        name="login"
-        @finish="onFinish"
-        layout="vertical"
-      >
+  <div class="auth-page">
+    <a-card class="auth-card">
+      <h2 class="title">{{ $t('login.title') }}</h2>
+
+      <a-form ref="formRef" :model="formState" layout="vertical" @finish="onSubmit">
         <a-form-item
-          :label="$t('login.username')"
-          name="username"
-          :rules="[{ required: true, message: 'Please input your username!' }]"
+          name="email"
+          :label="$t('login.email')"
+          :rules="[
+            { required: true, message: $t('login.emailRequired') },
+            { type: 'email', message: $t('login.emailInvalid') },
+          ]"
         >
-          <a-input v-model:value="formState.username" size="large">
-            <template #prefix>
-              <UserOutlined />
-            </template>
-          </a-input>
+          <a-input v-model:value="formState.email" type="email" autocomplete="email" />
         </a-form-item>
 
         <a-form-item
-          :label="$t('login.password')"
           name="password"
-          :rules="[{ required: true, message: 'Please input your password!' }]"
+          :label="$t('login.password')"
+          :rules="[{ required: true, message: $t('login.passwordRequired') }]"
         >
-          <a-input-password v-model:value="formState.password" size="large">
-            <template #prefix>
-              <LockOutlined />
-            </template>
-          </a-input-password>
+          <a-input-password v-model:value="formState.password" autocomplete="current-password" />
         </a-form-item>
 
-        <a-form-item>
-          <a-button type="primary" html-type="submit" size="large" block>
-            {{ $t('login.loginButton') }}
-          </a-button>
-        </a-form-item>
+        <a-button type="primary" html-type="submit" block :loading="loading">
+          {{ loading ? $t('login.loggingIn') : $t('login.loginButton') }}
+        </a-button>
 
-        <div class="register-link">
-          {{ $t('login.noAccount') }}
-          <router-link to="/register">{{ $t('login.registerLink') }}</router-link>
-        </div>
-
-        <div class="language-switcher">
-          <a-button @click="switchLanguage('en')" :type="currentLocale === 'en' ? 'primary' : 'default'" size="small">
-            EN
-          </a-button>
-          <a-button @click="switchLanguage('la')" :type="currentLocale === 'la' ? 'primary' : 'default'" size="small">
-            ລາວ
-          </a-button>
-          <a-button @click="switchLanguage('th')" :type="currentLocale === 'th' ? 'primary' : 'default'" size="small">
-            ไทย
-          </a-button>
+        <div class="footer">
+          <span>{{ $t('login.noAccount') }}</span>
+          <a class="link" @click="$router.push('/register')">{{ $t('login.registerLink') }}</a>
         </div>
       </a-form>
     </a-card>
@@ -59,65 +37,52 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useI18n } from 'vue-i18n';
-import { UserOutlined, LockOutlined } from '@ant-design/icons-vue';
-import { useAuthStore } from '../../store/auth.store';
-import { message } from 'ant-design-vue';
+import { reactive } from 'vue';
+import { useAuth } from '@/shared/composables/useAuth';
 
-const router = useRouter();
-const { locale } = useI18n();
-const authStore = useAuthStore();
+const { login, loading } = useAuth();
 
 const formState = reactive({
-  username: '',
+  email: '',
   password: '',
 });
 
-const currentLocale = computed(() => locale.value);
-
-const switchLanguage = (lang: string) => {
-  locale.value = lang;
-  localStorage.setItem('app-locale', lang);
-};
-
-const onFinish = () => {
-  try {
-    authStore.login(formState.username, formState.password);
-    message.success('Login successful!');
-    router.push('/dashboard');
-  } catch (error) {
-    message.error('Login failed!');
-  }
+const onSubmit = async () => {
+  await login({ email: formState.email, password: formState.password });
 };
 </script>
 
 <style scoped>
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.auth-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.login-card {
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-}
-
-.register-link {
-  text-align: center;
-  margin-top: 16px;
-}
-
-.language-switcher {
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 8px;
+  padding: 24px;
+  background: linear-gradient(135deg, #f5f7ff, #ffffff);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.title {
+  margin: 0 0 16px 0;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.footer {
   margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.link {
+  font-weight: 600;
 }
 </style>
+

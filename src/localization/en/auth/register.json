@@ -5,6 +5,8 @@
   "password": "Password",
   "confirmPassword": "Confirm Password",
   "submit": "Register",
-  "loginLink": "Already have an account? Login"
+  "loginLink": "Already have an account? Login",
+  "notImplemented": "Registration UI is not implemented yet. Please ask Super Admin to create your account.",
+  "backToLogin": "Back to Login"
 }
 

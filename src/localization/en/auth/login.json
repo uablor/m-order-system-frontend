@@ -1,9 +1,15 @@
 {
   "title": "Login",
+  "email": "Email",
   "username": "Username",
   "password": "Password",
-  "submit": "Login",
-  "registerLink": "Don't have an account? Register",
-  "success": "Login success"
+  "loginButton": "Login",
+  "loggingIn": "Logging in",
+  "noAccount": "Don't have an account?",
+  "registerLink": "Register",
+  "emailRequired": "Please input your email!",
+  "emailInvalid": "Please input a valid email!",
+  "passwordRequired": "Please input your password!",
+  "success": "Login successful!"
 }
 

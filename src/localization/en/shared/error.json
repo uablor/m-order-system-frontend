@@ -1,0 +1,8 @@
+{
+  "unknown": "An unknown error occurred",
+  "network": "Network error. Please check your connection.",
+  "unauthorized": "Unauthorized. Please login again.",
+  "forbidden": "You don't have permission to perform this action.",
+  "notFound": "Resource not found.",
+  "server": "Server error. Please try again later."
+}
