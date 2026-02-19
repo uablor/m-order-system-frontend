@@ -1,3 +1,17 @@
+export interface ExchangeRate {
+  id: number;
+  merchantId: number;
+  baseCurrency: string;
+  targetCurrency: string;
+  rateType: 'BUY' | 'SELL';
+  rate: string;
+  isActive: boolean;
+  rateDate: string;
+  createdBy: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface User {
   id: number;
   email: string;
@@ -81,6 +95,7 @@ export interface AuthPayload {
   userId: number;
   email: string;
   roleName: string;
+  merchantId?: number;
   iat: number;
   exp: number;
 }

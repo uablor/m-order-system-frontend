@@ -7,11 +7,10 @@
 
     <div class="page-head">
       <div class="head-left">
-        <div class="text-3xl font-semibold text-slate-900">{{ $t('merchant.orders.title') }}</div>
-        <div class="text-slate-500 mt-1">{{ $t('merchant.orders.subtitle') }}</div>
+        <div class="page-title">{{ $t('merchant.orders.title') }}</div>
+        <div class="page-subtitle">{{ $t('merchant.orders.subtitle') }}</div>
       </div>
 
-      <!-- Tabs: right on desktop, center on mobile -->
       <div class="tabs-wrap">
         <div class="tab-pills" role="tablist" aria-label="Manage order tabs">
           <button
@@ -506,13 +505,15 @@ const todayOrders = computed(() => mockOrders.slice(0, 3));
 
 .page-head {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px; /* replaces old mb-5 + tabs margin */
+  margin-bottom: 16px;
 }
-.head-left { flex: 1; min-width: 240px; }
-.tabs-wrap { display: flex; justify-content: flex-end; }
+.head-left { flex: 1; min-width: 0; }
+.page-title { font-size: 22px; font-weight: 700; color: #0f172a; line-height: 1.25; }
+.page-subtitle { font-size: 13px; color: #64748b; margin-top: 2px; }
+.tabs-wrap { display: flex; justify-content: flex-end; flex-shrink: 0; }
 
 .tab-pills {
   display: inline-flex;
@@ -537,6 +538,13 @@ const todayOrders = computed(() => mockOrders.slice(0, 3));
   background: #ffffff;
   color: #1d4ed8;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+@media (max-width: 767px) {
+  .head-left { display: none; }
+  .tabs-wrap { width: 100%; }
+  .tab-pills { width: 100%; gap: 6px; padding: 6px; border-radius: 12px; }
+  .tab-pill { flex: 1; text-align: center; padding: 8px 4px; font-size: 13px; border-radius: 9px; }
 }
 
 .panel-title {
@@ -721,13 +729,6 @@ const todayOrders = computed(() => mockOrders.slice(0, 3));
 }
 
 @media (max-width: 768px) {
-  .page-head {
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 16px;
-  }
-  .tabs-wrap { width: 100%; justify-content: center; }
-
   .sticky-card { position: static; }
   .group-grid { grid-template-columns: 1fr; }
   .group-grid.header { display: none; }

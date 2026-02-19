@@ -177,6 +177,71 @@
       "notArrived": "ຍັງບໍ່ຖຶງ"
     },
     "countAll": "ທັງໝົດ {count} ລາຍການ"
+  },
+  "exchangeRates": {
+    "title": "ອັດຕາແລກປ່ຽນ",
+    "subtitle": "ຈັດການອັດຕາແລກປ່ຽນສະກຸນເງິນສຳລັບຊື້ ແລະ ຂາຍ",
+    "breadcrumb": "ອັດຕາແລກປ່ຽນ",
+    "addButton": "ເພີ່ມອັດຕາ",
+    "filterAll": "ທັງໝົດ",
+    "filterBuy": "ຊື້",
+    "filterSell": "ຂາຍ",
+    "form": {
+      "title": "ເພີ່ມອັດຕາແລກປ່ຽນ",
+      "baseCurrency": "ສະກຸນເງິນຕົ້ນທາງ",
+      "baseCurrencyPlaceholder": "ເຊັ່ນ USD, CNY, THB",
+      "targetCurrency": "ສະກຸນເງິນປາຍທາງ",
+      "targetCurrencyPlaceholder": "ເຊັ່ນ LAK",
+      "rateType": "ປະເພດອັດຕາ",
+      "rate": "ອັດຕາແລກປ່ຽນ",
+      "ratePlaceholder": "ລະບຸອັດຕາແລກປ່ຽນ",
+      "rateDate": "ວັນທີ່ອັດຕາ",
+      "submit": "ບັນທຶກ",
+      "cancel": "ຍົກເລີກ",
+      "baseCurrencyRequired": "ກະລຸນາລະບຸສະກຸນເງິນຕົ້ນທາງ",
+      "targetCurrencyRequired": "ກະລຸນາລະບຸສະກຸນເງິນປາຍທາງ",
+      "rateRequired": "ກະລຸນາລະບຸອັດຕາແລກປ່ຽນ"
+    },
+    "table": {
+      "baseCurrency": "ຕົ້ນທາງ",
+      "targetCurrency": "ປາຍທາງ",
+      "rateType": "ປະເພດ",
+      "rate": "ອັດຕາ",
+      "rateDate": "ວັນທີ",
+      "isActive": "ສະຖານະ",
+      "actions": "ຈັດການ"
+    },
+    "toast": {
+      "createSuccess": "ເພີ່ມອັດຕາແລກປ່ຽນສຳເລັດ!",
+      "bulkCreateSuccess": "ບັນທຶກອັດຕາແລກປ່ຽນສຳເລັດ!",
+      "deleteSuccess": "ລຶບອັດຕາແລກປ່ຽນສຳເລັດ!"
+    },
+    "confirmDelete": "ຢືນຢັນການລຶບອັດຕາແລກປ່ຽນນີ້?",
+    "active": "ໃຊ້ງານ",
+    "inactive": "ບໍ່ໃຊ້ງານ",
+    "typeBuy": "ຊື້",
+    "typeSell": "ຂາຍ",
+    "bulkModal": {
+      "title": "ຕັ້ງອັດຕາແລກປ່ຽນ",
+      "subtitle": "ກະລຸນາໃສ່ອັດຕາຊື້ ແລະ ອັດຕາຂາຍປະຈຳວັນ",
+      "subtitleSellOnly": "ມີອັດຕາຊື້ແລ້ວ. ກະລຸນາໃສ່ອັດຕາຂາຍສຳລັບວັນນີ້",
+      "subtitleBuyOnly": "ມີອັດຕາຂາຍແລ້ວ. ກະລຸນາໃສ່ອັດຕາຊື້ສຳລັບວັນນີ້",
+      "buyFormTitle": "ອັດຕາຊື້ (BUY)",
+      "sellFormTitle": "ອັດຕາຂາຍ (SELL)",
+      "baseCurrency": "ສະກຸນເງິນຕົ້ນທາງ",
+      "baseCurrencyPlaceholder": "ເຊັ່ນ USD, CNY, THB",
+      "targetCurrency": "ສະກຸນເງິນປາຍທາງ",
+      "targetCurrencyPlaceholder": "ເຊັ່ນ LAK",
+      "rate": "ອັດຕາແລກປ່ຽນ",
+      "ratePlaceholder": "ໃສ່ອັດຕາແລກປ່ຽນ",
+      "baseCurrencyRequired": "ກະລຸນາໃສ່ສະກຸນເງິນຕົ້ນທາງ",
+      "targetCurrencyRequired": "ກະລຸນາໃສ່ສະກຸນເງິນປາຍທາງ",
+      "rateRequired": "ກະລຸນາໃສ່ອັດຕາແລກປ່ຽນ",
+      "submit": "ບັນທຶກອັດຕາ",
+      "cancel": "ຍົກເລີກ",
+      "skipText": "ຂ້າມກ່ອນ"
+    }
   }
 }
+
 

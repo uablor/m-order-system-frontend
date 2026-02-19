@@ -6,9 +6,10 @@
   "stockOrder": "ສະຕ໊ອກ / ອໍເດີ",
   "manageStock": "ຈັດການສະຕ໊ອກ",
   "createOrder": "ສ້າງອໍເດີ",
-  "itemArrived": "ຂອງຖຶງແລ້ວ",
-  "notifyArrival": "ແຈ້ງເຄື່ອງຖຶງ",
+  "itemArrived": "ເຄື່ອງເຖີງແລ້ວ",
+  "notifyArrival": "ແຈ້ງເຄື່ອງເຖີງ",
   "payment": "ການຊຳລະເງິນ",
+  "exchangeRates": "ອັດຕາແລກປ່ຽນ",
   "reports": "ລາຍງານ"
 }
 

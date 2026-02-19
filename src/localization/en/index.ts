@@ -8,6 +8,7 @@ import logout from './shared/logout.json';
 import superAdminMenus from './super-admin/menus.json';
 import merchantMenus from './merchant/menus.json';
 import customerMenus from './customer/menus.json';
+import customer from './customer/customer.json';
 import merchant from './merchant/merchant.json';
 import users from './super-admin/users.json';
 import merchants from './super-admin/merchants.json';
@@ -32,4 +33,5 @@ export default {
   users,
   merchants,
   access,
+  customer,
 };

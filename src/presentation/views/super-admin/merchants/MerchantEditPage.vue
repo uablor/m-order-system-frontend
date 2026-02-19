@@ -1,14 +1,14 @@
 <template>
   <div class="sa-form-page">
     <div class="page-head">
-      <div>
-        <div class="text-3xl font-semibold text-slate-900">{{ $t('merchants.createMerchant') }}</div>
-        <div class="text-slate-500 mt-1">{{ $t('merchants.subtitle') }}</div>
+      <div class="title-block">
+        <div class="page-title">{{ $t('merchants.editMerchant') }}</div>
+        <div class="page-subtitle">{{ $t('merchants.subtitle') }}</div>
       </div>
-      <div class="head-actions">
+      <div v-if="!isMobile" class="head-actions">
         <a-button @click="goBack">{{ $t('common.cancel') }}</a-button>
         <a-button type="primary" :loading="loading" @click="submitFromOutside">
-          {{ $t('common.create') }}
+          {{ $t('common.save') }}
         </a-button>
       </div>
     </div>
@@ -28,7 +28,7 @@
             </a-form-item>
           </a-col>
           <a-col :xs="24" :md="12">
-            <a-form-item name="defaultCurrency" class="pb-2px">
+            <a-form-item name="defaultCurrency">
               <template #label>
                 <span class="label-ico"><DollarOutlined />{{ $t('merchants.defaultCurrency') }}</span>
               </template>
@@ -109,12 +109,20 @@
         </a-form-item>
       </a-form>
     </a-card>
+
+    <div v-if="isMobile" class="mobile-footer">
+      <a-button block size="large" @click="goBack">{{ $t('common.cancel') }}</a-button>
+      <a-button block size="large" type="primary" :loading="loading" @click="submitFromOutside">
+        {{ $t('common.save') }}
+      </a-button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { onMounted, reactive, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useIsMobile } from '@/shared/composables/useIsMobile';
 import type { FormInstance } from 'ant-design-vue';
 import {
   ShopOutlined,
@@ -129,11 +137,21 @@ import {
   CheckCircleOutlined,
 } from '@ant-design/icons-vue';
 import type { MerchantCurrency } from '@/domain/entities/user.entity';
+import type { MerchantUpdateDto } from '@/application/dto/merchant.dto';
+import { merchantRepository } from '@/infrastructure/repositories/merchant.repository';
 import { useSuperAdminMerchants } from '@/presentation/composables/super-admin/useSuperAdminMerchants';
+import type { BackendResponse } from '@/shared/types/backend-response.types';
+import { handleApiError } from '@/shared/utils/error';
+import { useI18n } from 'vue-i18n';
 
+const route = useRoute();
 const router = useRouter();
-const { loading, createMerchant } = useSuperAdminMerchants();
+const { isMobile } = useIsMobile();
+const id = Number(route.params.id);
+
+const { loading, updateMerchant } = useSuperAdminMerchants();
 const formRef = ref<FormInstance>();
+const { t } = useI18n();
 
 const formState = reactive({
   shopName: '',
@@ -148,11 +166,59 @@ const formState = reactive({
   isActive: true,
 });
 
+const applyMerchantToForm = (m: any) => {
+  if (!m) return;
+  formState.shopName = m.shopName ?? '';
+  formState.shopLogoUrl = m.shopLogoUrl ?? '';
+  formState.shopAddress = m.shopAddress ?? '';
+  formState.contactPhone = m.contactPhone ?? '';
+  formState.contactEmail = m.contactEmail ?? '';
+  formState.contactFacebook = m.contactFacebook ?? '';
+  formState.contactLine = m.contactLine ?? '';
+  formState.contactWhatsapp = m.contactWhatsapp ?? '';
+  formState.defaultCurrency = (m.defaultCurrency ?? 'LAK') as MerchantCurrency;
+  formState.isActive = !!m.isActive;
+};
+
+const readMerchantFromLocalStorage = () => {
+  try {
+    const raw = localStorage.getItem('sa:last-edit-merchant');
+    if (!raw) return undefined;
+    const parsed = JSON.parse(raw);
+    if (parsed && Number(parsed.id) === id) return parsed;
+    return undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const unwrapMaybeBackendResponse = (res: any) => {
+  // บาง endpoint อาจส่งแบบ { success, results: [entity] }
+  if (res && typeof res === 'object' && Array.isArray((res as BackendResponse<any>).results)) {
+    return (res as BackendResponse<any>).results?.[0];
+  }
+  return res;
+};
+
+const loadMerchant = async () => {
+  // เติมข้อมูลเร็วจาก localStorage ก่อน (กันหน้าฟอร์มว่าง)
+  const cached = readMerchantFromLocalStorage();
+  if (cached) applyMerchantToForm(cached);
+
+  try {
+    const res = await merchantRepository.getById(id);
+    const m = unwrapMaybeBackendResponse(res);
+    applyMerchantToForm(m);
+  } catch (error) {
+    handleApiError(error, t);
+  }
+};
+
 const opt = (v: string) => (v.trim() ? v.trim() : undefined);
 
 const submit = async () => {
   await formRef.value?.validate();
-  const ok = await createMerchant({
+  const payload: MerchantUpdateDto = {
     shopName: formState.shopName.trim(),
     shopLogoUrl: opt(formState.shopLogoUrl),
     shopAddress: opt(formState.shopAddress),
@@ -163,7 +229,8 @@ const submit = async () => {
     contactWhatsapp: opt(formState.contactWhatsapp),
     defaultCurrency: formState.defaultCurrency,
     isActive: !!formState.isActive,
-  });
+  };
+  const ok = await updateMerchant(id, payload);
   if (ok) router.push('/super-admin/merchants');
 };
 
@@ -172,21 +239,24 @@ const submitFromOutside = async () => {
 };
 
 const goBack = () => router.push('/super-admin/merchants');
+
+onMounted(async () => {
+  await loadMerchant();
+});
 </script>
 
 <style scoped>
-.panel-card {
-  border-radius: 14px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 10px 25px rgba(15, 23, 42, 0.04);
-}
+.panel-card { border-radius: 14px; box-shadow: 0 1px 2px rgba(15,23,42,0.06), 0 10px 25px rgba(15,23,42,0.04); }
 .sa-form-page { display: flex; flex-direction: column; gap: 12px; }
 .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.page-title { font-size: 26px; font-weight: 600; color: #0f172a; line-height: 1.3; }
+.page-subtitle { font-size: 13px; color: #64748b; margin-top: 4px; }
+.head-actions { display: flex; gap: 8px; }
 .label-ico { display: inline-flex; align-items: center; gap: 8px; }
-.pb-2px { padding-bottom: 2px; }
-@media (max-width: 768px) {
-  .head-actions { width: 100%; }
-  .head-actions :deep(.ant-btn) { flex: 1; }
+.mobile-footer { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; padding-bottom: 12px; }
+@media (max-width: 767px) {
+  .page-title { font-size: 16px; }
+  .page-subtitle { font-size: 12px; }
 }
 </style>
 

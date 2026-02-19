@@ -56,11 +56,11 @@ import { onMounted, ref } from 'vue';
 import type { Role, Permission } from '@/domain/entities/user.entity';
 import type { RoleCreateDto, RoleUpdateDto } from '@/application/dto/role.dto';
 import type { PermissionCreateDto, PermissionUpdateDto } from '@/application/dto/permission.dto';
-import RoleTable from '@/presentation/components/super-admin/RoleTable.vue';
-import RoleFormModal from '@/presentation/components/super-admin/RoleFormModal.vue';
-import PermissionTable from '@/presentation/components/super-admin/PermissionTable.vue';
-import PermissionFormModal from '@/presentation/components/super-admin/PermissionFormModal.vue';
-import RolePermissionManager from '@/presentation/components/super-admin/RolePermissionManager.vue';
+import RoleTable from '@/presentation/components/super-admin/settings/table/RoleTable.vue';
+import RoleFormModal from '@/presentation/components/super-admin/settings/modal/RoleFormModal.vue';
+import PermissionTable from '@/presentation/components/super-admin/settings/table/PermissionTable.vue';
+import PermissionFormModal from '@/presentation/components/super-admin/settings/modal/PermissionFormModal.vue';
+import RolePermissionManager from '@/presentation/components/super-admin/settings/table/RolePermissionManager.vue';
 import { useSuperAdminRolesCrud } from '@/presentation/composables/super-admin/useSuperAdminRolesCrud';
 import { useSuperAdminPermissions } from '@/presentation/composables/super-admin/useSuperAdminPermissions';
 

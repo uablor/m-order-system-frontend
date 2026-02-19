@@ -13,9 +13,6 @@
       </a-layout-content>
       <FooterLayout />
     </a-layout>
-
-    <!-- Super Admin mobile bottom navigation -->
-    <SuperAdminBottomNav v-if="isMobile" />
   </a-layout>
 </template>
 
@@ -26,7 +23,6 @@ import { useI18n } from 'vue-i18n';
 import HeaderWithLayoutSwitcher from '../shared/HeaderWithLayoutSwitcher.vue';
 import FooterLayout from '../shared/FooterLayout.vue';
 import { useIsMobile } from '../../../shared/composables/useIsMobile';
-import SuperAdminBottomNav from './SuperAdminBottomNav.vue';
 
 const collapsed = ref(false);
 const route = useRoute();
@@ -59,7 +55,7 @@ const toggleSidebar = () => { collapsed.value = !collapsed.value; };
 }
 
 .content {
-  margin: 24px 16px;
+  margin: 5px 10px;
   padding: 24px;
   min-height: calc(100vh - 64px - 70px - 48px);
   background: #fff;
@@ -67,15 +63,16 @@ const toggleSidebar = () => { collapsed.value = !collapsed.value; };
 }
 
 .content-wrapper {
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
 }
 
 @media (max-width: 768px) {
   .content {
-    margin: 16px 8px;
-    padding: 16px;
-    padding-bottom: 96px; /* กันโดน bottom nav บัง */
+    margin: 0;
+    padding: 12px;
+    border-radius: 0;
   }
 }
 </style>

@@ -1,6 +1,16 @@
 <template>
   <a-layout-header class="header">
     <div class="header-left">
+      <a-button
+        v-if="showTriggerButton"
+        type="text"
+        class="header-interactive-btn trigger-btn"
+        @click="$emit('toggle-sidebar')"
+      >
+        <MenuFoldOutlined v-if="!collapsed" />
+        <MenuUnfoldOutlined v-else />
+      </a-button>
+
       <h3 v-if="showPageTitle" class="page-title">{{ pageTitle }}</h3>
 
       <!-- Super Admin: move sidebar menus into header (no overflow "...") -->
@@ -20,7 +30,9 @@
     </div>
 
     <div class="header-right">
-      <a-space :size="16">
+      
+      <a-space :size="5">
+       
         <!-- Language Switcher -->
         <a-dropdown>
           <a-button type="text" class="header-interactive-btn lang-btn">
@@ -29,9 +41,9 @@
           </a-button>
           <template #overlay>
             <a-menu @click="handleLanguageChange">
-              <a-menu-item key="en"><span>English</span></a-menu-item>
-              <a-menu-item key="la"><span>ພາສາລາວ</span></a-menu-item>
-              <a-menu-item key="th"><span>ภาษาไทย</span></a-menu-item>
+              <a-menu-item key="en"><span>🇬🇧 English</span></a-menu-item>
+              <a-menu-item key="la"><span>🇹🇭 ພາສາລາວ</span></a-menu-item>
+              <a-menu-item key="th"><span>🇱🇦 ภาษาไทย</span></a-menu-item>
             </a-menu>
           </template>
         </a-dropdown>
@@ -45,19 +57,19 @@
           </a-badge>
         </div>
 
-        <!-- User Profile -->
-        <a-dropdown v-if="showUserDropdown">
+         <!-- User Profile -->
+         <a-dropdown v-if="showUserDropdown">
           <a-button type="text" class="header-interactive-btn user-btn">
-            <a-avatar :size="32" style="background-color: #1890ff">
+            <a-avatar :size="25" style="background-color: #1890ff">
               <template #icon><UserOutlined /></template>
             </a-avatar>
             <span class="username">{{ username }}</span>
-            <DownOutlined />
+            <!-- <DownOutlined /> -->
           </a-button>
           <template #overlay>
             <a-menu @click="handleUserMenuClick">
               <a-menu-item key="profile"><UserOutlined /><span>Profile</span></a-menu-item>
-              <!-- <a-menu-item key="settings"><SettingOutlined /><span>Settings</span></a-menu-item> -->
+             <!-- <a-menu-item key="settings"><SettingOutlined /><span>Settings</span></a-menu-item>  -->
               <a-menu-divider />
               <a-menu-item key="logout">
                 <LogoutOutlined /><span>{{ $t('dashboard.logout') }}</span>
@@ -65,18 +77,29 @@
             </a-menu>
           </template>
         </a-dropdown>
-
-        <a-button
-          v-if="showTriggerButton"
-          type="text"
-          class="header-interactive-btn trigger-btn"
-          @click="$emit('toggle-sidebar')"
-        >
-          <MenuFoldOutlined v-if="!collapsed" />
-          <MenuUnfoldOutlined v-else />
-        </a-button>
       </a-space>
     </div>
+
+    <!-- Super Admin mobile drawer menu -->
+    <a-drawer
+      v-if="isSuperAdminRoute && isMobile"
+      placement="left"
+      :open="superAdminDrawerOpen"
+      :width="280"
+      :closable="false"
+      :body-style="{ padding: '0' }"
+      @close="closeSuperAdminDrawer"
+    >
+      <div class="sa-drawer-head">
+        <div class="sa-drawer-title">{{ $t('menus.superAdmin.settings') }}</div>
+      </div>
+      <a-menu :selected-keys="[superAdminSelectedKey]" mode="inline" @click="handleSuperAdminDrawerClick">
+        <a-menu-item v-for="item in superAdminMenuItems" :key="item.key">
+          <component :is="item.icon" />
+          <span>{{ item.label }}</span>
+        </a-menu-item>
+      </a-menu>
+    </a-drawer>
 
     <!-- Profile modal -->
     <a-modal
@@ -104,7 +127,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
   MenuFoldOutlined, MenuUnfoldOutlined, GlobalOutlined, BellOutlined,
-  UserOutlined, LogoutOutlined, DownOutlined,
+  UserOutlined, LogoutOutlined,
 } from '@ant-design/icons-vue';
 import { useAuthStore } from '../../../store/auth.store';
 import { message } from 'ant-design-vue';
@@ -117,7 +140,7 @@ const props = defineProps<{
   pageTitle: string;
 }>();
 
-defineEmits<{ (e: 'toggle-sidebar'): void }>();
+const emit = defineEmits<{ (e: 'toggle-sidebar'): void }>();
 
 const router = useRouter();
 const route = useRoute();
@@ -138,11 +161,27 @@ const goSuperAdmin = (path: string) => {
   router.push(path);
 };
 
+const superAdminDrawerOpen = computed(() => isSuperAdminRoute.value && isMobile.value && !props.collapsed);
+
+const emitToggleSidebar = () => emit('toggle-sidebar');
+
+const closeSuperAdminDrawer = () => {
+  if (!superAdminDrawerOpen.value) return;
+  emitToggleSidebar();
+};
+
+const handleSuperAdminDrawerClick = async (info: any) => {
+  const item = superAdminMenuItems.value.find((m) => m.key === info.key);
+  if (!item) return;
+  await router.push(item.path);
+  closeSuperAdminDrawer();
+};
+
 const showTriggerButton = computed(() => {
   // merchant/customer ยังใช้ปุ่มนี้เปิด sidebar/drawer ได้ตามเดิม
   if (!isSuperAdminRoute.value) return true;
-  // superadmin: ใช้ bottom nav แล้ว ไม่ต้องมีปุ่มเปิดเมนู
-  return false;
+  // superadmin: ใช้ปุ่มนี้เปิด drawer เมนูด้านข้าง (mobile)
+  return isMobile.value;
 });
 
 const showPageTitle = computed(() => {
@@ -189,13 +228,10 @@ const handleUserMenuClick = async ({ key }: { key: string }) => {
 };
 
 const showNotifications = computed(() => {
-  if (isSuperAdminRoute.value && isMobile.value) return false;
   return true;
 });
 
 const showUserDropdown = computed(() => {
-  // superadmin mobile: profile อยู่ bottom nav
-  if (isSuperAdminRoute.value && isMobile.value) return false;
   return true;
 });
 </script>
@@ -207,7 +243,7 @@ const showUserDropdown = computed(() => {
 .header-interactive-btn { cursor: pointer; border: none !important; outline: none !important; box-shadow: none !important; }
 .header-interactive-btn:hover, .header-interactive-btn:focus { background: rgba(24,144,255,0.12) !important; }
 .lang-btn { display: flex; align-items: center; gap: 8px; }
-.notification-wrap { display: inline-flex; }
+.notification-wrap { display: inline-flex; margin-bottom: 22px; }
 .user-btn { display: flex; align-items: center; gap: 8px; }
 .username { font-size: 14px; font-weight: 500; color: #262626; }
 .sa-nav-wrap { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -218,6 +254,7 @@ const showUserDropdown = computed(() => {
   align-items: center;
   gap: 8px;
   padding: 0 12px;
+
 }
 .sa-nav-btn.active {
   background: rgba(24, 144, 255, 0.12) !important;

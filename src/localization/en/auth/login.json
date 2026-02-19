@@ -1,5 +1,6 @@
 {
   "title": "Login",
+  "subtitle": "Welcome back! Please enter your details.",
   "email": "Email",
   "username": "Username",
   "password": "Password",
@@ -10,6 +11,7 @@
   "emailRequired": "Please input your email!",
   "emailInvalid": "Please input a valid email!",
   "passwordRequired": "Please input your password!",
-  "success": "Login successful!"
+  "success": "Login successful!",
+  "invalidCredentials": "Incorrect email or password. Please try again."
 }
 

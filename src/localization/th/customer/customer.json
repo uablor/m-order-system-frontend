@@ -1,0 +1,30 @@
+{
+  "premiumStore": "ร้านค้าพรีเมียม",
+  "greeting": "สวัสดี,",
+  "guest": "ผู้ใช้",
+  "statusPending": "รอชำระเงิน",
+  "greetingSub": "ตรวจสอบรายการสินค้าและแจ้งโอนเงินที่นี่",
+  "balanceLabel": "ยอดค้างชำระทั้งหมด",
+  "totalProducts": "ยอดรวมสินค้า",
+  "paid": "ชำระแล้ว",
+  "sectionTitle": "สินค้าที่มาถึงแล้ว",
+  "items": "รายการ",
+  "emptyText": "ยังไม่มีสินค้าที่มาถึง",
+  "detail": {
+    "title": "รายละเอียดสินค้า",
+    "arrived": "ถึงแล้ว",
+    "totalDue": "ยอดชำระทั้งหมด",
+    "messageTitle": "ข้อความถึงร้านค้า",
+    "messagePlaceholder": "พิมพ์ข้อความเพิ่มเติมถึงร้านค้า...",
+    "uploadTitle": "อัปโหลดสลิปโอนเงิน",
+    "uploadText": "กดที่นี่เพื่ออัปโหลดสลิป",
+    "uploadHint": "รองรับไฟล์ JPG, PNG เท่านั้น",
+    "submitBtn": "ส่งข้อมูลการโอนเงิน",
+    "removeSlip": "ลบ"
+  },
+  "toast": {
+    "fileTypeError": "รองรับเฉพาะไฟล์ JPG, PNG เท่านั้น",
+    "uploadRequired": "กรุณาอัปโหลดสลิปการโอนเงินก่อน",
+    "submitSuccess": "ส่งข้อมูลการโอนเงินสำเร็จ!"
+  }
+}

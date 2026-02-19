@@ -64,6 +64,7 @@ const pathToMenuKey: Record<string, string> = {
   'item-arrived': 'itemArrived',
   'notify-arrival': 'notifyArrival',
   payment: 'payment',
+  'exchange-rates': 'exchangeRates',
   reports: 'reports',
 };
 const pageTitle = computed(() => {
@@ -77,7 +78,7 @@ const toggleSidebar = () => { collapsed.value = !collapsed.value; };
 
 <style scoped>
 .app-layout { min-height: 100vh; }
-.content { margin: 24px 16px; padding: 24px; min-height: calc(100vh - 64px - 70px - 48px); background: #fff; border-radius: 8px; }
+.content { margin: 5px 10px;  min-height: calc(100vh - 64px - 70px - 48px); background: #fff; border-radius: 8px; padding: 10px 15px; }
 .content-wrapper { max-width: 1400px; margin: 0 auto; }
 @media (max-width: 768px) { .content { margin: 16px 8px; padding: 16px; } }
 </style>

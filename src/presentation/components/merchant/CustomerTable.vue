@@ -5,33 +5,32 @@
       <a-breadcrumb-item>{{ $t('merchant.customers.breadcrumb') }}</a-breadcrumb-item>
     </a-breadcrumb>
 
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
-      <div>
-        <div class="text-3xl font-semibold text-slate-900">{{ $t('merchant.customers.title') }}</div>
-        <div class="text-slate-500 mt-1">{{ $t('merchant.customers.subtitle') }}</div>
+    <div class="page-header">
+      <div class="title-block">
+        <div class="page-title">{{ $t('merchant.customers.title') }}</div>
+        <div class="page-subtitle">{{ $t('merchant.customers.subtitle') }}</div>
       </div>
 
-      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
-        <a-input
-          v-model:value="q"
-          allow-clear
-          class="search-input"
-          :placeholder="$t('merchant.customers.searchPlaceholder')"
-          @pressEnter="triggerSearch"
-        >
-          <template #prefix><SearchOutlined /></template>
-        </a-input>
-        <a-button type="primary" class="add-btn sm:shrink-0" @click="openCreatePage">
-          <template #icon><UserAddOutlined /></template>
-          {{ $t('merchant.customers.addButton') }}
-        </a-button>
-      </div>
+      <a-input
+        v-model:value="q"
+        allow-clear
+        class="search-input"
+        :placeholder="$t('merchant.customers.searchPlaceholder')"
+        @pressEnter="triggerSearch"
+      >
+        <template #prefix><SearchOutlined /></template>
+      </a-input>
+
+      <a-button type="primary" class="add-btn" @click="openCreatePage">
+        <template #icon><UserAddOutlined /></template>
+        {{ $t('merchant.customers.addButton') }}
+      </a-button>
     </div>
 
-    <a-card :bordered="false" class="panel-card">
-      <!-- Desktop table -->
+    <!-- Desktop: table inside card -->
+    <a-card v-if="!isMobile" :bordered="false" class="panel-card">
       <a-table
-        v-if="!isMobile"
+        v-if="true"
         :columns="columns"
         :data-source="filteredCustomers"
         :pagination="paginationConfig"
@@ -87,66 +86,69 @@
         </template>
       </a-table>
 
-      <!-- Mobile accordion/list -->
-      <div v-else class="customers-mobile">
-        <a-collapse accordion ghost class="customers-collapse">
-          <a-collapse-panel v-for="c in filteredCustomers" :key="c.id">
-            <template #header>
-              <div class="mobile-header">
-                <div class="flex items-center justify-between gap-3">
-                  <div class="flex items-center gap-3 min-w-0">
-                    <a-avatar :size="36" :style="{ backgroundColor: c.avatarColor }">{{ c.avatarText }}</a-avatar>
-                    <div class="min-w-0">
-                      <div class="font-semibold text-slate-900 truncate">{{ c.name }}</div>
-                      <div class="text-slate-500 text-sm truncate">{{ c.code }}</div>
-                    </div>
-                  </div>
-                  <a-tag :color="c.status === 'active' ? 'green' : 'default'" class="pill-tag shrink-0">
-                    {{ c.status === 'active' ? $t('merchant.customers.status.active') : $t('merchant.customers.status.inactive') }}
-                  </a-tag>
-                </div>
+    </a-card>
+
+    <!-- Mobile: individual cards (no outer wrapper) -->
+    <div v-if="isMobile" class="customers-mobile">
+      <a-collapse accordion ghost class="customers-collapse">
+        <template #expandIcon="{ isActive }">
+          <DownOutlined class="expand-icon" :class="{ rotated: isActive }" />
+        </template>
+
+        <a-collapse-panel v-for="c in filteredCustomers" :key="c.id">
+          <template #header>
+            <div class="card-row">
+              <!-- Avatar with active dot -->
+              <div class="avatar-wrap">
+                <a-avatar :size="48" :style="{ backgroundColor: c.avatarColor }">{{ c.avatarText }}</a-avatar>
+                <span v-if="c.status === 'active'" class="active-dot" />
               </div>
-            </template>
 
-            <div class="mobile-body">
-              <div class="mobile-kv">
-                <div class="info-item">
-                  <div class="info-label">{{ $t('merchant.customers.table.address') }}</div>
-                  <div class="info-value">
-                    <a-tag color="blue" class="pill-tag mr-2">{{ c.shipTag }}</a-tag>
-                    <span class="text-slate-700">{{ c.address }}</span>
-                  </div>
-                </div>
+              <!-- Name + code -->
+              <div class="item-info">
+                <div class="item-name">{{ c.name }}</div>
+                <div class="item-sub">{{ c.contactPhone || c.code || '-' }}</div>
+              </div>
 
-                <div class="info-item">
-                  <div class="info-label">{{ $t('merchant.customers.table.pay') }}</div>
-                  <div class="info-value text-slate-900">{{ c.paymentMethod }}</div>
-                </div>
-
-                <div class="info-item">
-                  <div class="info-label">{{ $t('merchant.customers.table.contact') }}</div>
-                  <div class="info-actions">
-                    <a-button type="text" class="icon-action" @click="() => {}"><MessageOutlined /></a-button>
-                    <a-button type="text" class="icon-action" @click="() => {}"><PhoneOutlined /></a-button>
-                    <span class="text-slate-900 font-extrabold">{{ c.contactPhone }}</span>
-                  </div>
-                </div>
-
-                <div class="info-item last">
-                  <div class="info-label">{{ $t('merchant.customers.table.manage') }}</div>
-                  <div class="info-actions">
-                    <a-button type="text" class="icon-action" @click="openEditPage(c.__raw)"><EditOutlined /></a-button>
-                    <a-popconfirm :title="$t('merchant.customers.confirmDelete')" @confirm="confirmDelete(c.__raw)">
-                      <a-button type="text" danger class="icon-action"><DeleteOutlined /></a-button>
-                    </a-popconfirm>
-                  </div>
-                </div>
+              <!-- Status tag right -->
+              <div class="status-side">
+                <a-tag :color="c.status === 'active' ? 'success' : 'default'" class="status-tag">
+                  {{ c.status === 'active' ? $t('merchant.customers.status.active') : $t('merchant.customers.status.inactive') }}
+                </a-tag>
               </div>
             </div>
-          </a-collapse-panel>
-        </a-collapse>
-      </div>
-    </a-card>
+          </template>
+
+          <div class="card-detail">
+            <div class="detail-row">
+              <span class="detail-label">{{ $t('merchant.customers.table.address') }}</span>
+              <span class="detail-val">
+                <a-tag color="blue" class="ship-tag">{{ c.shipTag }}</a-tag>
+                {{ c.address || '-' }}
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">{{ $t('merchant.customers.table.pay') }}</span>
+              <span class="detail-val">{{ c.paymentMethod || '-' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">{{ $t('merchant.customers.table.contact') }}</span>
+              <span class="detail-val">{{ c.contactPhone || '-' }}</span>
+            </div>
+            <div class="detail-row border-none pt-2">
+              <a-button type="default" size="small" class="action-btn" @click="openEditPage(c.__raw)">
+                <EditOutlined /> {{ $t('common.edit') }}
+              </a-button>
+              <a-popconfirm :title="$t('merchant.customers.confirmDelete')" @confirm="confirmDelete(c.__raw)">
+                <a-button type="text" danger size="small" class="action-btn">
+                  <DeleteOutlined /> {{ $t('common.delete') }}
+                </a-button>
+              </a-popconfirm>
+            </div>
+          </div>
+        </a-collapse-panel>
+      </a-collapse>
+    </div>
 
   </div>
 </template>
@@ -162,6 +164,7 @@ import {
   PhoneOutlined,
   EditOutlined,
   DeleteOutlined,
+  DownOutlined,
 } from '@ant-design/icons-vue';
 import type { TablePaginationConfig } from 'ant-design-vue';
 import type { Customer } from '@/domain/entities/user.entity';
@@ -277,53 +280,86 @@ onMounted(async () => {
 .mb-3 { margin-bottom: 12px; }
 .mb-5 { margin-bottom: 20px; }
 
+/* ===== Page header (matches UserTable responsive pattern) ===== */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.title-block { flex: 1 1 auto; min-width: 0; }
+.page-title { font-size: 22px; font-weight: 600; color: #0f172a; line-height: 1.25; }
+.page-subtitle { font-size: 13px; color: #64748b; margin-top: 2px; }
+.search-input { height: 44px; border-radius: 12px; width: min(320px, 100%); }
+.add-btn { height: 44px; border-radius: 12px; font-weight: 700; flex-shrink: 0; }
+
+/* Mobile: title+button on row 1, search full-width on row 2 */
+@media (max-width: 767px) {
+  .page-header { flex-wrap: wrap; }
+  .title-block { order: 1; flex: 1 1 auto; }
+  .add-btn { order: 2; flex-shrink: 0; height: 36px; font-size: 12px; padding: 0 10px; }
+  .search-input { order: 3; flex: 1 1 100%; width: 100%; }
+  .page-title { font-size: 15px; }
+  .page-subtitle { display: none; }
+}
+
 .panel-card {
   border-radius: 14px;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 10px 25px rgba(15, 23, 42, 0.04);
 }
-
-.search-input { width: min(420px, 100%); height: 44px; border-radius: 12px; }
-.add-btn { height: 44px; border-radius: 12px; font-weight: 700; }
 .pill-tag { border-radius: 999px; padding: 2px 10px; font-weight: 800; }
 .icon-action { border-radius: 10px; }
 .icon-action:hover { background: rgba(29, 78, 216, 0.08) !important; color: #1d4ed8; }
 
-/* Mobile list style */
-.customers-mobile { margin-top: 4px; }
-.mobile-header { padding-right: 8px; }
-.mobile-body { padding: 2px 0 6px; }
-.mobile-kv {
-  background: #f8fafc;
-  border-radius: 14px;
-  padding: 12px;
-}
-
-.info-item {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.35);
-}
-.info-item.last { border-bottom: none; padding-bottom: 2px; }
-.info-label { color: #64748b; font-weight: 800; font-size: 12px; min-width: 120px; }
-.info-value { color: #0f172a; font-weight: 800; text-align: right; flex: 1; }
-.info-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; flex: 1; }
-
+/* Mobile card list */
+.customers-mobile { display: flex; flex-direction: column; gap: 10px; }
+.customers-collapse { background: transparent !important; border: none !important; }
 .customers-collapse :deep(.ant-collapse-item) {
-  background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 10px 25px rgba(15, 23, 42, 0.04);
-  margin-bottom: 12px;
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.06) !important;
+  border: 1px solid rgba(148, 163, 184, 0.15) !important;
+  overflow: hidden;
+  margin-bottom: 10px !important;
 }
-.customers-collapse :deep(.ant-collapse-header) { padding: 14px 14px !important; }
+.customers-collapse :deep(.ant-collapse-header) { padding: 14px 14px !important; align-items: center !important; }
+.customers-collapse :deep(.ant-collapse-content) { background: transparent !important; border-top: 1px solid rgba(148, 163, 184, 0.18) !important; }
 .customers-collapse :deep(.ant-collapse-content-box) { padding: 0 14px 14px !important; }
-.customers-collapse :deep(.ant-collapse-arrow) { inset-inline-end: 14px !important; }
 
-@media (max-width: 480px) {
-  .info-item { flex-direction: column; align-items: flex-start; }
-  .info-label { min-width: 0; }
-  .info-value, .info-actions { justify-content: flex-start; text-align: left; }
+.expand-icon { font-size: 13px; color: #94a3b8; transition: transform 260ms ease; }
+.expand-icon.rotated { transform: rotate(180deg); }
+
+.card-row { display: flex; align-items: center; gap: 12px; padding-right: 4px; }
+
+.avatar-wrap { position: relative; flex-shrink: 0; }
+.active-dot {
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  width: 11px;
+  height: 11px;
+  background: #22c55e;
+  border-radius: 999px;
+  border: 2px solid #fff;
 }
+.item-info { flex: 1; min-width: 0; }
+.item-name { font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.3; }
+.item-sub { font-size: 13px; color: #64748b; margin-top: 2px; }
+.status-side { flex-shrink: 0; margin-left: auto; }
+.status-tag { border-radius: 999px; font-weight: 700; font-size: 12px; }
+
+.card-detail { padding-top: 10px; }
+.detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  gap: 8px;
+}
+.detail-row.border-none { border-bottom: none; justify-content: flex-end; gap: 8px; padding-bottom: 0; }
+.detail-label { font-size: 12px; font-weight: 600; color: #94a3b8; flex-shrink: 0; }
+.detail-val { font-size: 13px; font-weight: 600; color: #1e293b; text-align: right; }
+.ship-tag { border-radius: 999px; font-size: 11px; }
+.action-btn { border-radius: 8px; font-size: 13px; }
 </style>

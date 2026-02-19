@@ -2,6 +2,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { message } from 'ant-design-vue';
 import { useI18n } from 'vue-i18n';
+import { AxiosError } from 'axios';
 import { useAuthStore } from '@/store/auth.store';
 import { authRepository } from '@/infrastructure/repositories/auth.repository';
 import type { LoginDto } from '@/application/dto/auth.dto';
@@ -14,12 +15,15 @@ export function useAuth() {
   const router = useRouter();
   const { t } = useI18n();
   const loading = ref(false);
+  /** ข้อความ error สำหรับแสดงใน login form inline */
+  const loginError = ref<string | null>(null);
 
   /**
    * Login
    */
   const login = async (credentials: LoginDto) => {
     loading.value = true;
+    loginError.value = null;
     try {
       const response = await authRepository.login(credentials);
       if (response?.access_token) {
@@ -62,7 +66,21 @@ export function useAuth() {
         message.success(t('login.success'));
       }
     } catch (error) {
-      handleApiError(error, t);
+      if (error instanceof AxiosError && error.response) {
+        const status = error.response.status;
+        const data = error.response.data as { message?: string | string[] };
+        const msg = Array.isArray(data.message) ? data.message.join(', ') : data.message;
+
+        if (status === 401 || status === 400) {
+          /* รหัสผ่านหรืออีเมลผิด — แสดง inline ใน form */
+          loginError.value = msg || t('login.invalidCredentials');
+        } else {
+          /* error อื่น — toast ตามปกติ */
+          handleApiError(error, t);
+        }
+      } else {
+        handleApiError(error, t);
+      }
     } finally {
       loading.value = false;
     }
@@ -120,8 +138,12 @@ export function useAuth() {
     }
   };
 
+  const clearLoginError = () => { loginError.value = null; };
+
   return {
     loading: computed(() => loading.value),
+    loginError: computed(() => loginError.value),
+    clearLoginError,
     token,
     user,
     isAuthenticated,

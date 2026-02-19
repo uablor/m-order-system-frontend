@@ -5,7 +5,7 @@
     </a-breadcrumb>
 
     <div class="mb-5">
-      <div class="text-3xl font-semibold text-slate-900">{{ $t('merchant.dashboard.overviewTitle') }}</div>
+      <div class="text-xl  text-slate-600 font-medium">{{ $t('merchant.dashboard.overviewTitle') }}</div>
       <div class="text-slate-500 mt-1">{{ $t('merchant.dashboard.overviewSubtitle') }}</div>
     </div>
 
@@ -162,36 +162,29 @@
         </template>
       </a-table>
 
-      <!-- Mobile accordion list (match screenshot style) -->
+      <!-- Mobile card list -->
       <div v-else class="latest-mobile">
-        <a-collapse accordion ghost class="latest-collapse">
+        <a-collapse class="latest-collapse" :expand-icon="expandCollapseIcon">
           <a-collapse-panel v-for="o in latestOrders" :key="o.id">
             <template #header>
-              <div class="mobile-header">
-                <div class="flex items-center justify-between gap-3">
-                  <div class="min-w-0">
-                    <div class="font-semibold text-slate-900 truncate">#{{ o.orderCode }}</div>
-                    <div class="text-slate-500 text-sm truncate">{{ o.customerName }}</div>
-                  </div>
-                  <a-tag :color="o.statusColor" class="status-tag shrink-0">{{ o.statusText }}</a-tag>
+              <div class="card-row">
+                <div class="order-info">
+                  <div class="order-code">#{{ o.orderCode }}</div>
+                  <div class="order-customer">{{ o.customerName }}</div>
                 </div>
+                <a-tag :color="o.statusColor" class="status-tag">{{ o.statusText }}</a-tag>
               </div>
             </template>
 
-            <div class="mobile-body">
-              <div class="mobile-kv">
-                <div class="kv-row">
-                  <div class="kv-label">{{ $t('merchant.dashboard.table.total') }}</div>
-                  <div class="kv-value">{{ n(o.totalAmount, 'currency') }}</div>
-                </div>
-                <div class="kv-row">
-                  <div class="kv-label">{{ $t('merchant.dashboard.table.actions') }}</div>
-                  <div class="kv-actions">
-                    <a-button type="text" class="action-btn" @click="() => {}">
-                      <EyeOutlined />
-                    </a-button>
-                  </div>
-                </div>
+            <div class="card-detail">
+              <div class="detail-row">
+                <span class="detail-label">{{ $t('merchant.dashboard.table.total') }}</span>
+                <span class="detail-val">{{ n(o.totalAmount, 'currency') }}</span>
+              </div>
+              <div class="detail-row action-row">
+                <a-button type="primary" ghost size="small" class="view-btn" @click="() => {}">
+                  <EyeOutlined /> {{ $t('merchant.dashboard.table.actions') }}
+                </a-button>
               </div>
             </div>
           </a-collapse-panel>
@@ -202,7 +195,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, h, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { mockOrders } from '../../../shared/mock';
@@ -212,7 +205,11 @@ import {
   ShoppingCartOutlined,
   WalletOutlined,
   EyeOutlined,
+  DownOutlined,
 } from '@ant-design/icons-vue';
+
+const expandCollapseIcon = ({ isActive }: { isActive: boolean }) =>
+  h(DownOutlined, { class: 'expand-icon', style: { transform: isActive ? 'rotate(180deg)' : 'rotate(0deg)' } });
 
 const router = useRouter();
 const { n, t } = useI18n();
@@ -352,35 +349,34 @@ const goOrders = () => {
 .action-btn { color: #334155; }
 .action-btn:hover { color: #1d4ed8; background: rgba(29, 78, 216, 0.08) !important; }
 
-/* Mobile latest-orders list style */
-.latest-mobile { margin-top: 4px; }
-.mobile-header { padding-right: 8px; }
-.mobile-body { padding: 2px 0 6px; }
-.mobile-kv {
-  background: #f8fafc;
-  border-radius: 14px;
-  padding: 12px;
-}
-.kv-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
-.kv-label { color: #64748b; font-weight: 700; font-size: 12px; }
-.kv-value { color: #0f172a; font-weight: 900; }
-.kv-actions { display: flex; justify-content: flex-end; }
-
+/* ===== Mobile latest-orders card list ===== */
+.latest-mobile { display: flex; flex-direction: column; margin-top: 4px; }
+.latest-collapse { background: transparent !important; border: none !important; }
 .latest-collapse :deep(.ant-collapse-item) {
-  background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 10px 25px rgba(15, 23, 42, 0.04);
-  margin-bottom: 12px;
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.06) !important;
+  border: 1px solid rgba(148, 163, 184, 0.15) !important;
+  overflow: hidden;
+  margin-bottom: 10px !important;
 }
-.latest-collapse :deep(.ant-collapse-header) {
-  padding: 14px 14px !important;
-}
-.latest-collapse :deep(.ant-collapse-content-box) {
-  padding: 0 14px 14px !important;
-}
-.latest-collapse :deep(.ant-collapse-arrow) {
-  inset-inline-end: 14px !important;
-}
+.latest-collapse :deep(.ant-collapse-header) { padding: 14px 14px !important; align-items: center !important; }
+.latest-collapse :deep(.ant-collapse-content) { background: transparent !important; border-top: 1px solid rgba(148, 163, 184, 0.18) !important; }
+.latest-collapse :deep(.ant-collapse-content-box) { padding: 0 14px 14px !important; }
+
+.expand-icon { font-size: 13px; color: #94a3b8; transition: transform 260ms ease; }
+
+.card-row { display: flex; align-items: center; gap: 12px; min-width: 0; width: 100%; }
+.order-info { flex: 1; min-width: 0; }
+.order-code { font-size: 14px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.order-customer { font-size: 12px; color: #64748b; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.card-detail { padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.detail-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.detail-label { color: #64748b; font-weight: 500; }
+.detail-val { color: #0f172a; font-weight: 700; text-align: right; }
+.action-row { justify-content: flex-end; margin-top: 4px; }
+.view-btn { border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
 
 @media (max-width: 768px) {
   .chart-wrap {

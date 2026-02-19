@@ -50,6 +50,12 @@ export const MerchantRoute: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/merchant/exchange-rates',
+    name: 'merchant-exchange-rates',
+    component: () => import('@/presentation/views/merchant/ExchangeRatePage.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/merchant/reports',
     name: 'merchant-reports',
     component: () => import('@/presentation/views/merchant/ReportsPage.vue'),

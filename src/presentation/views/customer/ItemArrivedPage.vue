@@ -1,10 +1,16 @@
 <template>
-  <CustomerLayout>
+  <div class="customer-page-root">
     <CustomerItemArrivedContent />
-  </CustomerLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
-import CustomerLayout from '../../../components/layouts/customer-layouts/AppLayout.vue';
 import CustomerItemArrivedContent from '../../components/customer/CustomerItemArrivedContent.vue';
 </script>
+
+<style scoped>
+.customer-page-root {
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+</style>

@@ -13,32 +13,32 @@ export const SuperAdminRoute: RouteRecordRaw[] = [
       {
         path: 'users',
         name: 'super-admin-users',
-        component: () => import('@/presentation/views/super-admin/UsersPage.vue'),
+        component: () => import('@/presentation/views/super-admin/users/UsersPage.vue'),
       },
       {
         path: 'users/create-merchant',
         name: 'super-admin-users-create-merchant',
-        component: () => import('@/presentation/views/super-admin/UserMerchantCreatePage.vue'),
+        component: () => import('@/presentation/views/super-admin/users/UserMerchantCreatePage.vue'),
       },
       {
         path: 'merchants',
         name: 'super-admin-merchants',
-        component: () => import('@/presentation/views/super-admin/MerchantsPage.vue'),
+        component: () => import('@/presentation/views/super-admin/merchants/MerchantsPage.vue'),
       },
       {
         path: 'merchants/create',
         name: 'super-admin-merchants-create',
-        component: () => import('@/presentation/views/super-admin/MerchantCreatePage.vue'),
+        component: () => import('@/presentation/views/super-admin/merchants/MerchantCreatePage.vue'),
       },
       {
         path: 'merchants/:id/edit',
         name: 'super-admin-merchants-edit',
-        component: () => import('@/presentation/views/super-admin/MerchantEditPage.vue'),
+        component: () => import('@/presentation/views/super-admin/merchants/MerchantEditPage.vue'),
       },
       {
         path: 'settings',
         name: 'super-admin-settings',
-        component: () => import('@/presentation/components/super-admin/SettingsContent.vue'),
+        component: () => import('@/presentation/components/super-admin/settings/SettingsContent.vue'),
       },
     ],
   },

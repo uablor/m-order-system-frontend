@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import UserTable from '@/presentation/components/super-admin/UserTable.vue';
+import UserTable from '@/presentation/components/super-admin/users/table/UserTable.vue';
 import { useSuperAdminUsers } from '@/presentation/composables/super-admin/useSuperAdminUsers';
 import { useSuperAdminRoles } from '@/presentation/composables/super-admin/useSuperAdminRoles';
 
@@ -55,12 +55,6 @@ onMounted(async () => {
 
 <style scoped>
 .users-page {
-  padding: 24px;
-}
-
-@media (max-width: 768px) {
-  .users-page {
-    padding: 16px;
-  }
+  padding: 0;
 }
 </style>

@@ -2,6 +2,7 @@
   <a-modal
     :open="open"
     :title="$t('users.createMerchantUser')"
+    :style="{ fontSize: '5px' }"
     :confirm-loading="loading"
     @ok="submit"
     @cancel="$emit('cancel')"

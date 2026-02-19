@@ -177,6 +177,71 @@
       "notArrived": "ยังไม่ถึง"
     },
     "countAll": "ทั้งหมด {count} รายการ"
+  },
+  "exchangeRates": {
+    "title": "อัตราแลกเปลี่ยน",
+    "subtitle": "จัดการอัตราแลกเปลี่ยนสกุลเงินสำหรับซื้อและขาย",
+    "breadcrumb": "อัตราแลกเปลี่ยน",
+    "addButton": "เพิ่มอัตรา",
+    "filterAll": "ทั้งหมด",
+    "filterBuy": "ซื้อ",
+    "filterSell": "ขาย",
+    "form": {
+      "title": "เพิ่มอัตราแลกเปลี่ยน",
+      "baseCurrency": "สกุลเงินต้นทาง",
+      "baseCurrencyPlaceholder": "เช่น USD, CNY, THB",
+      "targetCurrency": "สกุลเงินปลายทาง",
+      "targetCurrencyPlaceholder": "เช่น LAK",
+      "rateType": "ประเภทอัตรา",
+      "rate": "อัตราแลกเปลี่ยน",
+      "ratePlaceholder": "ระบุอัตราแลกเปลี่ยน",
+      "rateDate": "วันที่อัตรา",
+      "submit": "บันทึก",
+      "cancel": "ยกเลิก",
+      "baseCurrencyRequired": "กรุณาระบุสกุลเงินต้นทาง",
+      "targetCurrencyRequired": "กรุณาระบุสกุลเงินปลายทาง",
+      "rateRequired": "กรุณาระบุอัตราแลกเปลี่ยน"
+    },
+    "table": {
+      "baseCurrency": "ต้นทาง",
+      "targetCurrency": "ปลายทาง",
+      "rateType": "ประเภท",
+      "rate": "อัตรา",
+      "rateDate": "วันที่",
+      "isActive": "สถานะ",
+      "actions": "จัดการ"
+    },
+    "toast": {
+      "createSuccess": "เพิ่มอัตราแลกเปลี่ยนสำเร็จ!",
+      "bulkCreateSuccess": "บันทึกอัตราแลกเปลี่ยนสำเร็จ!",
+      "deleteSuccess": "ลบอัตราแลกเปลี่ยนสำเร็จ!"
+    },
+    "confirmDelete": "ยืนยันการลบอัตราแลกเปลี่ยนนี้?",
+    "active": "ใช้งาน",
+    "inactive": "ไม่ใช้งาน",
+    "typeBuy": "ซื้อ",
+    "typeSell": "ขาย",
+    "bulkModal": {
+      "title": "ตั้งอัตราแลกเปลี่ยน",
+      "subtitle": "กรอกอัตราซื้อและอัตราขายประจำวัน",
+      "subtitleSellOnly": "มีอัตราซื้อแล้ว กรุณากรอกอัตราขายสำหรับวันนี้",
+      "subtitleBuyOnly": "มีอัตราขายแล้ว กรุณากรอกอัตราซื้อสำหรับวันนี้",
+      "buyFormTitle": "อัตราซื้อ (BUY)",
+      "sellFormTitle": "อัตราขาย (SELL)",
+      "baseCurrency": "สกุลเงินต้นทาง",
+      "baseCurrencyPlaceholder": "เช่น USD, CNY, THB",
+      "targetCurrency": "สกุลเงินปลายทาง",
+      "targetCurrencyPlaceholder": "เช่น LAK",
+      "rate": "อัตราแลกเปลี่ยน",
+      "ratePlaceholder": "กรอกอัตราแลกเปลี่ยน",
+      "baseCurrencyRequired": "กรุณากรอกสกุลเงินต้นทาง",
+      "targetCurrencyRequired": "กรุณากรอกสกุลเงินปลายทาง",
+      "rateRequired": "กรุณากรอกอัตราแลกเปลี่ยน",
+      "submit": "บันทึกอัตรา",
+      "cancel": "ยกเลิก",
+      "skipText": "ข้ามก่อน"
+    }
   }
 }
+
 

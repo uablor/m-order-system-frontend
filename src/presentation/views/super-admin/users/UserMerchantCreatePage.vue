@@ -1,11 +1,12 @@
 <template>
   <div class="sa-form-page">
     <div class="page-head">
-      <div>
-        <div class="text-3xl font-semibold text-slate-900">{{ $t('users.createMerchantUser') }}</div>
-        <div class="text-slate-500 mt-1">{{ $t('users.subtitle') }}</div>
+      <div class="title-block">
+        <div class="page-title">{{ $t('users.createMerchantUser') }}</div>
+        <div class="page-subtitle">{{ $t('users.subtitle') }}</div>
       </div>
-      <div class="head-actions">
+      <!-- Desktop: buttons in header -->
+      <div v-if="!isMobile" class="head-actions">
         <a-button @click="goBack">{{ $t('common.cancel') }}</a-button>
         <a-button type="primary" :loading="loading" @click="submitFromOutside">
           {{ $t('common.create') }}
@@ -118,12 +119,21 @@
         </a-row>
       </a-form>
     </a-card>
+
+    <!-- Mobile: buttons fixed at bottom -->
+    <div v-if="isMobile" class="mobile-footer">
+      <a-button block size="large" @click="goBack">{{ $t('common.cancel') }}</a-button>
+      <a-button block size="large" type="primary" :loading="loading" @click="submitFromOutside">
+        {{ $t('common.create') }}
+      </a-button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useIsMobile } from '@/shared/composables/useIsMobile';
 import type { FormInstance } from 'ant-design-vue';
 import {
   UserOutlined,
@@ -139,6 +149,7 @@ import type { CurrencyCode, UserMerchantCreateDto } from '@/application/dto/user
 import { useSuperAdminUsers } from '@/presentation/composables/super-admin/useSuperAdminUsers';
 
 const router = useRouter();
+const { isMobile } = useIsMobile();
 const { loading, createUserWithMerchant } = useSuperAdminUsers();
 const formRef = ref<FormInstance>();
 
@@ -187,11 +198,25 @@ const goBack = () => router.push('/super-admin/users');
 }
 .sa-form-page { display: flex; flex-direction: column; gap: 12px; }
 .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.page-title { font-size: 26px; font-weight: 600; color: #0f172a; line-height: 1.3; }
+.page-subtitle { font-size: 13px; color: #64748b; margin-top: 4px; }
+
+.head-actions { display: flex; gap: 8px; }
 .label-ico { display: inline-flex; align-items: center; gap: 8px; }
-@media (max-width: 768px) {
-  .head-actions { width: 100%; }
-  .head-actions :deep(.ant-btn) { flex: 1; }
+
+/* Mobile footer buttons */
+.mobile-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+  padding-bottom: 12px;
+}
+
+@media (max-width: 767px) {
+  .page-title { font-size: 16px; }
+  .page-subtitle { font-size: 12px; }
 }
 </style>
 

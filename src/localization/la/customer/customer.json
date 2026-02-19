@@ -1,0 +1,30 @@
+{
+  "premiumStore": "ຮ້ານຄ້າພຣີມຽມ",
+  "greeting": "ສະບາຍດີ,",
+  "guest": "ແຂກ",
+  "statusPending": "ລໍຖ້າຊຳລະເງິນ",
+  "greetingSub": "ກວດສອບລາຍການສິນຄ້າ ແລະ ແຈ້ງໂອນເງິນທີ່ນີ້",
+  "balanceLabel": "ຍອດຄ້າງຊຳລະທັງໝົດ",
+  "totalProducts": "ຍອດລວມສິນຄ້າ",
+  "paid": "ຊຳລະແລ້ວ",
+  "sectionTitle": "ສິນຄ້າທີ່ມາຮອດແລ້ວ",
+  "items": "ລາຍການ",
+  "emptyText": "ຍັງບໍ່ມີສິນຄ້າທີ່ມາຮອດ",
+  "detail": {
+    "title": "ລາຍລະອຽດສິນຄ້າ",
+    "arrived": "ມາຮອດແລ້ວ",
+    "totalDue": "ຍອດຊຳລະທັງໝົດ",
+    "messageTitle": "ຂໍ້ຄວາມຫາຮ້ານຄ້າ",
+    "messagePlaceholder": "ພິມຂໍ້ຄວາມເພີ່ມເຕີມຫາຮ້ານຄ້າ...",
+    "uploadTitle": "ອັບໂຫລດສລິບໂອນເງິນ",
+    "uploadText": "ກົດທີ່ນີ້ເພື່ອອັບໂຫລດສລິບ",
+    "uploadHint": "ຮອງຮັບໄຟລ໌ JPG, PNG ເທົ່ານັ້ນ",
+    "submitBtn": "ສົ່ງຂໍ້ມູນການໂອນເງິນ",
+    "removeSlip": "ລຶບ"
+  },
+  "toast": {
+    "fileTypeError": "ຮອງຮັບສະເພາະໄຟລ໌ JPG, PNG ເທົ່ານັ້ນ",
+    "uploadRequired": "ກະລຸນາອັບໂຫລດສລິບການໂອນເງິນກ່ອນ",
+    "submitSuccess": "ສົ່ງຂໍ້ມູນການໂອນເງິນສຳເລັດ!"
+  }
+}

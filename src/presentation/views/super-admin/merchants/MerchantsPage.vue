@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import MerchantTable from '../../components/super-admin/MerchantTable.vue';
+import MerchantTable from '@/presentation/components/super-admin/merchants/table/MerchantTable.vue';
 import { useSuperAdminMerchants } from '@/presentation/composables/super-admin/useSuperAdminMerchants';
 
 const router = useRouter();
@@ -30,7 +30,7 @@ const {
   changePage,
 } = useSuperAdminMerchants();
 
-const goCreate = () => router.push('/super-admin/merchants/create');
+const goCreate = () => router.push({ name: 'super-admin-users-create-merchant' });
 const goEdit = (merchant: import('@/domain/entities/user.entity').Merchant) => {
   try {
     localStorage.setItem('sa:last-edit-merchant', JSON.stringify(merchant));
@@ -59,12 +59,6 @@ onMounted(async () => {
 
 <style scoped>
 .merchants-page {
-  padding: 24px;
-}
-
-@media (max-width: 768px) {
-  .merchants-page {
-    padding: 16px;
-  }
+  padding: 0;
 }
 </style>

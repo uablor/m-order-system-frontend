@@ -1,0 +1,30 @@
+{
+  "premiumStore": "PREMIUM STORE",
+  "greeting": "Hello,",
+  "guest": "Guest",
+  "statusPending": "Awaiting Payment",
+  "greetingSub": "Check your items and confirm payment here",
+  "balanceLabel": "Total Outstanding",
+  "totalProducts": "Total Products",
+  "paid": "Paid",
+  "sectionTitle": "Items Arrived",
+  "items": "items",
+  "emptyText": "No items arrived yet",
+  "detail": {
+    "title": "Item Details",
+    "arrived": "Arrived",
+    "totalDue": "Total Due",
+    "messageTitle": "Message to Store",
+    "messagePlaceholder": "Type an additional message to the store...",
+    "uploadTitle": "Upload Payment Slip",
+    "uploadText": "Click here to upload slip",
+    "uploadHint": "JPG, PNG files only",
+    "submitBtn": "Submit Payment Info",
+    "removeSlip": "Remove"
+  },
+  "toast": {
+    "fileTypeError": "Only JPG, PNG files are supported",
+    "uploadRequired": "Please upload a payment slip first",
+    "submitSuccess": "Payment info submitted successfully!"
+  }
+}

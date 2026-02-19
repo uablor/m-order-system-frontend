@@ -1,12 +1,12 @@
 {
   "dashboard": "ແດຊບອດ",
   "users": "ຈັດການຜູ້ໃຊ້",
-  "merchantManagement": "ການຈັດການຜູ້ຄ້າສົ່ງ",
-  "merchantList": "ລາຍການຜູ້ຄ້າສົ່ງ",
-  "merchantDetails": "ລາຍລະອຽດຜູ້ຄ້າສົ່ງ",
-  "addMerchant": "ເພີ່ມຜູ້ຄ້າສົ່ງ",
+  "merchantManagement": "ການຈັດການຮ້ານຄ້າ",
+  "merchantList": "ລາຍການຮ້ານຄ້າ",
+  "merchantDetails": "ລາຍລະອຽດຮ້ານຄ້າ",
+  "addMerchant": "ເພີ່ມຮ້ານຄ້າ",
   "reports": "ລາຍງານ",
-  "merchantReports": "ລາຍງານຜູ້ຄ້າສົ່ງ",
+  "merchantReports": "ລາຍງານຮ້ານຄ້າ",
   "notifications": "ການແຈ້ງເຕືອນ",
   "settings": "ຕັ້ງຄ່າ"
 }

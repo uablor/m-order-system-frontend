@@ -177,6 +177,71 @@
       "notArrived": "Not arrived"
     },
     "countAll": "All {count} items"
+  },
+  "exchangeRates": {
+    "title": "Exchange Rates",
+    "subtitle": "Manage currency exchange rates for BUY and SELL.",
+    "breadcrumb": "Exchange Rates",
+    "addButton": "Add Rate",
+    "filterAll": "All",
+    "filterBuy": "BUY",
+    "filterSell": "SELL",
+    "form": {
+      "title": "Add Exchange Rate",
+      "baseCurrency": "Base Currency",
+      "baseCurrencyPlaceholder": "e.g. USD, CNY, THB",
+      "targetCurrency": "Target Currency",
+      "targetCurrencyPlaceholder": "e.g. LAK",
+      "rateType": "Rate Type",
+      "rate": "Rate",
+      "ratePlaceholder": "Enter exchange rate",
+      "rateDate": "Rate Date",
+      "submit": "Save",
+      "cancel": "Cancel",
+      "baseCurrencyRequired": "Base currency is required",
+      "targetCurrencyRequired": "Target currency is required",
+      "rateRequired": "Rate is required"
+    },
+    "table": {
+      "baseCurrency": "Base",
+      "targetCurrency": "Target",
+      "rateType": "Type",
+      "rate": "Rate",
+      "rateDate": "Date",
+      "isActive": "Active",
+      "actions": "Actions"
+    },
+    "toast": {
+      "createSuccess": "Exchange rate created successfully!",
+      "bulkCreateSuccess": "Exchange rates saved successfully!",
+      "deleteSuccess": "Exchange rate deleted successfully!"
+    },
+    "confirmDelete": "Are you sure you want to delete this exchange rate?",
+    "active": "Active",
+    "inactive": "Inactive",
+    "typeBuy": "BUY",
+    "typeSell": "SELL",
+    "bulkModal": {
+      "title": "Set Exchange Rates",
+      "subtitle": "Enter BUY and SELL rates for today",
+      "subtitleSellOnly": "BUY rate already set. Please enter the SELL rate for today.",
+      "subtitleBuyOnly": "SELL rate already set. Please enter the BUY rate for today.",
+      "buyFormTitle": "BUY Rate",
+      "sellFormTitle": "SELL Rate",
+      "baseCurrency": "Base Currency",
+      "baseCurrencyPlaceholder": "e.g. USD, CNY, THB",
+      "targetCurrency": "Target Currency",
+      "targetCurrencyPlaceholder": "e.g. LAK",
+      "rate": "Rate",
+      "ratePlaceholder": "Enter exchange rate",
+      "baseCurrencyRequired": "Base currency is required",
+      "targetCurrencyRequired": "Target currency is required",
+      "rateRequired": "Rate is required",
+      "submit": "Save Rates",
+      "cancel": "Cancel",
+      "skipText": "Skip for now"
+    }
   }
 }
+
 
