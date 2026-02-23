@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue';
 import { message } from 'ant-design-vue';
 import { useI18n } from 'vue-i18n';
-import { userRepository } from '@/infrastructure/repositories/user.repository';
+import { userService } from '@/infrastructure/services/user.service';
 import type { User } from '@/domain/entities/user.entity';
 import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
 import type { UserCreateDto, UserListQueryDto, UserMerchantCreateDto, UserUpdateDto } from '@/application/dto/user.dto';
@@ -14,12 +14,6 @@ import {
   validateUserListQuery,
 } from '@/presentation/validator/super-admin/user.validator';
 
-/**
- * Business logic สำหรับ Super Admin: User Management
- * - list/search/pagination
- * - CRUD user
- * - create user + merchant
- */
 export function useSuperAdminUsers() {
   const { t } = useI18n();
   const store = useSuperAdminUserStore();
@@ -36,14 +30,13 @@ export function useSuperAdminUsers() {
 
     const queryErrors = validateUserListQuery(query);
     if (queryErrors.length > 0) {
-      // ไม่โยน error ให้ UI สะดุด แต่แจ้งไว้พอ
       message.error(queryErrors[0]?.message || 'Invalid query');
       return false;
     }
 
     store.setLoading(true);
     try {
-      const response: BackendPaginatedResponse<User> = await userRepository.getList(query);
+      const response: BackendPaginatedResponse<User> = await userService.getList(query);
       store.setUsers(response.results);
       store.setPagination(response.pagination);
       return true;
@@ -74,7 +67,7 @@ export function useSuperAdminUsers() {
 
     store.setLoading(true);
     try {
-      await userRepository.create(payload);
+      await userService.create(payload);
       message.success(t('users.createSuccess'));
       await fetchUsers();
       return true;
@@ -95,9 +88,38 @@ export function useSuperAdminUsers() {
 
     store.setLoading(true);
     try {
-      await userRepository.update(id, payload);
+      await userService.update(id, payload);
       message.success(t('users.updateSuccess'));
       await fetchUsers();
+      return true;
+    } catch (error) {
+      handleApiError(error, t);
+      return false;
+    } finally {
+      store.setLoading(false);
+    }
+  };
+
+  const toggleActive = async (id: number, isActive: boolean) => {
+    store.setLoading(true);
+    try {
+      await userService.setActive(id, isActive);
+      message.success(t('users.updateSuccess'));
+      await fetchUsers();
+      return true;
+    } catch (error) {
+      handleApiError(error, t);
+      return false;
+    } finally {
+      store.setLoading(false);
+    }
+  };
+
+  const changePasswordById = async (id: number, password: string) => {
+    store.setLoading(true);
+    try {
+      await userService.changePassword(id, password);
+      message.success(t('users.updateSuccess'));
       return true;
     } catch (error) {
       handleApiError(error, t);
@@ -110,7 +132,7 @@ export function useSuperAdminUsers() {
   const deleteUser = async (id: number) => {
     store.setLoading(true);
     try {
-      await userRepository.delete(id);
+      await userService.delete(id);
       message.success(t('users.deleteSuccess'));
       await fetchUsers();
       return true;
@@ -131,7 +153,7 @@ export function useSuperAdminUsers() {
 
     store.setLoading(true);
     try {
-      await userRepository.createUserWithMerchant(payload);
+      await userService.createUserWithMerchant(payload);
       message.success(t('users.createSuccess'));
       await fetchUsers();
       return true;
@@ -159,6 +181,8 @@ export function useSuperAdminUsers() {
     changePage,
     createUser,
     updateUser,
+    toggleActive,
+    changePasswordById,
     deleteUser,
     createUserWithMerchant,
   };

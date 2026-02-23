@@ -107,16 +107,18 @@
         <div class="panel merchant-panel">
           <div class="panel-header">
             <span class="panel-icon merchant-icon"><ShopOutlined /></span>
-            <span class="panel-title">
-              {{ $t('users.merchantInfoSection') }}
-              <span class="panel-num">({{ $t('users.sectionPart') }} 2)</span>
-            </span>
+            <div class="panel-title-group">
+              <span class="panel-title">
+                {{ $t('users.merchantInfoSection') }}
+                <span class="panel-num">({{ $t('users.sectionPart') }} 2)</span>
+              </span>
+              <span class="panel-optional-hint">{{ $t('users.merchantInfoOptional') }}</span>
+            </div>
           </div>
 
           <!-- ชื่อร้าน -->
           <a-form-item
             name="shopName"
-            :rules="[{ required: true, message: $t('users.shopNameRequired') }]"
           >
             <template #label>
               <span class="field-label"><ShopOutlined class="lbl-ico" />{{ $t('users.shopName') }}</span>
@@ -271,11 +273,12 @@ const opt = (v: string) => (v.trim() ? v.trim() : undefined);
 
 const submit = async () => {
   await formRef.value?.validate();
+  const resolvedShopName = formState.shopName.trim() || formState.fullName.trim();
   const payload: UserMerchantCreateDto = {
     email: formState.email.trim(),
     password: formState.password,
     fullName: formState.fullName.trim(),
-    shopName: formState.shopName.trim(),
+    shopName: resolvedShopName,
     shopLogoUrl: opt(formState.shopLogoUrl),
     shopAddress: opt(formState.shopAddress),
     contactPhone: opt(formState.contactPhone),
@@ -382,6 +385,12 @@ const goBack = () => router.push('/super-admin/users');
   box-shadow: 0 2px 8px rgba(0, 168, 84, 0.3);
 }
 
+.panel-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .panel-title {
   font-size: 15px;
   font-weight: 700;
@@ -392,6 +401,13 @@ const goBack = () => router.push('/super-admin/users');
   font-size: 13px;
   font-weight: 500;
   color: #888;
+}
+
+.panel-optional-hint {
+  font-size: 11px;
+  font-weight: 500;
+  color: #f59e0b;
+  line-height: 1.3;
 }
 
 /* ====== field label ====== */

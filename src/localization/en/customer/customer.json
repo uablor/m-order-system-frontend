@@ -10,21 +10,33 @@
   "sectionTitle": "Items Arrived",
   "items": "items",
   "emptyText": "No items arrived yet",
+  "loadingOrders": "Loading your orders...",
+  "orderLabel": "Order",
+  "moreItems": "more items",
+  "paymentStatus": {
+    "UNPAID": "Unpaid",
+    "PARTIAL": "Partially Paid",
+    "PAID": "Paid"
+  },
   "detail": {
-    "title": "Item Details",
+    "title": "Order Details",
     "arrived": "Arrived",
-    "totalDue": "Total Due",
+    "totalDue": "Amount Due",
+    "paymentStatus": "Payment Status",
+    "itemsTitle": "Order Items",
     "messageTitle": "Message to Store",
     "messagePlaceholder": "Type an additional message to the store...",
     "uploadTitle": "Upload Payment Slip",
     "uploadText": "Click here to upload slip",
     "uploadHint": "JPG, PNG files only",
-    "submitBtn": "Submit Payment Info",
+    "uploadNote": "Image preview only — payment record will be created with demo reference",
+    "submitBtn": "Submit Payment",
     "removeSlip": "Remove"
   },
   "toast": {
     "fileTypeError": "Only JPG, PNG files are supported",
     "uploadRequired": "Please upload a payment slip first",
-    "submitSuccess": "Payment info submitted successfully!"
+    "submitSuccess": "Payment submitted successfully!",
+    "submitError": "Failed to submit payment. Please try again."
   }
 }

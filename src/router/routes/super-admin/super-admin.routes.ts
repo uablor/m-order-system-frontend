@@ -8,7 +8,12 @@ export const SuperAdminRoute: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        redirect: { name: 'super-admin-merchants' },
+        redirect: { name: 'super-admin-dashboard' },
+      },
+      {
+        path: 'dashboard',
+        name: 'super-admin-dashboard',
+        component: () => import('@/presentation/views/super-admin/DashboardPage.vue'),
       },
       {
         path: 'users',
@@ -31,6 +36,11 @@ export const SuperAdminRoute: RouteRecordRaw[] = [
         component: () => import('@/presentation/views/super-admin/merchants/MerchantCreatePage.vue'),
       },
       {
+        path: 'merchants/:id/detail',
+        name: 'super-admin-merchants-detail',
+        component: () => import('@/presentation/views/super-admin/merchants/MerchantDetailPage.vue'),
+      },
+      {
         path: 'merchants/:id/edit',
         name: 'super-admin-merchants-edit',
         component: () => import('@/presentation/views/super-admin/merchants/MerchantEditPage.vue'),
@@ -43,4 +53,3 @@ export const SuperAdminRoute: RouteRecordRaw[] = [
     ],
   },
 ];
-

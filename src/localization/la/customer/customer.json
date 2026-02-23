@@ -10,21 +10,33 @@
   "sectionTitle": "ສິນຄ້າທີ່ມາຮອດແລ້ວ",
   "items": "ລາຍການ",
   "emptyText": "ຍັງບໍ່ມີສິນຄ້າທີ່ມາຮອດ",
+  "loadingOrders": "ກຳລັງໂຫລດລາຍການຂອງທ່ານ...",
+  "orderLabel": "ອໍເດີ",
+  "moreItems": "ລາຍການເພີ່ມ",
+  "paymentStatus": {
+    "UNPAID": "ຍັງບໍ່ຊຳລະ",
+    "PARTIAL": "ຊຳລະບາງສ່ວນ",
+    "PAID": "ຊຳລະແລ້ວ"
+  },
   "detail": {
-    "title": "ລາຍລະອຽດສິນຄ້າ",
+    "title": "ລາຍລະອຽດອໍເດີ",
     "arrived": "ມາຮອດແລ້ວ",
-    "totalDue": "ຍອດຊຳລະທັງໝົດ",
+    "totalDue": "ຍອດຊຳລະ",
+    "paymentStatus": "ສະຖານະການຊຳລະເງິນ",
+    "itemsTitle": "ລາຍການສິນຄ້າ",
     "messageTitle": "ຂໍ້ຄວາມຫາຮ້ານຄ້າ",
     "messagePlaceholder": "ພິມຂໍ້ຄວາມເພີ່ມເຕີມຫາຮ້ານຄ້າ...",
     "uploadTitle": "ອັບໂຫລດສລິບໂອນເງິນ",
     "uploadText": "ກົດທີ່ນີ້ເພື່ອອັບໂຫລດສລິບ",
     "uploadHint": "ຮອງຮັບໄຟລ໌ JPG, PNG ເທົ່ານັ້ນ",
-    "submitBtn": "ສົ່ງຂໍ້ມູນການໂອນເງິນ",
+    "uploadNote": "ສະແດງຮູບ preview ເທົ່ານັ້ນ — ລະບົບຈະບັນທຶກການຊຳລະດ້ວຍຄ່າອ້າງອີງ demo",
+    "submitBtn": "ສົ່ງການຊຳລະເງິນ",
     "removeSlip": "ລຶບ"
   },
   "toast": {
     "fileTypeError": "ຮອງຮັບສະເພາະໄຟລ໌ JPG, PNG ເທົ່ານັ້ນ",
     "uploadRequired": "ກະລຸນາອັບໂຫລດສລິບການໂອນເງິນກ່ອນ",
-    "submitSuccess": "ສົ່ງຂໍ້ມູນການໂອນເງິນສຳເລັດ!"
+    "submitSuccess": "ສົ່ງການຊຳລະເງິນສຳເລັດ!",
+    "submitError": "ບໍ່ສາມາດສົ່ງການຊຳລະເງິນໄດ້ ກະລຸນາລອງໃໝ່"
   }
 }

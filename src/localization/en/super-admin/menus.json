@@ -5,10 +5,10 @@
   "merchantList": "Merchant List",
   "merchantDetails": "Merchant Details",
   "addMerchant": "Add Merchant",
+  "customers": "Customers",
+  "exchangeRates": "Exchange Rates",
   "reports": "Reports",
   "merchantReports": "Merchant Reports",
   "notifications": "Notifications",
   "settings": "Settings"
 }
-
-

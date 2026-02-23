@@ -57,3 +57,29 @@ a {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* Blue theme for date picker popup */
+.blue-picker-popup .ant-picker-cell-selected .ant-picker-cell-inner,
+.blue-picker-popup .ant-picker-cell-range-start .ant-picker-cell-inner,
+.blue-picker-popup .ant-picker-cell-range-end .ant-picker-cell-inner {
+  background: #1d4ed8 !important;
+  color: #fff !important;
+}
+.blue-picker-popup .ant-picker-cell-today .ant-picker-cell-inner::before {
+  border-color: #1d4ed8 !important;
+}
+.blue-picker-popup .ant-picker-cell-in-range::before {
+  background: rgba(29, 78, 216, 0.08) !important;
+}
+.blue-picker-popup .ant-picker-header button:hover {
+  color: #1d4ed8 !important;
+}
+.blue-picker-popup .ant-picker-header-view button:hover {
+  color: #1d4ed8 !important;
+}
+.blue-picker-popup .ant-picker-today-btn {
+  color: #1d4ed8 !important;
+}
+.blue-picker-popup .ant-picker-cell:hover:not(.ant-picker-cell-selected) .ant-picker-cell-inner {
+  background: rgba(29, 78, 216, 0.1) !important;
+}

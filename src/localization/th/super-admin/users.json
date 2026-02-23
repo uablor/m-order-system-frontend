@@ -33,6 +33,7 @@
   "userInfoDesc": "ข้อมูลสำหรับเข้าสู่ระบบ",
   "merchantInfoSection": "ข้อมูลร้านค้า",
   "merchantInfoDesc": "รายละเอียดร้านที่ลูกค้าจะเห็น",
+  "merchantInfoOptional": "ส่วนนี้ไม่บังคับ หากปล่อยว่าง ชื่อเต็มจะถูกใช้เป็นชื่อร้าน",
   "shopName": "ชื่อร้าน",
   "shopNamePlaceholder": "ชื่อร้านค้าของคุณ",
   "shopNameRequired": "กรุณากรอกชื่อร้าน",

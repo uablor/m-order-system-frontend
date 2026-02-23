@@ -1,10 +1,13 @@
 <template>
-  <SuperAdminLayout>
+  <div class="settings-page">
     <SettingsContent />
-  </SuperAdminLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
-import SuperAdminLayout from '@/components/layouts/superAdmin-layouts/AppLayout.vue';
 import SettingsContent from '@/presentation/components/super-admin/settings/SettingsContent.vue';
 </script>
+
+<style scoped>
+.settings-page { padding: 0; }
+</style>

@@ -13,8 +13,15 @@ export function authGuard(
   next: NavigationGuardNext
 ) {
   const authStore = useAuthStore();
-  const isAuthenticated = !!authStore.token;
+  // ใช้ isAuthenticated จาก store ซึ่งตรวจ JWT expiry ด้วย
+  const isAuthenticated = authStore.isAuthenticated;
   const roleName = (authStore.roleName || '').toLowerCase();
+
+  // ถ้า token หมดอายุ → เคลียร์แล้ว redirect ไป login
+  if (!isAuthenticated && authStore.token) {
+    authStore.clearAuth();
+    return next({ name: 'login' });
+  }
   const allowedRoles = Array.isArray(to.meta.roles)
     ? (to.meta.roles as string[]).map((r) => String(r).toLowerCase())
     : null;

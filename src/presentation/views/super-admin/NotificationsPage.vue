@@ -1,10 +1,13 @@
 <template>
-  <SuperAdminLayout>
+  <div class="notifications-page">
     <NotificationsContent />
-  </SuperAdminLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
-import SuperAdminLayout from '../../../components/layouts/superAdmin-layouts/AppLayout.vue';
-import NotificationsContent from '../../components/super-admin/NotificationsContent.vue';
+import NotificationsContent from '@/presentation/components/super-admin/NotificationsContent.vue';
 </script>
+
+<style scoped>
+.notifications-page { padding: 0; }
+</style>

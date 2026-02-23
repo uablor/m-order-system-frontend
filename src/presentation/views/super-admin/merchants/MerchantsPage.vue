@@ -5,6 +5,7 @@
       :loading="loading"
       :pagination="pagination"
       @create="goCreate"
+      @detail="goDetail"
       @edit="goEdit"
       @delete="confirmDelete"
       @search="handleSearch"
@@ -31,6 +32,9 @@ const {
 } = useSuperAdminMerchants();
 
 const goCreate = () => router.push({ name: 'super-admin-users-create-merchant' });
+const goDetail = (merchant: import('@/domain/entities/user.entity').Merchant) => {
+  router.push(`/super-admin/merchants/${merchant.id}/detail`);
+};
 const goEdit = (merchant: import('@/domain/entities/user.entity').Merchant) => {
   try {
     localStorage.setItem('sa:last-edit-merchant', JSON.stringify(merchant));

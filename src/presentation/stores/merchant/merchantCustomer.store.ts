@@ -19,6 +19,7 @@ export const useMerchantCustomerStore = defineStore('merchantCustomerStore', () 
   const pagination = ref<BackendPagination>({ ...defaultPagination });
   const query = ref<CustomerListQueryDto>({ page: 1, limit: 8, merchantId: undefined, search: undefined });
   const merchantId = ref<number | null>(null);
+  const summary = ref({ totalCustomers: 0, totalActive: 0, totalInactive: 0 });
 
   const tableData = computed(() => customers.value);
   const tablePagination = computed(() => pagination.value);
@@ -29,6 +30,7 @@ export const useMerchantCustomerStore = defineStore('merchantCustomerStore', () 
   const setPagination = (value: BackendPagination) => { pagination.value = value; };
   const setQuery = (value: Partial<CustomerListQueryDto>) => { query.value = { ...query.value, ...value }; };
   const setMerchantId = (value: number | null) => { merchantId.value = value; };
+  const setSummary = (value: { totalCustomers: number; totalActive: number; totalInactive: number }) => { summary.value = value; };
 
   return {
     loading,
@@ -39,11 +41,13 @@ export const useMerchantCustomerStore = defineStore('merchantCustomerStore', () 
     tableData,
     tablePagination,
     currentQuery,
+    summary,
     setLoading,
     setCustomers,
     setPagination,
     setQuery,
     setMerchantId,
+    setSummary,
   };
 });
 

@@ -61,16 +61,28 @@ const pathToMenuKey: Record<string, string> = {
   dashboard: 'dashboard',
   customers: 'customerManagement',
   'stock-order': 'stockOrder',
-  'item-arrived': 'itemArrived',
-  'notify-arrival': 'notifyArrival',
+  orders: 'orders',
+  arrivals: 'arrivals',
+  team: 'teamMembers',
+  notifications: 'notifications',
   payment: 'payment',
   'exchange-rates': 'exchangeRates',
   reports: 'reports',
 };
+
 const pageTitle = computed(() => {
-  const pathKey = route.path.split('/').pop() || 'dashboard';
+  const segments = route.path.split('/').filter(Boolean);
+  // For detail pages like /merchant/orders/2 → segments = ['merchant','orders','2']
+  if (segments.length >= 3 && /^\d+$/.test(segments[segments.length - 1] ?? '')) {
+    const parentKey = segments[segments.length - 2] ?? '';
+    const menuKey = pathToMenuKey[parentKey] || parentKey;
+    const base = t(`menus.merchant.${menuKey}`);
+    return base ? `${base} — ${t('common.detail')}` : t('menus.merchant.dashboard');
+  }
+  const pathKey = segments[segments.length - 1] ?? 'dashboard';
   const menuKey = pathToMenuKey[pathKey] || pathKey;
-  return t(`menus.merchant.${menuKey}`) || t('menus.merchant.dashboard');
+  const translated = t(`menus.merchant.${menuKey}`);
+  return /^menus\./.test(translated) ? t('menus.merchant.dashboard') : translated;
 });
 
 const toggleSidebar = () => { collapsed.value = !collapsed.value; };

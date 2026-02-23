@@ -102,22 +102,7 @@
     </a-drawer>
 
     <!-- Profile modal -->
-    <a-modal
-      :open="profileModalOpen"
-      title="Profile"
-      :confirm-loading="profileLoading"
-      :cancel-text="$t('common.cancel')"
-      @ok="profileModalOpen = false"
-      @cancel="profileModalOpen = false"
-      width="620px"
-    >
-      <a-descriptions bordered :column="1">
-        <a-descriptions-item label="Name">{{ authStore.user?.fullName || '-' }}</a-descriptions-item>
-        <a-descriptions-item label="Email">{{ authStore.user?.email || '-' }}</a-descriptions-item>
-        <a-descriptions-item label="Role">{{ authStore.user?.roleName || '-' }}</a-descriptions-item>
-        <a-descriptions-item label="User ID">{{ authStore.user?.id ?? '-' }}</a-descriptions-item>
-      </a-descriptions>
-    </a-modal>
+    <ProfileModal :open="profileModalOpen" @close="profileModalOpen = false" />
   </a-layout-header>
 </template>
 
@@ -132,6 +117,7 @@ import {
 import { useAuthStore } from '../../../store/auth.store';
 import { message } from 'ant-design-vue';
 import { useAuth } from '@/shared/composables/useAuth';
+import ProfileModal from './ProfileModal.vue';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import { getMenuItems } from '@/components/layouts/superAdmin-layouts/menuItem';
 
@@ -146,7 +132,7 @@ const router = useRouter();
 const route = useRoute();
 const { locale } = useI18n();
 const authStore = useAuthStore();
-const { getMe } = useAuth();
+useAuth();
 const { isMobile } = useIsMobile();
 
 const currentLocale = computed(() => locale.value);
@@ -155,7 +141,7 @@ const isSuperAdminRoute = computed(() => route.path.startsWith('/super-admin'));
 
 const { t } = useI18n();
 const superAdminMenuItems = computed(() => getMenuItems(t));
-const superAdminSelectedKey = computed(() => route.path.split('/')[2] || 'merchants');
+const superAdminSelectedKey = computed(() => route.path.split('/')[2] || 'dashboard');
 
 const goSuperAdmin = (path: string) => {
   router.push(path);
@@ -204,22 +190,10 @@ const handleLogout = async () => {
 };
 
 const profileModalOpen = ref(false);
-const profileLoading = ref(false);
-
-const openProfile = async () => {
-  profileModalOpen.value = true;
-  profileLoading.value = true;
-  try {
-    // `/auth/me` -> results[0] จะถูก map เข้า authStore.user ใน useAuth.getMe()
-    await getMe();
-  } finally {
-    profileLoading.value = false;
-  }
-};
 
 const handleUserMenuClick = async ({ key }: { key: string }) => {
   if (key === 'profile') {
-    await openProfile();
+    profileModalOpen.value = true;
     return;
   }
   if (key === 'logout') {

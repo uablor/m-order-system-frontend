@@ -35,8 +35,27 @@ export class UserRepository {
     await this.apiClient.putOrPatch<void>(API_ENDPOINTS.USERS.UPDATE(id), data, 'PATCH');
   }
 
+  async setActive(id: number, isActive: boolean): Promise<void> {
+    await this.apiClient.putOrPatch<void>(API_ENDPOINTS.USERS.SET_ACTIVE(id), { isActive }, 'PATCH');
+  }
+
+  async changePassword(id: number, password: string): Promise<void> {
+    await this.apiClient.putOrPatch<void>(API_ENDPOINTS.USERS.CHANGE_PASSWORD(id), { password }, 'PATCH');
+  }
+
   async delete(id: number): Promise<void> {
     await this.apiClient.delete<void>(API_ENDPOINTS.USERS.DELETE(id));
+  }
+
+  async merchantCreate(data: { email: string; password: string; fullName: string; isActive?: boolean }): Promise<{ id: number }> {
+    return await this.apiClient.post<{ id: number }>(API_ENDPOINTS.USERS.MERCHANT_CREATE, data);
+  }
+
+  async getByMerchant(query: Record<string, any>): Promise<BackendPaginatedResponse<User>> {
+    return await this.apiClient.getPaginated<BackendPaginatedResponse<User>>(
+      API_ENDPOINTS.USERS.BY_MERCHANT,
+      query,
+    );
   }
 }
 

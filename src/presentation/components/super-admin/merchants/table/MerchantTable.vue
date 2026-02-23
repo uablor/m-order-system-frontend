@@ -64,10 +64,13 @@
           </template>
 
           <template v-else-if="column.key === 'actions'">
-            <div class="flex items-center justify-end gap-2">
-              <a-button type="text" class="icon-action" @click="$emit('edit', record)"><EditOutlined /></a-button>
+            <div class="actions-wrap">
+              <a-tooltip :title="$t('merchants.detail.viewDetail')">
+                <a-button type="text" size="small" class="icon-action eye-btn" @click="$emit('detail', record)"><EyeOutlined /></a-button>
+              </a-tooltip>
+              <a-button type="text" size="small" class="icon-action" @click="$emit('edit', record)"><EditOutlined /></a-button>
               <a-popconfirm :title="$t('merchants.confirmDelete')" @confirm="$emit('delete', record)">
-                <a-button type="text" danger class="icon-action"><DeleteOutlined /></a-button>
+                <a-button type="text" size="small" danger class="icon-action"><DeleteOutlined /></a-button>
               </a-popconfirm>
             </div>
           </template>
@@ -131,6 +134,9 @@
               <span class="detail-val">{{ formatDate(m.createdAt) }}</span>
             </div>
             <div class="detail-row border-none pt-2">
+              <a-button type="primary" ghost size="small" class="action-btn" @click="$emit('detail', m)">
+                <EyeOutlined /> {{ $t('merchants.detail.viewDetail') }}
+              </a-button>
               <a-button type="default" size="small" class="action-btn" @click="$emit('edit', m)">
                 <EditOutlined /> {{ $t('common.edit') }}
               </a-button>
@@ -151,13 +157,14 @@
 import { computed, ref, watch } from 'vue';
 import dayjs from 'dayjs';
 import type { TableColumnsType, TablePaginationConfig } from 'ant-design-vue';
-import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ShopOutlined, DownOutlined } from '@ant-design/icons-vue';
+import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ShopOutlined, DownOutlined, EyeOutlined } from '@ant-design/icons-vue';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import type { Merchant } from '@/domain/entities/user.entity';
 import { useI18n } from 'vue-i18n';
 
 const emit = defineEmits<{
   (e: 'create'): void;
+  (e: 'detail', merchant: Merchant): void;
   (e: 'edit', merchant: Merchant): void;
   (e: 'delete', merchant: Merchant): void;
   (e: 'search', value: string): void;
@@ -226,7 +233,7 @@ const columns = computed<TableColumnsType>(() => [
   { title: $t('merchants.isActive'), key: 'isActive', width: 110, align: 'center' as const },
   { title: $t('merchants.createdAt'), key: 'createdAt', width: 170 },
   { title: $t('merchants.updatedAt'), key: 'updatedAt', width: 170 },
-  { title: $t('merchants.actions'), key: 'actions', fixed: 'right' as const, width: 120, align: 'right' as const },
+  { title: $t('merchants.actions'), key: 'actions', fixed: 'right' as const, width: 150, align: 'center' as const },
 ]);
 </script>
 
@@ -259,8 +266,17 @@ const columns = computed<TableColumnsType>(() => [
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 10px 25px rgba(15, 23, 42, 0.04);
 }
 .pill-tag { border-radius: 999px; padding: 2px 10px; font-weight: 800; }
-.icon-action { border-radius: 10px; }
+.actions-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex-wrap: nowrap;
+}
+.icon-action { border-radius: 8px; min-width: 28px; width: 28px; height: 28px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
 .icon-action:hover { background: rgba(29, 78, 216, 0.08) !important; color: #1d4ed8; }
+.eye-btn { color: #6366f1; }
+.eye-btn:hover { background: rgba(99, 102, 241, 0.1) !important; color: #4f46e5; }
 
 .address-cell {
   display: -webkit-box;

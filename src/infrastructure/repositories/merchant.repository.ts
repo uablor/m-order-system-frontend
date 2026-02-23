@@ -1,8 +1,8 @@
 import { ApiClient } from '@/infrastructure/apis/api';
 import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
 import type { MerchantCreateDto, MerchantListQueryDto, MerchantUpdateDto } from '@/application/dto/merchant.dto';
-import type { Merchant } from '@/domain/entities/user.entity';
-import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
+import type { Merchant, MerchantDetail } from '@/domain/entities/user.entity';
+import type { BackendPaginatedResponse, BackendResponse } from '@/shared/types/backend-response.types';
 
 export class MerchantRepository {
   private apiClient: ApiClient;
@@ -24,6 +24,10 @@ export class MerchantRepository {
 
   async getById(id: number): Promise<Merchant> {
     return await this.apiClient.get<Merchant>(API_ENDPOINTS.MERCHANTS.GET_BY_ID(id));
+  }
+
+  async getDetail(id: number): Promise<BackendResponse<MerchantDetail>> {
+    return await this.apiClient.get<BackendResponse<MerchantDetail>>(API_ENDPOINTS.MERCHANTS.GET_DETAIL(id));
   }
 
   async update(id: number, data: MerchantUpdateDto): Promise<void> {

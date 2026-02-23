@@ -50,7 +50,7 @@ export function useAuth() {
 
         if (role === 'superadmin' || role === 'admin') {
           authStore.setLayout('superAdmin');
-          await router.push({ name: 'super-admin-merchants' });
+          await router.push({ name: 'super-admin-dashboard' });
         } else if (role === 'admin_merchant' || role === 'employee_merchant') {
           authStore.setLayout('merchant');
           await router.push({ name: 'merchant-dashboard' });
@@ -58,9 +58,8 @@ export function useAuth() {
           authStore.setLayout('customer');
           await router.push({ name: 'customer-item-arrived' });
         } else {
-          // fallback ถ้าไม่รู้ role ให้เข้าฝั่ง super admin ไว้ก่อน (กัน user ค้างหน้า login)
           authStore.setLayout('superAdmin');
-          await router.push({ name: 'super-admin-merchants' });
+          await router.push({ name: 'super-admin-dashboard' });
         }
 
         message.success(t('login.success'));

@@ -5,13 +5,14 @@ export const CustomerRoute: RouteRecordRaw[] = [
     path: '/customer/item-arrived',
     name: 'customer-item-arrived',
     component: () => import('@/presentation/views/customer/ItemArrivedPage.vue'),
-    meta: { requiresAuth: true },
+    // หน้านี้เปิดสาธารณะ — ใช้ token จาก URL query (?token=xxx) แทน JWT
+    meta: { requiresAuth: false },
   },
   {
     path: '/customer/message',
     name: 'customer-message',
     component: () => import('@/presentation/views/customer/MessagePage.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: false },
   },
 ];
 

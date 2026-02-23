@@ -52,6 +52,13 @@ export function useMerchantCustomers() {
       const response: BackendPaginatedResponse<Customer> = await customerRepository.getList(query);
       store.setCustomers(response.results);
       store.setPagination(response.pagination);
+      if ((response as any).summary) {
+        store.setSummary({
+          totalCustomers: (response as any).summary.totalCustomers ?? 0,
+          totalActive: (response as any).summary.totalActive ?? 0,
+          totalInactive: (response as any).summary.totalInactive ?? 0,
+        });
+      }
       return true;
     } catch (error) {
       handleApiError(error, t);
@@ -71,7 +78,7 @@ export function useMerchantCustomers() {
     await fetchCustomers();
   };
 
-  const createCustomer = async (payload: Omit<CustomerCreateDto, 'merchantId'>) => {
+  const createCustomer = async (payload: Omit<CustomerCreateDto, 'merchantId'>): Promise<{ id: number } | false> => {
     const merchantId = await ensureMerchantId();
     if (!merchantId) {
       message.error('Merchant not found for current user');
@@ -84,10 +91,10 @@ export function useMerchantCustomers() {
 
     store.setLoading(true);
     try {
-      await customerRepository.create({ ...payload, merchantId });
+      const result = await customerRepository.create({ ...payload, merchantId });
       message.success(t('merchant.customers.toast.createSuccess'));
       await fetchCustomers({ page: 1 });
-      return true;
+      return result;
     } catch (error) {
       handleApiError(error, t);
       return false;
@@ -130,6 +137,7 @@ export function useMerchantCustomers() {
     loading: computed(() => store.loading),
     customers: computed(() => store.tableData),
     pagination: computed(() => store.tablePagination),
+    summary: computed(() => store.summary),
     fetchCustomers,
     searchCustomers,
     changePage,

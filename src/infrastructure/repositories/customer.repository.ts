@@ -1,6 +1,6 @@
 import { ApiClient } from '@/infrastructure/apis/api';
 import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
-import type { CustomerCreateDto, CustomerListQueryDto, CustomerUpdateDto } from '@/application/dto/customer.dto';
+import type { CustomerCreateDto, CustomerUpdateDto, CustomerListQueryDto } from '@/application/dto/customer.dto';
 import type { Customer } from '@/domain/entities/user.entity';
 import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
 
@@ -20,7 +20,17 @@ export class CustomerRepository {
   }
 
   async getList(query: CustomerListQueryDto): Promise<BackendPaginatedResponse<Customer>> {
-    return await this.apiClient.getPaginated<BackendPaginatedResponse<Customer>>(API_ENDPOINTS.CUSTOMERS.LIST, query);
+    return await this.apiClient.getPaginated<BackendPaginatedResponse<Customer>>(
+      API_ENDPOINTS.CUSTOMERS.LIST,
+      query,
+    );
+  }
+
+  async getByMerchant(query: Omit<CustomerListQueryDto, 'merchantId'>): Promise<BackendPaginatedResponse<Customer>> {
+    return await this.apiClient.getPaginated<BackendPaginatedResponse<Customer>>(
+      API_ENDPOINTS.CUSTOMERS.BY_MERCHANT,
+      query,
+    );
   }
 
   async update(id: number, data: CustomerUpdateDto): Promise<void> {
@@ -33,4 +43,3 @@ export class CustomerRepository {
 }
 
 export const customerRepository = new CustomerRepository();
-

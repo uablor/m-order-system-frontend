@@ -35,15 +35,16 @@ watch(isMobile, (val) => {
 });
 
 const pathToMenuKey: Record<string, string> = {
+  dashboard: 'dashboard',
   merchants: 'merchantManagement',
   users: 'users',
   settings: 'settings',
 };
 const pageTitle = computed(() => {
   const parts = route.path.split('/');
-  const pathKey = parts[2] || 'merchants';
+  const pathKey = parts[2] || 'dashboard';
   const menuKey = pathToMenuKey[pathKey] || pathKey;
-  return t(`menus.superAdmin.${menuKey}`) || t('menus.superAdmin.merchantManagement');
+  return t(`menus.superAdmin.${menuKey}`) || t('menus.superAdmin.dashboard');
 });
 
 const toggleSidebar = () => { collapsed.value = !collapsed.value; };

@@ -6,10 +6,11 @@
   "stockOrder": "Stock / Order",
   "manageStock": "Manage Stock",
   "createOrder": "Create Order",
-  "itemArrived": "Items Arrived",
-  "notifyArrival": "Notify Arrival",
+  "orders": "Orders",
+  "arrivals": "Arrivals",
+  "notifications": "Notifications",
+  "teamMembers": "Team Members",
   "payment": "Payment",
   "exchangeRates": "Exchange Rates",
   "reports": "Reports"
 }
-

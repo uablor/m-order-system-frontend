@@ -6,10 +6,11 @@
   "stockOrder": "สต๊อก / ออเดอร์",
   "manageStock": "จัดการสต๊อก",
   "createOrder": "สร้างออเดอร์",
-  "itemArrived": "ของถึงแล้ว",
-  "notifyArrival": "แจ้งเครื่องถึง",
+  "orders": "ออเดอร์ทั้งหมด",
+  "arrivals": "การมาถึง",
+  "teamMembers": "สมาชิกทีม",
+  "notifications": "การแจ้งเตือน",
   "payment": "การชำระเงิน",
   "exchangeRates": "อัตราแลกเปลี่ยน",
   "reports": "รายงาน"
 }
-

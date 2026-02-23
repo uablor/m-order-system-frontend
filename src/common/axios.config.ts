@@ -1,7 +1,8 @@
 import axios from 'axios';
 import type { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 import router from '@/router';
-import { deleteCookie, getCookie } from '@/shared/utils/cookie';
+import { deleteCookie } from '@/shared/utils/cookie';
+import { useAuthStore } from '@/store/auth.store';
 
 const envBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
 const isLocalBackendUrl =
@@ -9,7 +10,6 @@ const isLocalBackendUrl =
   envBaseUrl === 'http://127.0.0.1:4000';
 
 const defaultBaseUrl =
-  // โหมด dev ถ้าชี้ local backend ให้ผ่าน Vite proxy เพื่อตัด preflight/CORS
   (import.meta.env.DEV && (!envBaseUrl || isLocalBackendUrl))
     ? '/api'
     : (envBaseUrl || 'http://localhost:4000');
@@ -24,38 +24,51 @@ const api: AxiosInstance = axios.create({
 
 const ACCESS_TOKEN_COOKIE_KEY = 'access_token';
 
-// Request Interceptor - เพิ่ม token
+/**
+ * Request Interceptor
+ * อ่าน token จาก Pinia store โดยตรง (น่าเชื่อถือที่สุด)
+ * เรียก useAuthStore() ใน callback ไม่ใช่ตอน module init
+ * จึงไม่มี circular dependency และ Pinia พร้อมใช้งานแล้วตอนนี้
+ */
 api.interceptors.request.use(
   (config) => {
-    const rawToken = getCookie(ACCESS_TOKEN_COOKIE_KEY).trim();
-    const token =
-      rawToken && rawToken !== 'undefined' && rawToken !== 'null'
-        ? rawToken.replace(/^Bearer\s+/i, '')
-        : '';
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const authStore = useAuthStore();
+      const token = (authStore.token || '').trim().replace(/^Bearer\s+/i, '');
+      if (token && token !== 'undefined' && token !== 'null') {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch {
+      // Pinia ยังไม่ mount (กรณี SSR หรือ test เท่านั้น)
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor - จัดการ error
+let isRedirectingToLogin = false;
+
+// Response Interceptor — จัดการ 401
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
     if (error.response) {
       const status = error.response.status;
-      // ใช้ axios.isAxiosError เพื่อเช็กแบบ runtime (หลีกเลี่ยงการใช้ type เป็น value)
-      if (axios.isAxiosError(error) && error.response) {
-        if (status === 401) {
-          deleteCookie(ACCESS_TOKEN_COOKIE_KEY);
-          localStorage.removeItem('app-layout');
-          router.push({ name: 'login' });
-        }
+      if (status === 401 && !isRedirectingToLogin) {
+        isRedirectingToLogin = true;
+        try {
+          useAuthStore().clearAuth();
+        } catch { /* ignore */ }
+        deleteCookie(ACCESS_TOKEN_COOKIE_KEY);
+        try { localStorage.removeItem(ACCESS_TOKEN_COOKIE_KEY); } catch { /* ignore */ }
+        try { localStorage.removeItem('app-layout'); } catch { /* ignore */ }
+
+        router.push({ name: 'login' }).finally(() => {
+          setTimeout(() => { isRedirectingToLogin = false; }, 3000);
+        });
       }
     } else if (error.request) {
-      console.error('❌ Network error — server not reachable.');
+      console.error('Network error — server not reachable.');
     } else {
       console.error('Unexpected error:', error.message);
     }

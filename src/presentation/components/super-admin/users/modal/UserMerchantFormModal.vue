@@ -90,7 +90,6 @@
             <a-form-item
               name="shopName"
               :label="$t('users.shopName')"
-              :rules="[{ required: true, message: $t('users.shopNameRequired') }]"
             >
               <a-input
                 v-model:value="formState.shopName"
@@ -232,12 +231,29 @@ const resetForm = () => {
   formState.contactPhone = '';
   formState.contactEmail = '';
   formState.defaultCurrency = 'LAK';
+  shopNameTouched.value = false;
   formRef.value?.clearValidate?.();
 };
 
 watch(
   () => props.open,
   (isOpen) => { if (isOpen) resetForm(); },
+);
+
+const shopNameTouched = ref(false);
+
+watch(
+  () => formState.fullName,
+  (val) => {
+    if (!shopNameTouched.value) formState.shopName = val;
+  },
+);
+
+watch(
+  () => formState.shopName,
+  (val) => {
+    if (val !== formState.fullName && val !== '') shopNameTouched.value = true;
+  },
 );
 
 const submit = async () => {

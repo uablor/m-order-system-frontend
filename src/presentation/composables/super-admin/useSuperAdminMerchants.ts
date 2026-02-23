@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue';
 import { message } from 'ant-design-vue';
 import { useI18n } from 'vue-i18n';
-import { merchantRepository } from '@/infrastructure/repositories/merchant.repository';
+import { merchantService } from '@/infrastructure/services/merchant.service';
 import type { Merchant } from '@/domain/entities/user.entity';
 import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
 import type { MerchantCreateDto, MerchantListQueryDto, MerchantUpdateDto } from '@/application/dto/merchant.dto';
@@ -27,7 +27,7 @@ export function useSuperAdminMerchants() {
 
     store.setLoading(true);
     try {
-      const response: BackendPaginatedResponse<Merchant> = await merchantRepository.getList(query);
+      const response: BackendPaginatedResponse<Merchant> = await merchantService.getList(query);
       store.setMerchants(response.results);
       store.setPagination(response.pagination);
       return true;
@@ -46,7 +46,7 @@ export function useSuperAdminMerchants() {
     }
     store.setLoading(true);
     try {
-      await merchantRepository.create(payload);
+      await merchantService.create(payload);
       message.success(t('merchants.createSuccess'));
       await fetchMerchants();
       return true;
@@ -61,7 +61,7 @@ export function useSuperAdminMerchants() {
   const updateMerchant = async (id: number, payload: MerchantUpdateDto) => {
     store.setLoading(true);
     try {
-      await merchantRepository.update(id, payload);
+      await merchantService.update(id, payload);
       message.success(t('merchants.updateSuccess'));
       await fetchMerchants();
       return true;
@@ -76,7 +76,7 @@ export function useSuperAdminMerchants() {
   const deleteMerchant = async (id: number) => {
     store.setLoading(true);
     try {
-      await merchantRepository.delete(id);
+      await merchantService.delete(id);
       message.success(t('merchants.deleteSuccess'));
       await fetchMerchants();
       return true;

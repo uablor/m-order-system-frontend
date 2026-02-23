@@ -13,6 +13,9 @@ import merchant from './merchant/merchant.json';
 import users from './super-admin/users.json';
 import merchants from './super-admin/merchants.json';
 import access from './super-admin/access.json';
+import adminDashboard from './super-admin/dashboard.json';
+import customers from './super-admin/customers.json';
+import exchangeRates from './super-admin/exchangeRates.json';
 
 const menus = {
   superAdmin: superAdminMenus,
@@ -34,4 +37,7 @@ export default {
   merchants,
   access,
   customer,
+  adminDashboard,
+  customers,
+  exchangeRates,
 };

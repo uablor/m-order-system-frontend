@@ -33,6 +33,7 @@
   "userInfoDesc": "ຂໍ້ມູນສຳລັບເຂົ້າລະບົບ",
   "merchantInfoSection": "ຂໍ້ມູນຮ້ານຄ້າ",
   "merchantInfoDesc": "ລາຍລະອຽດຮ້ານທີ່ລູກຄ້າຈະເຫັນ",
+  "merchantInfoOptional": "ສ່ວນນີ້ບໍ່ບັງຄັບ. ຖ້າປ່ອຍວ່າງ ຊື່ເຕັມຈະຖືກໃຊ້ເປັນຊື່ຮ້ານ.",
   "shopName": "ຊື່ຮ້ານ",
   "shopNamePlaceholder": "ຊື່ຮ້ານຄ້າຂອງທ່ານ",
   "shopNameRequired": "ກະລຸນາໃສ່ຊື່ຮ້ານ",

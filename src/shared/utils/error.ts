@@ -22,7 +22,7 @@ export function handleApiError(error: unknown, t: (key: string) => string): void
           message.error(t('error.unauthorized'));
           break;
         case 403:
-          message.error(t('error.forbidden'));
+          message.error(errorMessage || t('error.forbidden'));
           break;
         case 404:
           message.error(t('error.notFound'));

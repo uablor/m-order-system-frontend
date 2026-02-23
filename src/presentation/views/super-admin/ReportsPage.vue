@@ -1,10 +1,13 @@
 <template>
-  <SuperAdminLayout>
+  <div class="reports-page">
     <ReportsContent />
-  </SuperAdminLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
-import SuperAdminLayout from '../../../components/layouts/superAdmin-layouts/AppLayout.vue';
-import ReportsContent from '../../components/super-admin/ReportsContent.vue';
+import ReportsContent from '@/presentation/components/super-admin/ReportsContent.vue';
 </script>
+
+<style scoped>
+.reports-page { padding: 0; }
+</style>
