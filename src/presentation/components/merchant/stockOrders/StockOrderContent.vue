@@ -12,7 +12,11 @@
       </div>
     </div>
 
-    <OrderCodeCard v-model="orderCode" />
+    <OrderCodeCard
+      v-model="orderCode"
+      :error="fieldErrors.orderCode"
+      @clear-error="clearFieldError('orderCode')"
+    />
 
     <ExchangeRateCard
       :buy-rate-display="buyRateDisplay"
@@ -40,7 +44,9 @@
           :buy-base-ccy="buyBaseCcy" :buy-target-ccy="buyTargetCcy"
           :sell-base-ccy="sellBaseCcy" :sell-target-ccy="sellTargetCcy"
           :get-buy-rate="getBuyRate" :get-sell-rate="getSellRate"
+          :errors="getItemErrors(idx)"
           @remove="removeItem"
+          @clear-error="(field: string) => clearFieldError(`items.${idx}.${field}`)"
         />
       </template>
       <template v-else-if="items.length > 0">
@@ -51,7 +57,9 @@
               :buy-base-ccy="buyBaseCcy" :buy-target-ccy="buyTargetCcy"
               :sell-base-ccy="sellBaseCcy" :sell-target-ccy="sellTargetCcy"
               :get-buy-rate="getBuyRate" :get-sell-rate="getSellRate"
+              :errors="getItemErrors(idx)"
               @remove="removeItem"
+              @clear-error="(field: string) => clearFieldError(`items.${idx}.${field}`)"
             />
           </div>
         </div>
@@ -83,6 +91,8 @@
           :sell-base-ccy="sellBaseCcy" :customer-options="customerOptions"
           :customer-searching="customerSearching"
           :get-max-qty="getMaxQtyForCoItem" :get-co-item-total="coItemTotal"
+          :error="getCustomerError(coIdx)"
+          :items-error="fieldErrors[`customerOrders.${coIdx}.items`]"
           @remove="removeCustomerOrder"
           @add-item="addCoItem"
           @remove-item="removeCoItem"
@@ -91,6 +101,8 @@
           @customer-search="onCustomerSearch"
           @customer-focus="onCustomerFocus"
           @create-customer="goCreateCustomer"
+          @clear-error="clearCustomerError(coIdx)"
+          @clear-items-error="clearFieldError(`customerOrders.${coIdx}.items`)"
         />
       </template>
       <template v-else-if="customerOrders.length > 0">
@@ -101,6 +113,8 @@
               :sell-base-ccy="sellBaseCcy" :customer-options="customerOptions"
               :customer-searching="customerSearching"
               :get-max-qty="getMaxQtyForCoItem" :get-co-item-total="coItemTotal"
+              :error="getCustomerError(coIdx)"
+              :items-error="fieldErrors[`customerOrders.${coIdx}.items`]"
               @remove="removeCustomerOrder"
               @add-item="addCoItem"
               @remove-item="removeCoItem"
@@ -109,6 +123,8 @@
               @customer-search="onCustomerSearch"
               @customer-focus="onCustomerFocus"
               @create-customer="goCreateCustomer"
+              @clear-error="clearCustomerError(coIdx)"
+              @clear-items-error="clearFieldError(`customerOrders.${coIdx}.items`)"
             />
           </div>
         </div>
@@ -135,7 +151,7 @@
 
     <!-- Submit -->
     <div class="submit-area">
-      <a-button type="primary" size="large" class="submit-btn" :loading="submitting" :disabled="!canSubmit" @click="handleSubmit">
+      <a-button type="primary" size="large" class="submit-btn" :loading="submitting" @click="handleSubmit">
         <template #icon><SaveOutlined /></template>
         {{ $t('merchant.orders.buttons.createOrder') }}
       </a-button>
@@ -200,7 +216,28 @@ const {
   goCreateCustomer, handleNewCustomerReturn,
 } = useCustomerOrders(items, customerOrders, isMobile, saveDraft);
 
-const { submitting, canSubmit, handleSubmit } = useOrderSubmit(orderCode, items, customerOrders, clearDraft);
+const { submitting, fieldErrors, clearFieldError, handleSubmit } = useOrderSubmit(orderCode, items, customerOrders, clearDraft);
+
+const getItemErrors = (idx: number): Record<string, string> => {
+  const prefix = `items.${idx}.`;
+  const result: Record<string, string> = {};
+  for (const key of Object.keys(fieldErrors.value)) {
+    if (key.startsWith(prefix)) {
+      result[key.slice(prefix.length)] = fieldErrors.value[key]!;
+    }
+  }
+  return result;
+};
+
+const getCustomerError = (coIdx: number): string | undefined => {
+  return fieldErrors.value[`customerOrders.${coIdx}.customerId`]
+    || (coIdx === 0 ? fieldErrors.value['customerOrders'] : undefined);
+};
+
+const clearCustomerError = (coIdx: number) => {
+  clearFieldError(`customerOrders.${coIdx}.customerId`);
+  clearFieldError('customerOrders');
+};
 
 const summaryPurchaseTotalForeign = computed(() =>
   items.value.reduce((sum, item) => sum + calc.calcPurchaseTotalForeign(item), 0));

@@ -180,6 +180,27 @@
       "profitForeign": "ກຳໄລ",
       "profitLak": "ກຳໄລ"
     },
+    "validation": {
+      "orderCodeRequired": "ກະລຸນາປ້ອນລະຫັດອໍເດີກ່ອນສົ່ງ.",
+      "atLeastOneItem": "ກະລຸນາເພີ່ມສິນຄ້າຢ່າງໜ້ອຍ 1 ລາຍການ.",
+      "productNameRequired": "ກະລຸນາປ້ອນຊື່ສິນຄ້າສຳລັບລາຍການ #{index}.",
+      "quantityRequired": "ກະລຸນາປ້ອນຈຳນວນທີ່ຖືກຕ້ອງສຳລັບລາຍການ #{index}.",
+      "purchasePriceRequired": "ກະລຸນາປ້ອນລາຄາຊື້ສຳລັບລາຍການ #{index}.",
+      "sellingPriceRequired": "ກະລຸນາປ້ອນລາຄາຂາຍສຳລັບລາຍການ #{index}.",
+      "atLeastOneCustomer": "ກະລຸນາເລືອກລູກຄ້າຢ່າງໜ້ອຍ 1 ຄົນ.",
+      "customerRequired": "ກະລຸນາເລືອກລູກຄ້າສຳລັບລູກຄ້າ #{index}.",
+      "coItemsRequired": "ກະລຸນາເພີ່ມລາຍການສິນຄ້າຢ່າງໜ້ອຍ 1 ລາຍການ ສຳລັບລູກຄ້າ #{index}.",
+      "inline": {
+        "orderCode": "ກະລຸນາປ້ອນລະຫັດອໍເດີ",
+        "productName": "ກະລຸນາປ້ອນຊື່ສິນຄ້າ",
+        "quantity": "ຈຳນວນຕ້ອງຢ່າງໜ້ອຍ 1",
+        "purchasePrice": "ກະລຸນາປ້ອນລາຄາຊື້",
+        "sellingPrice": "ກະລຸນາປ້ອນລາຄາຂາຍ",
+        "atLeastOneCustomer": "ກະລຸນາເລືອກລູກຄ້າຢ່າງໜ້ອຍ 1 ຄົນ",
+        "customerRequired": "ກະລຸນາເລືອກລູກຄ້າ",
+        "coItemsRequired": "ກະລຸນາເພີ່ມລາຍການສິນຄ້າຢ່າງໜ້ອຍ 1 ລາຍການ"
+      }
+    },
     "toast": {
       "createSuccess": "ສ້າງອໍເດີສຳເລັດ!",
       "qtyExceeded": "ສິນຄ້າ '{productName}' ມີທັງໝົດ {totalQty} ໜ່ວຍ ຍັງຈັດສັນໄດ້ {remainingQty} ໜ່ວຍ",

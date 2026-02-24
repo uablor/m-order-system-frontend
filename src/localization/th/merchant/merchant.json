@@ -180,6 +180,27 @@
       "profitForeign": "กำไร",
       "profitLak": "กำไร"
     },
+    "validation": {
+      "orderCodeRequired": "กรุณากรอกรหัสออเดอร์ก่อนส่ง",
+      "atLeastOneItem": "กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ",
+      "productNameRequired": "กรุณากรอกชื่อสินค้าสำหรับรายการ #{index}",
+      "quantityRequired": "กรุณากรอกจำนวนที่ถูกต้องสำหรับรายการ #{index}",
+      "purchasePriceRequired": "กรุณากรอกราคาซื้อสำหรับรายการ #{index}",
+      "sellingPriceRequired": "กรุณากรอกราคาขายสำหรับรายการ #{index}",
+      "atLeastOneCustomer": "กรุณาเลือกลูกค้าอย่างน้อย 1 คน",
+      "customerRequired": "กรุณาเลือกลูกค้าสำหรับลูกค้า #{index}",
+      "coItemsRequired": "กรุณาเพิ่มรายการสินค้าอย่างน้อย 1 รายการ สำหรับลูกค้า #{index}",
+      "inline": {
+        "orderCode": "กรุณากรอกรหัสออเดอร์",
+        "productName": "กรุณากรอกชื่อสินค้า",
+        "quantity": "จำนวนต้องอย่างน้อย 1",
+        "purchasePrice": "กรุณากรอกราคาซื้อ",
+        "sellingPrice": "กรุณากรอกราคาขาย",
+        "atLeastOneCustomer": "กรุณาเลือกลูกค้าอย่างน้อย 1 คน",
+        "customerRequired": "กรุณาเลือกลูกค้า",
+        "coItemsRequired": "กรุณาเพิ่มรายการสินค้าอย่างน้อย 1 รายการ"
+      }
+    },
     "toast": {
       "createSuccess": "สร้างออเดอร์สำเร็จ!",
       "qtyExceeded": "สินค้า '{productName}' มีทั้งหมด {totalQty} ชิ้น ยังจัดสรรได้อีก {remainingQty} ชิ้น",

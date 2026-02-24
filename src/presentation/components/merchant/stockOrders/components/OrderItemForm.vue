@@ -9,8 +9,17 @@
       <template v-if="!isMobile">
         <a-row :gutter="[16, 0]">
           <a-col :sm="24" :md="10">
-            <a-form-item :label="$t('merchant.orders.items.productName')">
-              <a-input v-model:value="item.productName" :placeholder="$t('merchant.orders.items.productNamePh')" />
+            <a-form-item
+              :label="$t('merchant.orders.items.productName')"
+              :validate-status="errors.productName ? 'error' : ''"
+              :help="errors.productName || ''"
+            >
+              <a-input
+                v-model:value="item.productName"
+                :placeholder="$t('merchant.orders.items.productNamePh')"
+                :status="errors.productName ? 'error' : undefined"
+                @input="onFieldChange('productName')"
+              />
             </a-form-item>
           </a-col>
           <a-col :sm="14" :md="8">
@@ -19,21 +28,50 @@
             </a-form-item>
           </a-col>
           <a-col :sm="10" :md="6">
-            <a-form-item :label="$t('merchant.orders.items.quantity')">
-              <a-input-number v-model:value="item.quantity" :min="1" :formatter="numFormatter" :parser="numParser" class="w-full" />
+            <a-form-item
+              :label="$t('merchant.orders.items.quantity')"
+              :validate-status="errors.quantity ? 'error' : ''"
+              :help="errors.quantity || ''"
+            >
+              <a-input-number
+                v-model:value="item.quantity" :min="1"
+                :formatter="numFormatter" :parser="numParser"
+                :status="errors.quantity ? 'error' : undefined"
+                class="w-full"
+                @change="onFieldChange('quantity')"
+              />
             </a-form-item>
           </a-col>
         </a-row>
       </template>
       <template v-else>
-        <a-form-item :label="$t('merchant.orders.items.productName')">
-          <a-input v-model:value="item.productName" :placeholder="$t('merchant.orders.items.productNamePh')" />
+        <a-form-item
+          :label="$t('merchant.orders.items.productName')"
+          :validate-status="errors.productName ? 'error' : ''"
+          :help="errors.productName || ''"
+        >
+          <a-input
+            v-model:value="item.productName"
+            :placeholder="$t('merchant.orders.items.productNamePh')"
+            :status="errors.productName ? 'error' : undefined"
+            @input="onFieldChange('productName')"
+          />
         </a-form-item>
         <a-form-item :label="$t('merchant.orders.items.variant')">
           <a-input v-model:value="item.variant" :placeholder="$t('merchant.orders.items.variantPh')" />
         </a-form-item>
-        <a-form-item :label="$t('merchant.orders.items.quantity')">
-          <a-input-number v-model:value="item.quantity" :min="1" :formatter="numFormatter" :parser="numParser" class="w-full" />
+        <a-form-item
+          :label="$t('merchant.orders.items.quantity')"
+          :validate-status="errors.quantity ? 'error' : ''"
+          :help="errors.quantity || ''"
+        >
+          <a-input-number
+            v-model:value="item.quantity" :min="1"
+            :formatter="numFormatter" :parser="numParser"
+            :status="errors.quantity ? 'error' : undefined"
+            class="w-full"
+            @change="onFieldChange('quantity')"
+          />
         </a-form-item>
       </template>
 
@@ -45,8 +83,18 @@
         </div>
         <a-row :gutter="gutter">
           <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.purchasePrice')} (${buyBaseCcy})`">
-              <a-input-number v-model:value="item.purchasePrice" :min="0" :formatter="numFormatter" :parser="numParser" class="w-full" />
+            <a-form-item
+              :label="`${$t('merchant.orders.items.purchasePrice')} (${buyBaseCcy})`"
+              :validate-status="errors.purchasePrice ? 'error' : ''"
+              :help="errors.purchasePrice || ''"
+            >
+              <a-input-number
+                v-model:value="item.purchasePrice" :min="0"
+                :formatter="numFormatter" :parser="numParser"
+                :status="errors.purchasePrice ? 'error' : undefined"
+                class="w-full"
+                @change="onFieldChange('purchasePrice')"
+              />
             </a-form-item>
           </a-col>
           <a-col v-bind="halfCol">
@@ -68,7 +116,7 @@
         <a-row :gutter="gutter">
           <a-col v-bind="halfCol">
             <a-form-item :label="`${$t('merchant.orders.items.purchasePriceKip')} (${buyTargetCcy})`">
-              <a-input :value="fmtNum(calc.calcPurchaseUnitLak(item))" disabled class="w-full" />
+              <a-input :value="fmtNum(calc.calcPurchaseUnitLak(item))" disabled class="w-full" /> 
             </a-form-item>
           </a-col>
           <a-col v-bind="halfCol">
@@ -100,37 +148,6 @@
           </a-col>
         </a-row>
       </div>
-
-      <!-- Section: Selling -->
-      <div class="item-section">
-        <div class="item-section-header">
-          <span class="item-section-title selling">{{ $t('merchant.orders.items.sectionSelling') }}</span>
-          <span class="exchange-rate-tag sell">1 {{ sellBaseCcy }} = {{ fmtRate(getSellRate()) }} {{ sellTargetCcy }}</span>
-        </div>
-        <a-row :gutter="gutter">
-          <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.sellingPrice')} (${sellBaseCcy})`">
-              <a-input-number v-model:value="item.sellingPriceForeign" :min="0" :formatter="numFormatter" :parser="numParser" class="w-full" />
-            </a-form-item>
-          </a-col>
-          <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.sellingKip')} (${sellTargetCcy})`">
-              <a-input :value="fmtNum(calc.calcSellingUnitLak(item))" disabled class="w-full" />
-            </a-form-item>
-          </a-col>
-          <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.sellingTotalForeign')} (${sellBaseCcy})`">
-              <a-input :value="fmtNum(calc.calcSellingTotalForeign(item))" disabled class="w-full" />
-            </a-form-item>
-          </a-col>
-          <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.sellingTotalKip')} (${sellTargetCcy})`">
-              <a-input :value="fmtNum(calc.calcSellingTotalLak(item))" disabled class="w-full" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-      </div>
-
       <!-- Section: Discount -->
       <div class="item-section">
         <div class="item-section-header">
@@ -162,6 +179,45 @@
           </a-col>
         </a-row>
       </div>
+      <!-- Section: Selling -->
+      <div class="item-section">
+        <div class="item-section-header">
+          <span class="item-section-title selling">{{ $t('merchant.orders.items.sectionSelling') }}</span>
+          <span class="exchange-rate-tag sell">1 {{ sellBaseCcy }} = {{ fmtRate(getSellRate()) }} {{ sellTargetCcy }}</span>
+        </div>
+        <a-row :gutter="gutter">
+          <a-col v-bind="halfCol">
+            <a-form-item
+              :label="`${$t('merchant.orders.items.sellingPrice')} (${sellBaseCcy})`"
+              :validate-status="errors.sellingPriceForeign ? 'error' : ''"
+              :help="errors.sellingPriceForeign || ''"
+            >
+              <a-input-number
+                v-model:value="item.sellingPriceForeign" :min="0"
+                :formatter="numFormatter" :parser="numParser"
+                :status="errors.sellingPriceForeign ? 'error' : undefined"
+                class="w-full"
+                @change="onFieldChange('sellingPriceForeign')"
+              />
+            </a-form-item>
+          </a-col>
+          <a-col v-bind="halfCol">
+            <a-form-item :label="`${$t('merchant.orders.items.sellingKip')} (${sellTargetCcy})`">
+              <a-input :value="fmtNum(calc.calcSellingUnitLak(item))" disabled class="w-full" />
+            </a-form-item>
+          </a-col>
+          <a-col v-bind="halfCol">
+            <a-form-item :label="`${$t('merchant.orders.items.sellingTotalForeign')} (${sellBaseCcy})`">
+              <a-input :value="fmtNum(calc.calcSellingTotalForeign(item))" disabled class="w-full" />
+            </a-form-item>
+          </a-col>
+          <a-col v-bind="halfCol">
+            <a-form-item :label="`${$t('merchant.orders.items.sellingTotalKip')} (${sellTargetCcy})`">
+              <a-input :value="fmtNum(calc.calcSellingTotalLak(item))" disabled class="w-full" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+      </div>
     </a-form>
   </div>
 </template>
@@ -183,9 +239,13 @@ const props = defineProps<{
   sellTargetCcy: string;
   getBuyRate: () => number;
   getSellRate: () => number;
+  errors: Record<string, string>;
 }>();
 
-defineEmits<{ (e: 'remove', uid: string): void }>();
+const emit = defineEmits<{
+  (e: 'remove', uid: string): void;
+  (e: 'clearError', field: string): void;
+}>();
 
 const calc = useItemCalculations(props.getBuyRate, props.getSellRate);
 
@@ -194,6 +254,12 @@ const fmtRate = (val: number) => val.toLocaleString('en-US');
 
 const gutter = computed<[number, number]>(() => props.isMobile ? [12, 0] : [16, 0]);
 const halfCol = computed(() => props.isMobile ? { span: 12 } : { sm: 12, md: 6 });
+
+const onFieldChange = (field: string) => {
+  if (props.errors[field]) {
+    emit('clearError', field);
+  }
+};
 </script>
 
 <style scoped>

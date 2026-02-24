@@ -7,11 +7,16 @@
 
     <!-- Desktop layout -->
     <template v-if="!isMobile">
-      <a-form-item :label="$t('merchant.orders.customerOrders.selectCustomer')">
+      <a-form-item
+        :label="$t('merchant.orders.customerOrders.selectCustomer')"
+        :validate-status="error ? 'error' : ''"
+        :help="error || ''"
+      >
         <div class="customer-select-row">
           <a-select v-model:value="co.customerId" show-search :placeholder="$t('merchant.orders.customerOrders.searchCustomerPh')"
             :filter-option="false" :not-found-content="customerSearching ? undefined : null" class="customer-select" size="large"
-            @search="$emit('customerSearch', $event)" @focus="$emit('customerFocus')">
+            :status="error ? 'error' : undefined"
+            @search="$emit('customerSearch', $event)" @focus="$emit('customerFocus')" @change="onCustomerChange">
             <template v-if="customerSearching" #notFoundContent><a-spin size="small" /></template>
             <a-select-option v-for="c in customerOptions" :key="c.id" :value="c.id">
               <div class="customer-opt">
@@ -27,6 +32,7 @@
         </div>
       </a-form-item>
       <div class="co-items-title">{{ $t('merchant.orders.customerOrders.assignItems') }}</div>
+      <div v-if="itemsError" class="co-items-error">{{ itemsError }}</div>
       <a-empty v-if="items.length === 0" :description="$t('merchant.orders.customerOrders.addItemsFirst')" style="margin:8px 0" />
       <a-row v-if="co.items.length > 0" :gutter="[8, 0]" class="co-col-labels">
         <a-col :sm="6"><span>{{ $t('merchant.orders.customerOrders.selectItem') }}</span></a-col>
@@ -59,10 +65,15 @@
     <!-- Mobile layout -->
     <template v-else>
       <a-form layout="vertical">
-        <a-form-item :label="$t('merchant.orders.customerOrders.selectCustomer')">
+        <a-form-item
+          :label="$t('merchant.orders.customerOrders.selectCustomer')"
+          :validate-status="error ? 'error' : ''"
+          :help="error || ''"
+        >
           <a-select v-model:value="co.customerId" show-search :placeholder="$t('merchant.orders.customerOrders.searchCustomerPh')"
             :filter-option="false" :not-found-content="customerSearching ? undefined : null" style="width:100%" size="large"
-            @search="$emit('customerSearch', $event)" @focus="$emit('customerFocus')">
+            :status="error ? 'error' : undefined"
+            @search="$emit('customerSearch', $event)" @focus="$emit('customerFocus')" @change="onCustomerChange">
             <template v-if="customerSearching" #notFoundContent><a-spin size="small" /></template>
             <a-select-option v-for="c in customerOptions" :key="c.id" :value="c.id">
               <div class="customer-opt">
@@ -77,6 +88,7 @@
         <template #icon><UserAddOutlined /></template>{{ $t('merchant.orders.customerOrders.createNew') }}
       </a-button>
       <div class="co-items-title">{{ $t('merchant.orders.customerOrders.assignItems') }}</div>
+      <div v-if="itemsError" class="co-items-error">{{ itemsError }}</div>
       <div v-for="(coItem, ciIdx) in co.items" :key="ciIdx" class="co-item-row">
         <a-form layout="vertical">
           <a-form-item :label="$t('merchant.orders.customerOrders.selectItem')">
@@ -112,7 +124,7 @@
       </div>
     </template>
 
-    <a-button type="dashed" block class="add-co-item-btn" :disabled="items.length === 0" @click="$emit('addItem', co)">
+    <a-button type="dashed" block class="add-co-item-btn" :disabled="items.length === 0" @click="onAddItem">
       <template #icon><PlusOutlined /></template>{{ $t('merchant.orders.customerOrders.addItem') }}
     </a-button>
   </div>
@@ -124,7 +136,7 @@ import { numFormatter, numParser } from '@/shared/utils/format';
 import type { Customer } from '@/domain/entities/user.entity';
 import type { ItemForm, CoItemForm, CustomerOrderForm } from '../types';
 
-defineProps<{
+const props = defineProps<{
   co: CustomerOrderForm;
   index: number;
   items: ItemForm[];
@@ -134,9 +146,11 @@ defineProps<{
   customerSearching: boolean;
   getMaxQty: (co: CustomerOrderForm, coItem: CoItemForm) => number;
   getCoItemTotal: (coItem: CoItemForm) => string;
+  error?: string;
+  itemsError?: string;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'remove', uid: string): void;
   (e: 'addItem', co: CustomerOrderForm): void;
   (e: 'removeItem', co: CustomerOrderForm, idx: number): void;
@@ -145,7 +159,18 @@ defineEmits<{
   (e: 'customerSearch', val: string): void;
   (e: 'customerFocus'): void;
   (e: 'createCustomer', uid: string): void;
+  (e: 'clearError'): void;
+  (e: 'clearItemsError'): void;
 }>();
+
+const onCustomerChange = () => {
+  if (props.error) emit('clearError');
+};
+
+const onAddItem = () => {
+  emit('addItem', props.co);
+  if (props.itemsError) emit('clearItemsError');
+};
 </script>
 
 <style scoped>
@@ -167,6 +192,7 @@ defineEmits<{
 .customer-name { font-weight: 600; }
 .customer-type-tag { font-size: 10px; border-radius: 999px; }
 .co-items-title { font-size: 13px; font-weight: 700; color: #475569; margin: 10px 0 8px; }
+.co-items-error { font-size: 12px; font-weight: 600; color: #ff4d4f; margin: -4px 0 8px; }
 .co-col-labels { margin-bottom: 6px; padding: 0 12px; }
 .co-col-labels span { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; }
 .co-item-row { margin-bottom: 8px; background: #fff; border-radius: 12px; padding: 10px 12px; border: 1px solid rgba(148, 163, 184, 0.12); }

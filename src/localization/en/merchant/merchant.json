@@ -180,6 +180,27 @@
       "profitForeign": "Profit",
       "profitLak": "Profit"
     },
+    "validation": {
+      "orderCodeRequired": "Please enter the Order Code before submitting.",
+      "atLeastOneItem": "Please add at least one order item.",
+      "productNameRequired": "Please enter a Product Name for item #{index}.",
+      "quantityRequired": "Please enter a valid Quantity for item #{index}.",
+      "purchasePriceRequired": "Please enter the Purchase Price for item #{index}.",
+      "sellingPriceRequired": "Please enter the Selling Price for item #{index}.",
+      "atLeastOneCustomer": "Please select at least one customer.",
+      "customerRequired": "Please select a customer for customer #{index}.",
+      "coItemsRequired": "Please add at least 1 item for customer #{index}.",
+      "inline": {
+        "orderCode": "Order Code is required",
+        "productName": "Product Name is required",
+        "quantity": "Quantity must be at least 1",
+        "purchasePrice": "Purchase Price is required",
+        "sellingPrice": "Selling Price is required",
+        "atLeastOneCustomer": "Please select at least one customer",
+        "customerRequired": "Please select a customer",
+        "coItemsRequired": "Please add at least 1 item allocation"
+      }
+    },
     "toast": {
       "createSuccess": "Order created successfully!",
       "qtyExceeded": "'{productName}' has {totalQty} units total. Only {remainingQty} unit(s) can still be assigned.",

@@ -28,5 +28,5 @@ export const getMenuItems = (t: any): MenuItem[] => [
   { key: 'payment', icon: DollarOutlined, label: t('menus.merchant.payment'), path: '/merchant/payment' },
   { key: 'team', icon: UserSwitchOutlined, label: t('menus.merchant.teamMembers'), path: '/merchant/team' },
   { key: 'exchange-rates', icon: SwapOutlined, label: t('menus.merchant.exchangeRates'), path: '/merchant/exchange-rates' },
-  { key: 'reports', icon: FileTextOutlined, label: t('menus.merchant.reports'), path: '/merchant/reports' },
+  // { key: 'reports', icon: FileTextOutlined, label: t('menus.merchant.reports'), path: '/merchant/reports' },
 ];
