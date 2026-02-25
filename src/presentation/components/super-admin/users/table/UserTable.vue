@@ -124,7 +124,7 @@ import { computed, ref, watch } from 'vue';
 import dayjs from 'dayjs';
 import type { TableColumnsType, TablePaginationConfig } from 'ant-design-vue';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
-import { SearchOutlined, DeleteOutlined, PlusOutlined, DownOutlined } from '@ant-design/icons-vue';
+import { SearchOutlined, DeleteOutlined, DownOutlined } from '@ant-design/icons-vue';
 import type { User } from '@/domain/entities/user.entity';
 import { useI18n } from 'vue-i18n';
 
