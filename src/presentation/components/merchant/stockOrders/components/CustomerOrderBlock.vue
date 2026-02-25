@@ -16,6 +16,7 @@
           <a-select v-model:value="co.customerId" show-search :placeholder="$t('merchant.orders.customerOrders.searchCustomerPh')"
             :filter-option="false" :not-found-content="customerSearching ? undefined : null" class="customer-select" size="large"
             :status="error ? 'error' : undefined"
+            :data-testid="`customer-select-${index}`"
             @search="$emit('customerSearch', $event)" @focus="$emit('customerFocus')" @change="onCustomerChange">
             <template v-if="customerSearching" #notFoundContent><a-spin size="small" /></template>
             <a-select-option v-for="c in customerOptions" :key="c.id" :value="c.id">
@@ -32,7 +33,7 @@
         </div>
       </a-form-item>
       <div class="co-items-title">{{ $t('merchant.orders.customerOrders.assignItems') }}</div>
-      <div v-if="itemsError" class="co-items-error">{{ itemsError }}</div>
+      <div v-if="itemsError" class="co-items-error" :data-testid="`co-items-error-${index}`">{{ itemsError }}</div>
       <a-empty v-if="items.length === 0" :description="$t('merchant.orders.customerOrders.addItemsFirst')" style="margin:8px 0" />
       <a-row v-if="co.items.length > 0" :gutter="[8, 0]" class="co-col-labels">
         <a-col :sm="6"><span>{{ $t('merchant.orders.customerOrders.selectItem') }}</span></a-col>
@@ -124,7 +125,7 @@
       </div>
     </template>
 
-    <a-button type="dashed" block class="add-co-item-btn" :disabled="items.length === 0" @click="onAddItem">
+    <a-button type="dashed" block class="add-co-item-btn" :disabled="items.length === 0" :data-testid="`add-co-item-btn-${index}`" @click="onAddItem">
       <template #icon><PlusOutlined /></template>{{ $t('merchant.orders.customerOrders.addItem') }}
     </a-button>
   </div>
@@ -203,6 +204,21 @@ const onAddItem = () => {
 .add-co-item-btn { border-radius: 10px; margin-top: 4px; }
 :deep(.ant-input[disabled]) { color: #0f172a !important; font-weight: 600; background: #f1f5f9; font-size: 13px; }
 @media (max-width: 767px) {
-  .co-block { padding: 14px 12px 6px; border-radius: 12px; }
+  .co-block {
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 24px;
+  }
+  .co-block:hover { box-shadow: none; }
+  .co-item-row {
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    margin-bottom: 16px;
+  }
 }
 </style>

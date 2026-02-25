@@ -25,13 +25,13 @@
     />
 
     <!-- Items Section -->
-    <a-card :bordered="false" class="panel-card mb-4">
+    <a-card :bordered="false" class="panel-card mb-4" data-testid="items-section">
       <div class="panel-header-row">
         <div class="panel-title" style="margin-bottom:0">
           <ShoppingOutlined class="icon-blue" />
           <span>{{ $t('merchant.orders.items.title') }}</span>
         </div>
-        <a-button type="primary" class="add-btn" @click="addItem">
+        <a-button type="primary" class="add-btn" data-testid="add-item-btn" @click="addItem">
           <template #icon><PlusOutlined /></template>
           {{ $t('merchant.orders.items.addItem') }}
         </a-button>
@@ -72,13 +72,13 @@
     </a-card>
 
     <!-- Customer Orders Section -->
-    <a-card :bordered="false" class="panel-card mb-4">
+    <a-card :bordered="false" class="panel-card mb-4" data-testid="customers-section">
       <div class="panel-header-row">
         <div class="panel-title" style="margin-bottom:0">
           <TeamOutlined class="icon-blue" />
           <span>{{ $t('merchant.orders.customerOrders.title') }}</span>
         </div>
-        <a-button type="primary" class="add-btn" @click="addCustomerOrder">
+        <a-button type="primary" class="add-btn" data-testid="add-customer-btn" @click="addCustomerOrder">
           <template #icon><PlusOutlined /></template>
           {{ $t('merchant.orders.customerOrders.addCustomer') }}
         </a-button>
@@ -151,7 +151,7 @@
 
     <!-- Submit -->
     <div class="submit-area">
-      <a-button type="primary" size="large" class="submit-btn" :loading="submitting" @click="handleSubmit">
+      <a-button type="primary" size="large" class="submit-btn" :loading="submitting" data-testid="create-order-btn" @click="handleSubmit">
         <template #icon><SaveOutlined /></template>
         {{ $t('merchant.orders.buttons.createOrder') }}
       </a-button>
@@ -240,15 +240,14 @@ const clearCustomerError = (coIdx: number) => {
 };
 
 const summaryPurchaseTotalForeign = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcPurchaseTotalForeign(item), 0));
+  items.value.reduce((sum, item) => sum + calc.calcNetCostForeign(item), 0));
 const summaryPurchaseTotalLak = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcPurchaseTotalLak(item), 0));
+  items.value.reduce((sum, item) => sum + calc.calcNetCostLak(item), 0));
 const summarySellingTotalForeign = computed(() =>
   items.value.reduce((sum, item) => sum + calc.calcSellingTotalForeign(item), 0));
 const summarySellingTotalLak = computed(() =>
   items.value.reduce((sum, item) => sum + calc.calcSellingTotalLak(item), 0));
-const summaryNetCostLak = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcNetCostLak(item), 0));
+const summaryNetCostLak = summaryPurchaseTotalLak; // Alias for clarity
 const summaryProfitLak = computed(() => summarySellingTotalLak.value - summaryNetCostLak.value);
 const summaryProfitForeign = computed(() => {
   const rate = getSellRate();

@@ -16,12 +16,13 @@
         allow-clear
         class="search-input"
         :placeholder="$t('merchant.customers.searchPlaceholder')"
+        data-testid="customer-search-input"
         @pressEnter="triggerSearch"
       >
         <template #prefix><SearchOutlined /></template>
       </a-input>
 
-      <a-button type="primary" class="add-btn" @click="openCreatePage">
+      <a-button type="primary" class="add-btn" data-testid="add-customer-btn" @click="openCreatePage">
         <template #icon><UserAddOutlined /></template>
         {{ $t('merchant.customers.addButton') }}
       </a-button>
@@ -62,6 +63,7 @@
         row-key="id"
         size="middle"
         :loading="loading"
+        data-testid="customer-table"
         @change="handleTableChange"
       >
         <template #bodyCell="{ column, record }">

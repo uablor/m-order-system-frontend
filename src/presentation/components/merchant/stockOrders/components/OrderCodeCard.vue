@@ -15,6 +15,7 @@
         allow-clear
         size="large"
         :status="error ? 'error' : undefined"
+        data-testid="order-code-input"
         @update:value="onInput"
       />
     </a-form-item>

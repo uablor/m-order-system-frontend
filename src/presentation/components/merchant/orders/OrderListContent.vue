@@ -11,6 +11,7 @@
         allow-clear
         class="search-input"
         :placeholder="$t('merchant.orderList.searchPlaceholder')"
+        data-testid="order-search-input"
         @pressEnter="triggerSearch"
       >
         <template #prefix><SearchOutlined /></template>
@@ -119,6 +120,7 @@
         size="middle"
         :loading="loading"
         :scroll="{ x: 1100 }"
+        data-testid="order-table"
         @change="handleTableChange"
       >
         <template #bodyCell="{ column, record }">

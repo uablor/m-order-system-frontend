@@ -12,6 +12,7 @@
         show-icon
         closable
         class="login-error"
+        data-testid="login-error"
         @close="clearError"
       />
 
@@ -28,6 +29,7 @@
             v-model:value="formState.email"
             type="email"
             autocomplete="email"
+            data-testid="email-input"
             @change="clearError"
           />
         </a-form-item>
@@ -40,11 +42,12 @@
           <a-input-password
             v-model:value="formState.password"
             autocomplete="current-password"
+            data-testid="password-input"
             @change="clearError"
           />
         </a-form-item>
 
-        <a-button type="primary" html-type="submit" block :loading="loading">
+        <a-button type="primary" html-type="submit" block :loading="loading" data-testid="submit-btn">
           {{ loading ? $t('login.loggingIn') : $t('login.loginButton') }}
         </a-button>
       </a-form>

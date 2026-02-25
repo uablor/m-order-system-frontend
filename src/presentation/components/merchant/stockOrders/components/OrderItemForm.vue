@@ -18,6 +18,7 @@
                 v-model:value="item.productName"
                 :placeholder="$t('merchant.orders.items.productNamePh')"
                 :status="errors.productName ? 'error' : undefined"
+                :data-testid="`item-product-name-${index}`"
                 @input="onFieldChange('productName')"
               />
             </a-form-item>
@@ -54,6 +55,7 @@
             v-model:value="item.productName"
             :placeholder="$t('merchant.orders.items.productNamePh')"
             :status="errors.productName ? 'error' : undefined"
+            :data-testid="`item-product-name-${index}`"
             @input="onFieldChange('productName')"
           />
         </a-form-item>
@@ -92,6 +94,7 @@
                 v-model:value="item.purchasePrice" :min="0"
                 :formatter="numFormatter" :parser="numParser"
                 :status="errors.purchasePrice ? 'error' : undefined"
+                :data-testid="`item-purchase-price-${index}`"
                 class="w-full"
                 @change="onFieldChange('purchasePrice')"
               />
@@ -137,24 +140,6 @@
         </a-row>
         <a-row :gutter="gutter">
           <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.netCostForeign')} (${buyBaseCcy})`">
-              <a-input :value="fmtNum(calc.calcNetCostForeign(item))" disabled class="w-full computed-highlight" />
-            </a-form-item>
-          </a-col>
-          <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.netCostKip')} (${buyTargetCcy})`">
-              <a-input :value="fmtNum(calc.calcNetCostLak(item))" disabled class="w-full computed-highlight" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-      </div>
-      <!-- Section: Discount -->
-      <div class="item-section">
-        <div class="item-section-header">
-          <span class="item-section-title discount">{{ $t('merchant.orders.items.sectionDiscount') }}</span>
-        </div>
-        <a-row :gutter="gutter">
-          <a-col v-bind="halfCol">
             <a-form-item :label="$t('merchant.orders.items.discountType')">
               <a-select v-model:value="item.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full">
                 <a-select-option value="percent">%</a-select-option>
@@ -178,7 +163,20 @@
             </a-form-item>
           </a-col>
         </a-row>
+        <a-row :gutter="gutter">
+          <a-col v-bind="halfCol">
+            <a-form-item :label="`${$t('merchant.orders.items.netCostForeign')} (${buyBaseCcy})`">
+              <a-input :value="fmtNum(calc.calcNetCostForeign(item))" disabled class="w-full computed-highlight" />
+            </a-form-item>
+          </a-col>
+          <a-col v-bind="halfCol">
+            <a-form-item :label="`${$t('merchant.orders.items.netCostKip')} (${buyTargetCcy})`">
+              <a-input :value="fmtNum(calc.calcNetCostLak(item))" disabled class="w-full computed-highlight" />
+            </a-form-item>
+          </a-col>
+        </a-row>
       </div>
+
       <!-- Section: Selling -->
       <div class="item-section">
         <div class="item-section-header">
@@ -196,6 +194,7 @@
                 v-model:value="item.sellingPriceForeign" :min="0"
                 :formatter="numFormatter" :parser="numParser"
                 :status="errors.sellingPriceForeign ? 'error' : undefined"
+                :data-testid="`item-selling-price-${index}`"
                 class="w-full"
                 @change="onFieldChange('sellingPriceForeign')"
               />
@@ -290,8 +289,22 @@ const onFieldChange = (field: string) => {
 .exchange-rate-tag.sell { background: #fff7ed; color: #d97706; }
 .computed-highlight:deep(input) { color: #1d4ed8 !important; font-weight: 700; background: #eff6ff !important; }
 @media (max-width: 767px) {
-  .item-block { padding: 14px 12px 6px; border-radius: 12px; }
-  .item-section { padding: 10px 10px 2px; border-radius: 10px; }
+  .item-block {
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 24px;
+  }
+  .item-block:hover { box-shadow: none; }
+  .item-section {
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    margin-bottom: 16px;
+  }
   .item-section-title { font-size: 12px; }
   .exchange-rate-tag { font-size: 10px; }
 }
