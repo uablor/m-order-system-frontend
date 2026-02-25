@@ -296,15 +296,11 @@ import {
 } from '@ant-design/icons-vue';
 import dayjs from 'dayjs';
 import { paymentRepository, type PaymentItem } from '@/infrastructure/repositories/payment.repository';
-import { useAuthStore } from '@/store/auth.store';
-import { storeToRefs } from 'pinia';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import { handleApiError } from '@/shared/utils/error';
 
 const { t } = useI18n();
 const { isMobile } = useIsMobile();
-const authStore = useAuthStore();
-const { authPayload } = storeToRefs(authStore);
 
 const loading = ref(false);
 const actionLoading = ref(false);

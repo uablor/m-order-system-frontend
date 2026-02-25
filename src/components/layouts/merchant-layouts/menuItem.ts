@@ -4,7 +4,6 @@ import {
   ShoppingOutlined,
   BellOutlined,
   DollarOutlined,
-  FileTextOutlined,
   SwapOutlined,
   OrderedListOutlined,
   UserSwitchOutlined,

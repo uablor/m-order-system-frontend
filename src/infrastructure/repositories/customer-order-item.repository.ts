@@ -35,18 +35,17 @@ class CustomerOrderItemRepository {
     };
     if (query?.customerOrderId) params.customerOrderId = query.customerOrderId;
     if (query?.orderItemId) params.orderItemId = query.orderItemId;
-    const res = await this.apiClient.get<BackendPaginatedResponse<CustomerOrderItemDetail>>(
+    return await this.apiClient.getPaginated<BackendPaginatedResponse<CustomerOrderItemDetail>>(
       API_ENDPOINTS.CUSTOMER_ORDER_ITEMS.LIST,
-      { params },
+      params,
     );
-    return res.data;
   }
 
   async getById(id: number): Promise<CustomerOrderItemDetail> {
     const res = await this.apiClient.get<{ results: CustomerOrderItemDetail[] }>(
       API_ENDPOINTS.CUSTOMER_ORDER_ITEMS.GET_BY_ID(id),
     );
-    const results = (res.data as any).results;
+    const results = (res as any).results;
     return Array.isArray(results) ? results[0] : results;
   }
 }

@@ -2,7 +2,7 @@ import { ApiClient } from '@/infrastructure/apis/api';
 import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
 import type { CustomerCreateDto, CustomerUpdateDto, CustomerListQueryDto } from '@/application/dto/customer.dto';
 import type { Customer } from '@/domain/entities/user.entity';
-import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
+import type { BackendPaginatedResponse, BackendResponse } from '@/shared/types/backend-response.types';
 
 export class CustomerRepository {
   private apiClient: ApiClient;
@@ -16,7 +16,10 @@ export class CustomerRepository {
   }
 
   async getById(id: number): Promise<Customer> {
-    return await this.apiClient.get<Customer>(API_ENDPOINTS.CUSTOMERS.GET_BY_ID(id));
+    const res = await this.apiClient.get<BackendResponse<Customer>>(API_ENDPOINTS.CUSTOMERS.GET_BY_ID(id));
+    const customer = res.results?.[0];
+    if (!customer) throw new Error('Customer not found in response');
+    return customer;
   }
 
   async getList(query: CustomerListQueryDto): Promise<BackendPaginatedResponse<Customer>> {

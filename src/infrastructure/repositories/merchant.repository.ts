@@ -23,7 +23,10 @@ export class MerchantRepository {
   }
 
   async getById(id: number): Promise<Merchant> {
-    return await this.apiClient.get<Merchant>(API_ENDPOINTS.MERCHANTS.GET_BY_ID(id));
+    const res = await this.apiClient.get<BackendResponse<Merchant>>(API_ENDPOINTS.MERCHANTS.GET_BY_ID(id));
+    const merchant = res.results?.[0];
+    if (!merchant) throw new Error('Merchant not found in response');
+    return merchant;
   }
 
   async getDetail(id: number): Promise<BackendResponse<MerchantDetail>> {

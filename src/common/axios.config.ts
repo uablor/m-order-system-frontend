@@ -4,18 +4,10 @@ import router from '@/router';
 import { deleteCookie } from '@/shared/utils/cookie';
 import { useAuthStore } from '@/store/auth.store';
 
-const envBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
-const isLocalBackendUrl =
-  envBaseUrl === 'http://localhost:4000' ||
-  envBaseUrl === 'http://127.0.0.1:4000';
-
-const defaultBaseUrl =
-  (import.meta.env.DEV && (!envBaseUrl || isLocalBackendUrl))
-    ? '/api'
-    : (envBaseUrl || 'http://localhost:4000');
+const envBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000').trim();
 
 const api: AxiosInstance = axios.create({
-  baseURL: defaultBaseUrl,
+  baseURL: envBaseUrl,
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',

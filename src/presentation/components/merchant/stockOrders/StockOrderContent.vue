@@ -216,6 +216,10 @@ const {
   goCreateCustomer, handleNewCustomerReturn,
 } = useCustomerOrders(items, customerOrders, isMobile, saveDraft);
 
+// Silence unused template refs
+void itemScrollRef;
+void coScrollRef;
+
 const { submitting, fieldErrors, clearFieldError, handleSubmit } = useOrderSubmit(orderCode, items, customerOrders, clearDraft);
 
 const getItemErrors = (idx: number): Record<string, string> => {

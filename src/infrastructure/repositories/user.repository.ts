@@ -2,7 +2,7 @@ import { ApiClient } from '@/infrastructure/apis/api';
 import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
 import type { UserCreateDto, UserUpdateDto, UserListQueryDto, UserMerchantCreateDto } from '@/application/dto/user.dto';
 import type { User } from '@/domain/entities/user.entity';
-import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
+import type { BackendPaginatedResponse, BackendResponse } from '@/shared/types/backend-response.types';
 
 export class UserRepository {
   private apiClient: ApiClient;
@@ -23,8 +23,10 @@ export class UserRepository {
   }
 
   async getById(id: number): Promise<User> {
-    // BaseController อาจ wrap response; ถ้าไม่ wrap จะเป็น User ตรงๆ
-    return await this.apiClient.get<User>(API_ENDPOINTS.USERS.GET_BY_ID(id));
+    const res = await this.apiClient.get<BackendResponse<User>>(API_ENDPOINTS.USERS.GET_BY_ID(id));
+    const user = res.results?.[0];
+    if (!user) throw new Error('User not found in response');
+    return user;
   }
 
   async getList(query: UserListQueryDto): Promise<BackendPaginatedResponse<User>> {

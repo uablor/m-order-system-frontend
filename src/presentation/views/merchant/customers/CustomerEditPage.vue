@@ -73,17 +73,28 @@
                 <a-input v-model:value="formState.shippingProvider" />
               </a-form-item>
             </a-col>
-            <a-col :xs="24" :md="12">
+            <!-- <a-col :xs="24" :md="12">
               <a-form-item name="paymentTerms">
                 <template #label>
                   <span class="label-ico"><DollarOutlined />{{ $t('merchant.customers.form.paymentTerms') }}</span>
                 </template>
                 <a-input v-model:value="formState.paymentTerms" />
               </a-form-item>
+            </a-col> -->
+            <a-col :xs="24" :md="12">
+              <a-form-item
+                name="contactPhone"
+                :rules="[{ max: 50, message: $t('merchant.customers.form.max50') }]"
+              >
+                <template #label>
+                  <span class="label-ico"><PhoneOutlined />{{ $t('merchant.customers.form.contactPhone') }}</span>
+                </template>
+                <a-input v-model:value="formState.contactPhone" />
+              </a-form-item>
             </a-col>
           </a-row>
 
-          <a-row :gutter="16">
+          <!-- <a-row :gutter="16">
             <a-col :xs="24" :md="12">
               <a-form-item name="shippingSource">
                 <template #label>
@@ -100,20 +111,10 @@
                 <a-input v-model:value="formState.shippingDestination" />
               </a-form-item>
             </a-col>
-          </a-row>
+          </a-row> -->
 
           <a-row :gutter="16">
-            <a-col :xs="24" :md="12">
-              <a-form-item
-                name="contactPhone"
-                :rules="[{ max: 50, message: $t('merchant.customers.form.max50') }]"
-              >
-                <template #label>
-                  <span class="label-ico"><PhoneOutlined />{{ $t('merchant.customers.form.contactPhone') }}</span>
-                </template>
-                <a-input v-model:value="formState.contactPhone" />
-              </a-form-item>
-            </a-col>
+           
             <a-col :xs="24" :md="12">
               <a-form-item name="contactFacebook">
                 <template #label>
@@ -122,10 +123,7 @@
                 <a-input v-model:value="formState.contactFacebook" />
               </a-form-item>
             </a-col>
-          </a-row>
-
-          <a-row :gutter="16">
-            <a-col :xs="24" :md="12">
+             <a-col :xs="24" :md="12">
               <a-form-item
                 name="contactWhatsapp"
                 :rules="[{ max: 50, message: $t('merchant.customers.form.max50') }]"
@@ -136,6 +134,10 @@
                 <a-input v-model:value="formState.contactWhatsapp" />
               </a-form-item>
             </a-col>
+          </a-row>
+
+          <a-row :gutter="16">
+           
             <a-col :xs="24" :md="12">
               <a-form-item name="contactLine">
                 <template #label>
@@ -144,10 +146,7 @@
                 <a-input v-model:value="formState.contactLine" />
               </a-form-item>
             </a-col>
-          </a-row>
-
-          <a-row :gutter="16">
-            <a-col :xs="24" :md="12">
+             <a-col :xs="24" :md="12">
               <a-form-item name="preferredContactMethod">
                 <template #label>
                   <span class="label-ico"><ContactsOutlined />{{ $t('merchant.customers.form.preferredContactMethod') }}</span>
@@ -160,6 +159,10 @@
                 </a-select>
               </a-form-item>
             </a-col>
+          </a-row>
+
+          <a-row :gutter="16">
+           
             <a-col :xs="24" :md="12">
               <a-form-item name="isActive">
                 <template #label>

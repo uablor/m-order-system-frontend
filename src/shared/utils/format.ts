@@ -23,7 +23,9 @@ export const numFormatter = (value: string | number | undefined): string => {
   if (value === undefined || value === '') return '';
   const str = String(value);
   const parts = str.split('.');
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  if (parts[0]) {
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
   return parts.join('.');
 };
 

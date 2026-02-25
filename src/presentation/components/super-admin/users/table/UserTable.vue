@@ -17,10 +17,10 @@
         <template #prefix><SearchOutlined /></template>
       </a-input>
 
-      <a-button type="primary" class="add-btn" @click="$emit('create-merchant')">
+      <!-- <a-button type="primary" class="add-btn" @click="$emit('create-merchant')">
         <template #icon><PlusOutlined /></template>
         {{ $t('users.createUser') }}
-      </a-button>
+      </a-button> -->
     </div>
 
     <!-- Desktop: table inside card -->

@@ -24,7 +24,10 @@ export class ExchangeRateRepository {
   }
 
   async getById(id: number): Promise<ExchangeRate> {
-    return await this.apiClient.get<ExchangeRate>(API_ENDPOINTS.EXCHANGE_RATES.GET_BY_ID(id));
+    const res = await this.apiClient.get<BackendResponse<ExchangeRate>>(API_ENDPOINTS.EXCHANGE_RATES.GET_BY_ID(id));
+    const rate = res.results?.[0];
+    if (!rate) throw new Error('Exchange rate not found in response');
+    return rate;
   }
 
   async getList(query: ExchangeRateListQueryDto): Promise<BackendPaginatedResponse<ExchangeRate>> {

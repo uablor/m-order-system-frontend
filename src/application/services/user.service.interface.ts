@@ -1,5 +1,5 @@
 import type { User } from '@/domain/entities/user.entity';
-import type { BackendPaginatedResponse, BackendResponse } from '@/shared/types/backend-response.types';
+import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
 import type { UserCreateDto, UserUpdateDto, UserListQueryDto, UserMerchantCreateDto } from '@/application/dto/user.dto';
 
 export interface IUserService {
