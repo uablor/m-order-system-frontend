@@ -148,15 +148,15 @@
             </a-form-item>
           </a-col>
           <a-col v-if="item.discountType" v-bind="halfCol">
-            <a-form-item :label="$t('merchant.orders.items.discountValue')">
+            <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
               <a-input-number v-model:value="item.discountValue" :min="0" :formatter="numFormatter" :parser="numParser" class="w-full" />
             </a-form-item>
           </a-col>
-          <a-col v-if="item.discountType" v-bind="halfCol">
+          <!-- <a-col v-if="item.discountType && item.discountType !== 'cash'" v-bind="halfCol">
             <a-form-item :label="`${$t('merchant.orders.items.discountForeign')} (${buyBaseCcy})`">
               <a-input :value="fmtNum(calc.calcDiscountForeign(item))" disabled class="w-full" />
             </a-form-item>
-          </a-col>
+          </a-col> -->
           <a-col v-if="item.discountType" v-bind="halfCol">
             <a-form-item :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
               <a-input :value="fmtNum(calc.calcDiscountLak(item))" disabled class="w-full" />

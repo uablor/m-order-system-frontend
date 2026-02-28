@@ -5,8 +5,8 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
   const calcPurchaseUnitLak = (item: ItemForm) => item.purchasePrice * getBuyRate();
   const calcPurchaseTotalLak = (item: ItemForm) => item.purchasePrice * item.quantity * getBuyRate();
   const calcShippingLak = (item: ItemForm) => item.shippingPrice * getBuyRate();
-  const calcPurchaseAndShipForeign = (item: ItemForm) => item.purchasePrice + item.shippingPrice;
-  const calcPurchaseAndShipLak = (item: ItemForm) => (item.purchasePrice + item.shippingPrice) * getBuyRate();
+  const calcPurchaseAndShipForeign = (item: ItemForm) => (item.purchasePrice * item.quantity) + item.shippingPrice;
+  const calcPurchaseAndShipLak = (item: ItemForm) => ((item.purchasePrice * item.quantity) + item.shippingPrice) * getBuyRate();
   const calcSubtotalLak = (item: ItemForm) => calcPurchaseTotalLak(item) + calcShippingLak(item);
 
   const calcDiscountLak = (item: ItemForm) => {
