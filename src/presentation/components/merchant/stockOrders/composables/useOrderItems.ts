@@ -2,6 +2,10 @@ import { nextTick, ref } from 'vue';
 import type { Ref } from 'vue';
 import type { ItemForm } from '../types';
 
+export function getItemTotalQty(item: ItemForm): number {
+  return item.customers.reduce((sum, c) => sum + (c.qty || 0), 0);
+}
+
 export function useOrderItems(isMobile: Ref<boolean>) {
   const items = ref<ItemForm[]>([]);
 
@@ -28,9 +32,10 @@ export function useOrderItems(isMobile: Ref<boolean>) {
 
   const addItem = () => {
     items.value.push({
-      uid: uid(), productName: '', variant: '', quantity: 1,
+      uid: uid(), productName: '', variant: '',
       purchasePrice: 0, shippingPrice: 0,
       discountType: undefined, discountValue: 0, sellingPriceForeign: 0,
+      customers: [],
     });
     if (isMobile.value) nextTick(() => scrollToItem(items.value.length - 1));
   };

@@ -133,7 +133,7 @@ const route = useRoute();
 const { locale } = useI18n();
 const authStore = useAuthStore();
 useAuth();
-const { isMobile } = useIsMobile();
+const { isMobile, isTablet } = useIsMobile();
 
 const currentLocale = computed(() => locale.value);
 const username = computed(() => authStore.user?.fullName || authStore.user?.email || 'Admin');
@@ -171,7 +171,7 @@ const showTriggerButton = computed(() => {
 });
 
 const showPageTitle = computed(() => {
-  // superadmin desktop มีเมนูอยู่แล้ว ไม่ต้องซ้ำ pageTitle และช่วยเพิ่มพื้นที่ไม่ให้เมนูยุบเป็น "..."
+  // superadmin: ซ่อน pageTitle บน desktop/tablet เพราะมีเมนูใน header แล้ว
   if (isSuperAdminRoute.value && !isMobile.value) return false;
   return true;
 });
@@ -238,5 +238,16 @@ const showUserDropdown = computed(() => {
 .sa-nav-label { white-space: nowrap; }
 .sa-drawer-head { padding: 12px 16px; border-bottom: 1px solid rgba(148,163,184,0.25); }
 .sa-drawer-title { font-weight: 700; color: #0f172a; }
-@media (max-width: 768px) { .page-title, .username, .lang-text { display: none; } }
+/* Mobile: hide some text elements */
+@media (max-width: 767px) {
+  .page-title { display: none; }
+  .username { display: none; }
+  .lang-text { display: none; }
+}
+/* Tablet: show page title but keep username hidden to save space */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .username { display: none; }
+  .sa-nav-label { font-size: 12px; }
+  .sa-nav-btn { padding: 0 8px; gap: 5px; }
+}
 </style>

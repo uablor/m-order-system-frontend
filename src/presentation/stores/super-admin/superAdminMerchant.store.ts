@@ -17,7 +17,7 @@ export const useSuperAdminMerchantStore = defineStore('superAdminMerchantStore',
   const loading = ref(false);
   const merchants = ref<Merchant[]>([]);
   const pagination = ref<BackendPagination>({ ...defaultPagination });
-  const query = ref<MerchantListQueryDto>({ page: 1, limit: 10, search: undefined });
+  const query = ref<MerchantListQueryDto>({ page: 1, limit: 10, search: undefined, searchField: undefined, sort: undefined });
 
   const tableData = computed(() => merchants.value);
   const tablePagination = computed(() => pagination.value);
@@ -27,7 +27,7 @@ export const useSuperAdminMerchantStore = defineStore('superAdminMerchantStore',
   const setMerchants = (value: Merchant[]) => { merchants.value = value; };
   const setPagination = (value: BackendPagination) => { pagination.value = value; };
   const setQuery = (value: Partial<MerchantListQueryDto>) => { query.value = { ...query.value, ...value }; };
-  const resetQuery = () => { query.value = { page: 1, limit: 10, search: undefined }; };
+  const resetQuery = () => { query.value = { page: 1, limit: 10, search: undefined, searchField: undefined, sort: undefined }; };
 
   return {
     loading,

@@ -3,6 +3,7 @@ import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
 import type { ExchangeRateCreateDto, ExchangeRateBulkCreateDto, ExchangeRateUpdateDto, ExchangeRateListQueryDto } from '@/application/dto/exchange-rate.dto';
 import type { ExchangeRate } from '@/domain/entities/user.entity';
 import type { BackendPaginatedResponse, BackendResponse } from '@/shared/types/backend-response.types';
+import { extractSingleResult } from '@/shared/types/backend-response.types';
 
 export class ExchangeRateRepository {
   private apiClient: ApiClient;
@@ -24,8 +25,8 @@ export class ExchangeRateRepository {
   }
 
   async getById(id: number): Promise<ExchangeRate> {
-    const res = await this.apiClient.get<BackendResponse<ExchangeRate>>(API_ENDPOINTS.EXCHANGE_RATES.GET_BY_ID(id));
-    const rate = res.results?.[0];
+    const res = await this.apiClient.get<any>(API_ENDPOINTS.EXCHANGE_RATES.GET_BY_ID(id));
+    const rate = extractSingleResult<ExchangeRate>(res);
     if (!rate) throw new Error('Exchange rate not found in response');
     return rate;
   }

@@ -13,15 +13,15 @@
     <div class="balance-card">
       <div class="balance-bg-icon"><ShoppingOutlined /></div>
       <div class="balance-label">{{ $t('customer.balanceLabel') }}</div>
-      <div class="balance-amount">{{ formatAmount(summary.totalDue) }} ₭</div>
+      <div class="balance-amount">{{ formatBalance(summary.totalDue) }}</div>
       <div class="balance-breakdown">
         <div class="breakdown-item">
           <div class="breakdown-label">{{ $t('customer.totalProducts') }}</div>
-          <div class="breakdown-val">{{ formatAmount(summary.totalProducts) }} ₭</div>
+          <div class="breakdown-val">{{ formatBalance(summary.totalProducts) }}</div>
         </div>
         <div class="breakdown-item">
           <div class="breakdown-label">{{ $t('customer.paid') }}</div>
-          <div class="breakdown-val">{{ formatAmount(summary.paid) }} ₭</div>
+          <div class="breakdown-val">{{ formatBalance(summary.paid) }}</div>
         </div>
       </div>
     </div>
@@ -68,9 +68,9 @@
               {{ getOrderTitle(order) }}
             </div>
             <div class="product-bottom-row">
-              <span class="product-price">{{ formatAmount(parseFloat(order.remainingAmount)) }} ₭</span>
-              <span class="product-status" :class="statusClass(order.paymentStatus)">
-                {{ $t(`customer.paymentStatus.${order.paymentStatus}`) }}
+              <span class="product-price">{{ formatOrderAmount(order.remainingAmount, order.targetCurrency) }}</span>
+              <span class="product-status" :class="statusClass(displayPaymentStatus(order))">
+                {{ $t(`customer.paymentStatus.${displayPaymentStatus(order)}`) }}
               </span>
             </div>
           </div>
@@ -112,7 +112,7 @@ const summary = computed(() => {
   return props.orders.reduce(
     (acc, o) => {
       acc.totalDue += parseFloat(o.remainingAmount) || 0;
-      acc.totalProducts += parseFloat(o.totalSellingAmountLak) || 0;
+      acc.totalProducts += parseFloat(o.totalSellingAmount) || 0;
       acc.paid += parseFloat(o.totalPaid) || 0;
       return acc;
     },
@@ -120,8 +120,30 @@ const summary = computed(() => {
   );
 });
 
+const displayCurrency = computed(() => {
+  const first = props.orders[0];
+  return first?.targetCurrency ?? null;
+});
+
+const currencySymbol = (code: string | null) => {
+  if (!code) return '₭';
+  const map: Record<string, string> = { LAK: '₭', THB: '฿', USD: '$', USDT: 'USDT' };
+  return map[code] ?? code;
+};
+
 const formatAmount = (val: number) =>
   val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+const formatBalance = (val: number) => {
+  const sym = currencySymbol(displayCurrency.value);
+  return `${formatAmount(val)} ${sym}`;
+};
+
+const formatOrderAmount = (amountStr: string, targetCurrency: string | null) => {
+  const val = parseFloat(amountStr) || 0;
+  const sym = currencySymbol(targetCurrency);
+  return `${formatAmount(val)} ${sym}`;
+};
 
 const formatDate = (dt: string) => dayjs(dt).format('DD/MM/YYYY');
 
@@ -131,9 +153,16 @@ const getOrderTitle = (order: CustomerOrder): string => {
   return `${t('customer.orderLabel')} #${order.id}`;
 };
 
+/** สถานะที่แสดง: ถ้ามี payment รอตรวจสอบ ให้แสดง PENDING_VERIFICATION */
+const displayPaymentStatus = (order: CustomerOrder): string => {
+  if (order.hasPendingPayment) return 'PENDING_VERIFICATION';
+  return order.paymentStatus;
+};
+
 const statusClass = (status: string) => {
   if (status === 'PAID') return 'status-ready';
   if (status === 'PARTIAL') return 'status-waiting';
+  if (status === 'PENDING_VERIFICATION') return 'status-waiting';
   return 'status-pending';
 };
 </script>

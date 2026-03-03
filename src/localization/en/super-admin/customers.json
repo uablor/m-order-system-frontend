@@ -1,6 +1,6 @@
 {
   "title": "Customer Management",
-  "subtitle": "Manage customers across all merchants.",
+  "subtitle": "Manage customers across all stores.",
   "createCustomer": "Add Customer",
   "editCustomer": "Edit Customer",
   "customerName": "Customer Name",
@@ -9,8 +9,8 @@
   "customerType": "Type",
   "customer": "Customer",
   "agent": "Agent",
-  "merchantId": "Merchant",
-  "selectMerchant": "Select Merchant",
+  "merchantId": "Store",
+  "selectMerchant": "Select Store",
   "shippingAddress": "Shipping Address",
   "shippingProvider": "Shipping Provider",
   "shippingSource": "Source",
@@ -35,5 +35,5 @@
   "deleteSuccess": "Customer deleted successfully!",
   "shippingInfo": "Shipping Information",
   "contactInfo": "Contact Information",
-  "allMerchants": "All Merchants"
+  "allMerchants": "All Stores"
 }

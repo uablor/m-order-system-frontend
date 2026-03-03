@@ -1,23 +1,34 @@
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, computed } from 'vue';
 
+/**
+ * Breakpoints:
+ *   mobile  < 768 px
+ *   tablet  768 – 1024 px  (covers Galaxy Tab S7 ~800px portrait, ~1340px landscape)
+ *   desktop > 1024 px
+ */
 export function useIsMobile(breakpointPx = 768) {
-  const isMobile = ref(false);
+  const windowWidth = ref(
+    typeof window !== 'undefined' ? window.innerWidth : 1280,
+  );
 
-  let mql: MediaQueryList | null = null;
-  const update = () => {
-    isMobile.value = !!mql?.matches;
+  const onResize = () => {
+    windowWidth.value = window.innerWidth;
   };
 
   onMounted(() => {
-    mql = window.matchMedia(`(max-width: ${breakpointPx}px)`);
-    update();
-    mql.addEventListener('change', update);
+    windowWidth.value = window.innerWidth;
+    window.addEventListener('resize', onResize);
   });
 
   onBeforeUnmount(() => {
-    mql?.removeEventListener('change', update);
+    window.removeEventListener('resize', onResize);
   });
 
-  return { isMobile };
-}
+  const isMobile = computed(() => windowWidth.value < breakpointPx);
+  const isTablet = computed(
+    () => windowWidth.value >= 768 && windowWidth.value <= 1024,
+  );
+  const isDesktop = computed(() => windowWidth.value > 1024);
 
+  return { isMobile, isTablet, isDesktop, windowWidth };
+}

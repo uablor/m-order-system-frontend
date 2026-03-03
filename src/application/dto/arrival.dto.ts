@@ -13,6 +13,11 @@ export interface CreateArrivalDto {
   arrivalItems: CreateArrivalItemDto[];
 }
 
+export interface CreateMultipleArrivalsDto {
+  notes?: string;
+  orders: CreateArrivalDto[];
+}
+
 export interface ArrivalUpdateDto {
   arrivedDate?: string;
   arrivedTime?: string;
@@ -24,10 +29,18 @@ export interface ArrivalListQueryDto {
   page?: number;
   limit?: number;
   search?: string;
+  searchField?: string;
+  sort?: 'ASC' | 'DESC';
   merchantId?: number;
   orderId?: number;
+  orderItemId?: number;
   startDate?: string;
   endDate?: string;
+  customerName?: string;
+  createdByUserId?: number;
+  arrivalDate?: string;
+  arrivalTime?: string;
+  arrival?: boolean;
 }
 
 export interface ArrivalItemListQueryDto {

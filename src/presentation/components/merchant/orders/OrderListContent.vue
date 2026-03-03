@@ -28,13 +28,46 @@
       </a-button>
     </div>
 
-    <!-- Filter Panel -->
-    <a-card
-      v-if="!isMobile || showFilters"
-      :bordered="false"
-      class="filter-card mb-4"
-    >
-      <div class="filter-bar">
+    <!-- Summary Cards -->
+    <div class="summary-grid mb-4">
+      <div class="summary-card">
+        <div class="summary-icon orders-icon"><OrderedListOutlined /></div>
+        <div class="summary-body">
+          <div class="summary-label">{{ $t('merchant.orderList.summaryTotalOrders') }}</div>
+          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ summary.totalOrders }}</template><div class="summary-value num-truncate">{{ summary.totalOrders }}</div></a-tooltip>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon cost-icon"><DollarOutlined /></div>
+        <div class="summary-body">
+          <div class="summary-label">{{ $t('merchant.orderList.summaryTotalCost') }}</div>
+          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(summary.totalFinalCost) }}</template><div class="summary-value num-truncate">{{ truncNum(summary.totalFinalCost) }}</div></a-tooltip>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon selling-icon"><ShoppingCartOutlined /></div>
+        <div class="summary-body">
+          <div class="summary-label">{{ $t('merchant.orderList.summaryTotalSelling') }}</div>
+          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(summary.totalSellingAmount) }}</template><div class="summary-value num-truncate">{{ truncNum(summary.totalSellingAmount) }}</div></a-tooltip>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon profit-icon"><RiseOutlined /></div>
+        <div class="summary-body">
+          <div class="summary-label">{{ $t('merchant.orderList.summaryTotalProfit') }}</div>
+          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(summary.totalProfit) }}</template><div class="summary-value num-truncate" :class="{ 'profit-positive': Number(summary.totalProfit) >= 0, 'profit-negative': Number(summary.totalProfit) < 0 }">{{ truncNum(summary.totalProfit) }}</div></a-tooltip>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Panel: under summary, mobile via icon -->
+    <Transition name="filter-slide">
+      <a-card
+        v-if="!isMobile || showFilters"
+        :bordered="false"
+        class="filter-card mb-4"
+      >
+        <div class="filter-bar">
         <a-date-picker
           v-model:value="startDate"
           class="filter-date-single"
@@ -72,43 +105,31 @@
           <a-select-option value="PARTIAL">{{ $t('merchant.orderList.paymentPartial') }}</a-select-option>
           <a-select-option value="PAID">{{ $t('merchant.orderList.paymentPaid') }}</a-select-option>
         </a-select>
+
+        <a-input
+          v-model:value="filters.customerName"
+          allow-clear
+          class="filter-input"
+          :placeholder="$t('merchant.orderList.customerNameFilter')"
+          @pressEnter="onFilterChange"
+          @change="onCustomerNameChange"
+        >
+          <template #prefix><UserOutlined /></template>
+        </a-input>
+
+        <a-select
+          v-model:value="filters.sort"
+          allow-clear
+          class="filter-select filter-select--sort"
+          :placeholder="$t('merchant.orderList.sortDirection')"
+          @change="onFilterChange"
+        >
+          <a-select-option value="DESC">{{ $t('merchant.orderList.sortDesc') }}</a-select-option>
+          <a-select-option value="ASC">{{ $t('merchant.orderList.sortAsc') }}</a-select-option>
+        </a-select>
       </div>
     </a-card>
-
-    <!-- Summary Cards -->
-    <div class="summary-grid mb-4">
-      <div class="summary-card">
-        <div class="summary-icon orders-icon"><OrderedListOutlined /></div>
-        <div class="summary-body">
-          <div class="summary-label">{{ $t('merchant.orderList.summaryTotalOrders') }}</div>
-          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ summary.totalOrders }}</template><div class="summary-value num-truncate">{{ summary.totalOrders }}</div></a-tooltip>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon cost-icon"><DollarOutlined /></div>
-        <div class="summary-body">
-          <div class="summary-label">{{ $t('merchant.orderList.summaryTotalCost') }}</div>
-          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(summary.totalFinalCostLak) }} LAK</template><div class="summary-value num-truncate">{{ truncNum(summary.totalFinalCostLak) }}</div></a-tooltip>
-          <div class="summary-sub">LAK</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon selling-icon"><ShoppingCartOutlined /></div>
-        <div class="summary-body">
-          <div class="summary-label">{{ $t('merchant.orderList.summaryTotalSelling') }}</div>
-          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(summary.totalSellingAmountLak) }} LAK</template><div class="summary-value num-truncate">{{ truncNum(summary.totalSellingAmountLak) }}</div></a-tooltip>
-          <div class="summary-sub">LAK</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon profit-icon"><RiseOutlined /></div>
-        <div class="summary-body">
-          <div class="summary-label">{{ $t('merchant.orderList.summaryTotalProfit') }}</div>
-          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(summary.totalProfitLak) }} LAK</template><div class="summary-value num-truncate" :class="{ 'profit-positive': Number(summary.totalProfitLak) >= 0, 'profit-negative': Number(summary.totalProfitLak) < 0 }">{{ truncNum(summary.totalProfitLak) }}</div></a-tooltip>
-          <div class="summary-sub">LAK</div>
-        </div>
-      </div>
-    </div>
+    </Transition>
 
     <!-- Desktop: table inside card -->
     <a-card v-if="!isMobile" :bordered="false" class="panel-card">
@@ -146,12 +167,12 @@
           <template v-else-if="column.key === 'orderItemsCount'">
             <a-tag class="count-tag">{{ record.orderItems?.length || 0 }}</a-tag>
           </template>
-          <template v-else-if="column.key === 'totalFinalCostLak'">
-            {{ formatNumber(record.totalFinalCostLak) }}
+          <template v-else-if="column.key === 'totalFinalCost'">
+            {{ formatNumber(record.totalFinalCost) }}
           </template>
           <template v-else-if="column.key === 'profit'">
-            <span :class="{ 'profit-positive': Number(record.totalProfitLak) >= 0, 'profit-negative': Number(record.totalProfitLak) < 0 }">
-              {{ formatNumber(record.totalProfitLak) }}
+            <span :class="{ 'profit-positive': Number(record.totalProfit) >= 0, 'profit-negative': Number(record.totalProfit) < 0 }">
+              {{ formatNumber(record.totalProfit) }}
             </span>
           </template>
           <template v-else-if="column.key === 'actions'">
@@ -207,12 +228,12 @@
               </div>
               <div class="detail-row">
                 <span class="detail-label">{{ $t('merchant.orderList.colTotalCost') }}</span>
-                <span class="detail-val">{{ formatNumber(order.totalFinalCostLak) }}</span>
+                <span class="detail-val">{{ formatNumber(order.totalFinalCost) }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">{{ $t('merchant.orderList.colProfit') }}</span>
-                <span class="detail-val" :class="{ 'profit-positive': Number(order.totalProfitLak) >= 0, 'profit-negative': Number(order.totalProfitLak) < 0 }">
-                  {{ formatNumber(order.totalProfitLak) }}
+                <span class="detail-val" :class="{ 'profit-positive': Number(order.totalProfit) >= 0, 'profit-negative': Number(order.totalProfit) < 0 }">
+                  {{ formatNumber(order.totalProfit) }}
                 </span>
               </div>
               <div class="detail-row border-none pt-2">
@@ -259,6 +280,7 @@ import {
   DollarOutlined,
   ShoppingCartOutlined,
   RiseOutlined,
+  UserOutlined,
 } from '@ant-design/icons-vue';
 import { OrderedListOutlined } from '@ant-design/icons-vue';
 import { orderRepository } from '@/infrastructure/repositories/order.repository';
@@ -280,9 +302,9 @@ const orders = ref<Order[]>([]);
 const total = ref(0);
 const summary = ref({
   totalOrders: 0,
-  totalFinalCostLak: '0',
-  totalSellingAmountLak: '0',
-  totalProfitLak: '0',
+  totalFinalCost: '0',
+  totalSellingAmount: '0',
+  totalProfit: '0',
 });
 const currentPage = ref(1);
 const pageSize = ref(10);
@@ -294,10 +316,14 @@ const filters = reactive<{
   search: string;
   arrivalStatus: ArrivalStatusEnum | undefined;
   paymentStatus: PaymentStatusEnum | undefined;
+  customerName: string;
+  sort: 'ASC' | 'DESC' | undefined;
 }>({
   search: '',
   arrivalStatus: undefined,
   paymentStatus: undefined,
+  customerName: '',
+  sort: undefined,
 });
 
 const columns = computed<TableColumnsType>(() => [
@@ -307,7 +333,7 @@ const columns = computed<TableColumnsType>(() => [
   { title: t('merchant.orderList.colArrivalStatus'), key: 'arrivalStatus', dataIndex: 'arrivalStatus', width: 140, align: 'center' as const },
   { title: t('merchant.orderList.colPaymentStatus'), key: 'paymentStatus', dataIndex: 'paymentStatus', width: 140, align: 'center' as const },
   { title: t('merchant.orderList.colOrderItems'), key: 'orderItemsCount', width: 100, align: 'center' as const },
-  { title: t('merchant.orderList.colTotalCost'), key: 'totalFinalCostLak', dataIndex: 'totalFinalCostLak', width: 140, align: 'right' as const },
+  { title: t('merchant.orderList.colTotalCost'), key: 'totalFinalCost', dataIndex: 'totalFinalCost', width: 140, align: 'right' as const },
   { title: t('merchant.orderList.colProfit'), key: 'profit', width: 130, align: 'right' as const },
   { title: t('merchant.orderList.colActions'), key: 'actions', fixed: 'right' as const, width: 100, align: 'right' as const },
 ]);
@@ -372,6 +398,15 @@ watch(() => filters.search, () => {
   }, 450);
 });
 
+let customerNameTimer: ReturnType<typeof setTimeout> | undefined;
+const onCustomerNameChange = () => {
+  clearTimeout(customerNameTimer);
+  customerNameTimer = setTimeout(() => {
+    currentPage.value = 1;
+    fetchOrders();
+  }, 450);
+};
+
 const buildQuery = (): OrderListQueryDto => {
   const query: OrderListQueryDto = {
     page: currentPage.value,
@@ -379,6 +414,8 @@ const buildQuery = (): OrderListQueryDto => {
     merchantId: authPayload.value?.merchantId,
   };
   if (filters.search?.trim()) query.search = filters.search.trim();
+  if (filters.customerName?.trim()) query.customerName = filters.customerName.trim();
+  if (filters.sort) query.sort = filters.sort;
   if (startDate.value) query.startDate = startDate.value.format('YYYY-MM-DD');
   if (endDate.value) query.endDate = endDate.value.format('YYYY-MM-DD');
   if (filters.arrivalStatus) query.arrivalStatus = filters.arrivalStatus;
@@ -390,17 +427,25 @@ const fetchOrders = async () => {
   loading.value = true;
   try {
     const query = buildQuery();
-    const res = await orderRepository.getList(query) as any;
-    orders.value = res.results ?? [];
-    total.value = res.pagination?.total ?? 0;
-    if (res.summary) {
-      summary.value = {
-        totalOrders: res.summary.totalOrders ?? 0,
-        totalFinalCostLak: res.summary.totalFinalCostLak ?? '0',
-        totalSellingAmountLak: res.summary.totalSellingAmountLak ?? '0',
-        totalProfitLak: res.summary.totalProfitLak ?? '0',
-      };
-    }
+    const [listRes, summaryRes] = await Promise.all([
+      orderRepository.getList(query) as Promise<any>,
+      orderRepository.getSummaryByMerchant({
+        search: query.search,
+        customerName: query.customerName,
+        startDate: query.startDate,
+        endDate: query.endDate,
+        arrivalStatus: query.arrivalStatus,
+        paymentStatus: query.paymentStatus,
+      }),
+    ]);
+    orders.value = listRes.results ?? [];
+    total.value = listRes.pagination?.total ?? 0;
+    summary.value = {
+      totalOrders: summaryRes.totalOrders ?? 0,
+      totalFinalCost: summaryRes.totalFinalCostLak ?? '0',
+      totalSellingAmount: summaryRes.totalSellingAmountLak ?? '0',
+      totalProfit: summaryRes.totalProfitLak ?? '0',
+    };
   } catch (err) {
     handleApiError(err, t);
   } finally {
@@ -497,7 +542,7 @@ onMounted(() => {
 .page-title { font-size: 22px; font-weight: 600; color: #0f172a; line-height: 1.25; }
 .page-subtitle { font-size: 13px; color: #64748b; margin-top: 2px; }
 
-.search-input { height: 44px; border-radius: 12px; width: min(320px, 100%); }
+.search-input { height: 44px; border-radius: 12px; width: min(200px, 100%); flex: 0 1 200px; }
 
 .filter-toggle-btn {
   height: 44px; width: 44px; border-radius: 12px;
@@ -529,6 +574,10 @@ onMounted(() => {
 .filter-date-single :deep(.ant-picker) { border-radius: 10px !important; }
 .filter-select { min-width: 160px; }
 .filter-select :deep(.ant-select-selector) { border-radius: 10px !important; }
+.filter-select--sort { min-width: 140px; }
+/* customer name input — same compact width as other filter inputs */
+.filter-input { border-radius: 10px; min-width: 160px; max-width: 200px; }
+.filter-input :deep(.ant-input-affix-wrapper) { border-radius: 10px !important; }
 
 @media (max-width: 767px) {
   .filter-card { border-radius: 10px; }
@@ -536,7 +585,13 @@ onMounted(() => {
   .filter-bar { flex-direction: column; }
   .filter-date-single { width: 100%; }
   .filter-select { width: 100%; }
+  .filter-input { width: 100%; }
 }
+
+.filter-slide-enter-active,
+.filter-slide-leave-active { transition: all 0.25s ease; }
+.filter-slide-enter-from,
+.filter-slide-leave-to { opacity: 0; transform: translateY(-8px); }
 
 /* ===== Desktop card ===== */
 .panel-card {

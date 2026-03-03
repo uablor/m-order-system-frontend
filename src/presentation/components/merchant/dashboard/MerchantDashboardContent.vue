@@ -1,572 +1,414 @@
 <template>
   <div class="m-dashboard">
-    <div class="page-header">
+    <!-- <div class="page-header">
       <div class="page-title">{{ $t('merchant.dashboard.title') }}</div>
       <div class="page-subtitle">{{ $t('merchant.dashboard.subtitle') }}</div>
-    </div>
+    </div> -->
 
-    <a-spin :spinning="loading">
-      <!-- Row 1: Stat Cards -->
+
+    <a-spin :spinning="loading && !error">
+      <!-- Error State -->
+      <div v-if="error" class="error-state">
+        <a-result
+          status="warning"
+          title="Some Data Failed to Load"
+          :sub-title="error"
+        >
+          <template #extra>
+            <a-button type="primary" @click="fetchWithTimeout()">
+              Try Again
+            </a-button>
+          </template>
+        </a-result>
+      </div>
+      
+      <!-- Dashboard Content -->
+      <template v-else>
+      <div class="page-header !mt-5">
+        <div class="page-titlek">{{ $t('merchant.dashboard.sectionOrderStats') }}</div>
+        <div class="page-subtitle">{{ $t('merchant.dashboard.sectionOrderStatsDesc') }}</div>
+      </div>
+      <!-- Row 1: Summary Stat Cards -->
       <a-row :gutter="[16, 16]" class="stats-row">
-        <a-col :xs="24" :sm="12" :md="6">
+        <a-col :xs="12" :sm="8" :md="8" :lg="4">
           <div class="stat-card stat-purple">
             <div class="stat-icon"><ShoppingCartOutlined /></div>
             <div class="stat-body">
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ dashboard?.totalOrders ?? 0 }}</template><div class="stat-value num-truncate">{{ truncNum(dashboard?.totalOrders ?? 0) }}</div></a-tooltip>
+              <a-tooltip :overlay-class-name="'blue-tooltip'">
+                <template #title>{{ dashboard?.summary.totalOrders ?? 0 }}</template>
+                <div class="stat-value num-truncate">{{ fmt(dashboard?.summary.totalOrders ?? 0) }}</div>
+              </a-tooltip>
               <div class="stat-label">{{ $t('merchant.dashboard.totalOrders') }}</div>
-              <div class="stat-sub">{{ dashboard?.totalOrdersThisMonth ?? 0 }} {{ $t('merchant.dashboard.ordersThisMonth') }}</div>
             </div>
           </div>
         </a-col>
-        <a-col :xs="24" :sm="12" :md="6">
-          <div class="stat-card stat-blue">
-            <div class="stat-icon"><TeamOutlined /></div>
-            <div class="stat-body">
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ dashboard?.totalCustomers ?? 0 }}</template><div class="stat-value num-truncate">{{ truncNum(dashboard?.totalCustomers ?? 0) }}</div></a-tooltip>
-              <div class="stat-label">{{ $t('merchant.dashboard.totalCustomers') }}</div>
-              <div class="stat-sub">{{ $t('merchant.dashboard.customersDesc') }}</div>
-            </div>
-          </div>
-        </a-col>
-        <a-col :xs="24" :sm="12" :md="6">
+        <a-col :xs="12" :sm="8" :md="8" :lg="4">
           <div class="stat-card stat-green">
             <div class="stat-icon"><CheckCircleOutlined /></div>
             <div class="stat-body">
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ dashboard?.totalArrivals ?? 0 }}</template><div class="stat-value num-truncate">{{ truncNum(dashboard?.totalArrivals ?? 0) }}</div></a-tooltip>
-              <div class="stat-label">{{ $t('merchant.dashboard.totalArrivals') }}</div>
-              <div class="stat-sub">{{ $t('merchant.dashboard.arrivalsDesc') }}</div>
+              <a-tooltip :overlay-class-name="'blue-tooltip'">
+                <template #title>{{ dashboard?.summary.totalPaidOrders ?? 0 }}</template>
+                <div class="stat-value num-truncate">{{ fmt(dashboard?.summary.totalPaidOrders ?? 0) }}</div>
+              </a-tooltip>
+              <div class="stat-label">{{ $t('merchant.dashboard.totalPaidOrders') }}</div>
             </div>
           </div>
         </a-col>
-        <a-col :xs="24" :sm="12" :md="6">
-          <div class="stat-card stat-orange">
-            <div class="stat-icon"><WalletOutlined /></div>
+        <a-col :xs="12" :sm="8" :md="8" :lg="4">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon"><TeamOutlined /></div>
             <div class="stat-body">
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatCurrency(Number(dashboard?.totalOutstandingAmountLak ?? 0)) }}</template><div class="stat-value num-truncate">{{ truncNum(Number(dashboard?.totalOutstandingAmountLak ?? 0)) }}</div></a-tooltip>
-              <div class="stat-label">{{ $t('merchant.dashboard.outstandingBalance') }}</div>
-              <div class="stat-sub">{{ $t('merchant.dashboard.outstandingDesc') }}</div>
+              <a-tooltip :overlay-class-name="'blue-tooltip'">
+                <template #title>{{ dashboard?.summary.totalCustomers ?? 0 }}</template>
+                <div class="stat-value num-truncate">{{ fmt(dashboard?.summary.totalCustomers ?? 0) }}</div>
+              </a-tooltip>
+              <div class="stat-label">{{ $t('merchant.dashboard.totalCustomers') }}</div>
+            </div>
+          </div>
+        </a-col>
+        <a-col :xs="12" :sm="8" :md="8" :lg="4">
+          <div class="stat-card stat-teal">
+            <div class="stat-icon"><InboxOutlined /></div>
+            <div class="stat-body">
+              <a-tooltip :overlay-class-name="'blue-tooltip'">
+                <template #title>{{ dashboard?.summary.totalArrivals ?? 0 }}</template>
+                <div class="stat-value num-truncate">{{ fmt(dashboard?.summary.totalArrivals ?? 0) }}</div>
+              </a-tooltip>
+              <div class="stat-label">{{ $t('merchant.dashboard.totalArrivals') }}</div>
+            </div>
+          </div>
+        </a-col>
+        <a-col :xs="12" :sm="8" :md="8" :lg="4">
+          <div class="stat-card stat-orange">
+            <div class="stat-icon"><AppstoreOutlined /></div>
+            <div class="stat-body">
+              <a-tooltip :overlay-class-name="'blue-tooltip'">
+                <template #title>{{ dashboard?.summary.totalOrderItems ?? 0 }}</template>
+                <div class="stat-value num-truncate">{{ fmt(dashboard?.summary.totalOrderItems ?? 0) }}</div>
+              </a-tooltip>
+              <div class="stat-label">{{ $t('merchant.dashboard.totalOrderItems') }}</div>
+            </div>
+          </div>
+        </a-col>
+        <a-col :xs="12" :sm="8" :md="8" :lg="4">
+          <div class="stat-card stat-indigo">
+            <div class="stat-icon"><UserOutlined /></div>
+            <div class="stat-body">
+              <a-tooltip :overlay-class-name="'blue-tooltip'">
+                <template #title>{{ dashboard?.summary.totalUsers ?? 0 }}</template>
+                <div class="stat-value num-truncate">{{ fmt(dashboard?.summary.totalUsers ?? 0) }}</div>
+              </a-tooltip>
+              <div class="stat-label">{{ $t('merchant.dashboard.totalUsers') }}</div>
             </div>
           </div>
         </a-col>
       </a-row>
-
-      <!-- Row 2: Payment Status + Arrival Status -->
-      <a-row :gutter="[16, 16]" class="stats-row status-equal-row">
-        <a-col :xs="24" :md="12">
-          <a-card :bordered="false" class="panel-card">
-            <div class="panel-title">{{ $t('merchant.dashboard.paymentStatus') }}</div>
-            <div class="status-bars">
-              <div class="bar-item">
-                <span class="bar-label">{{ $t('merchant.dashboard.unpaid') }}</span>
-                <a-progress :percent="paymentPercent('UNPAID')" :stroke-color="'#ef4444'" :show-info="false" size="small" />
-                <span class="bar-count">{{ dashboard?.ordersByPaymentStatus?.UNPAID ?? 0 }}</span>
-              </div>
-              <div class="bar-item">
-                <span class="bar-label">{{ $t('merchant.dashboard.partial') }}</span>
-                <a-progress :percent="paymentPercent('PARTIAL')" :stroke-color="'#f59e0b'" :show-info="false" size="small" />
-                <span class="bar-count">{{ dashboard?.ordersByPaymentStatus?.PARTIAL ?? 0 }}</span>
-              </div>
-              <div class="bar-item">
-                <span class="bar-label">{{ $t('merchant.dashboard.paid') }}</span>
-                <a-progress :percent="paymentPercent('PAID')" :stroke-color="'#22c55e'" :show-info="false" size="small" />
-                <span class="bar-count">{{ dashboard?.ordersByPaymentStatus?.PAID ?? 0 }}</span>
-              </div>
+      <div class="page-header !mt-5">
+        <div class="page-titlek">{{ $t('merchant.dashboard.sectionFinancialOverview') }}</div>
+        <div class="page-subtitle">{{ $t('merchant.dashboard.sectionPriceByCurrencyDesc') }}</div>
+      </div> 
+      <!-- Row 2a: Price by Currency (non-LAK) — grid 3, placeholders when empty -->
+      <a-row :gutter="[16, 16]" class="stats-row">
+        <a-col :xs="24" :sm="8" :md="8" v-for="(currency, i) in displayNonLakCurrencies" :key="currency ? (currency.baseCurrency || currency.targetCurrency || 'unknown') : `placeholder-${i}`">
+          <a-card :bordered="false" class="panel-card currency-card" :class="currency ? `currency-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'currency-placeholder'">
+            <div class="currency-header">
+              <span class="currency-badge" :class="currency ? `badge-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'badge-placeholder'">{{ currency ? (currency.baseCurrency || currency.targetCurrency || 'Unknown') : '—' }}</span>
+              <span class="currency-title">{{ currency ? $t('merchant.dashboard.priceInCurrency', { currency: currency.baseCurrency || currency.targetCurrency || 'Unknown' }) : $t('merchant.dashboard.noData') }}</span>
             </div>
-          </a-card>
-        </a-col>
-        <a-col :xs="24" :md="12">
-          <a-card :bordered="false" class="panel-card">
-            <div class="panel-title">{{ $t('merchant.dashboard.arrivalStatus') }}</div>
-            <div class="status-bars">
-              <div class="bar-item">
-                <span class="bar-label">{{ $t('merchant.dashboard.notArrived') }}</span>
-                <a-progress :percent="arrivalPercent('NOT_ARRIVED')" :stroke-color="'#f59e0b'" :show-info="false" size="small" />
-                <span class="bar-count">{{ dashboard?.ordersByArrivalStatus?.NOT_ARRIVED ?? 0 }}</span>
+            <div class="currency-rows">
+              <div class="currency-row">
+                <span class="c-label">{{ $t('merchant.dashboard.totalPrice') }}</span>
+                <span class="c-val">{{ currency ? fmtCurrency(currency.totalAll) : fmtCurrency(0) }}</span>
               </div>
-              <div class="bar-item">
-                <span class="bar-label">{{ $t('merchant.dashboard.arrived') }}</span>
-                <a-progress :percent="arrivalPercent('ARRIVED')" :stroke-color="'#22c55e'" :show-info="false" size="small" />
-                <span class="bar-count">{{ dashboard?.ordersByArrivalStatus?.ARRIVED ?? 0 }}</span>
+              <div class="currency-row">
+                <span class="c-label">{{ $t('merchant.dashboard.pricePaid') }}</span>
+                <span class="c-val text-green">{{ currency ? fmtCurrency(currency.totalPaid) : fmtCurrency(0) }}</span>
               </div>
+              <div class="currency-row">
+                <span class="c-label">{{ $t('merchant.dashboard.priceUnpaid') }}</span>
+                <span class="c-val text-red">{{ currency ? fmtCurrency(currency.totalUnpaid) : fmtCurrency(0) }}</span>
+              </div>
+              <!-- <div class="currency-divider" />
+              <div class="currency-row">
+                <span class="c-label">{{ $t('merchant.dashboard.totalInLak') }}</span>
+                <span class="c-val text-blue">{{ currency ? fmtCurrency(currency.totalAllConverted) : fmtCurrency(0) }}</span>
+              </div> -->
             </div>
           </a-card>
         </a-col>
       </a-row>
 
-      <!-- Row 3: Financial Overview -->
+      <!-- Row 2b: LAK card — full width, always render, placeholder when empty -->
       <a-row :gutter="[16, 16]" class="stats-row">
         <a-col :xs="24">
-          <a-card :bordered="false" class="panel-card">
-            <div class="panel-title">{{ $t('merchant.dashboard.financialOverview') }}</div>
-            <a-row :gutter="[16, 12]">
-              <a-col :xs="12" :sm="8" :md="4">
-                <div class="fin-item">
-                  <div class="fin-label">{{ $t('merchant.dashboard.totalFinalCost') }}</div>
-                  <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatCurrency(Number(dashboard?.totalFinalCostLak ?? 0)) }}</template><div class="fin-value num-truncate">{{ truncNum(Number(dashboard?.totalFinalCostLak ?? 0)) }}</div></a-tooltip>
-                </div>
-              </a-col>
-              <a-col :xs="12" :sm="8" :md="4">
-                <div class="fin-item">
-                  <div class="fin-label">{{ $t('merchant.dashboard.totalRevenueLAK') }}</div>
-                  <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatCurrency(Number(dashboard?.totalRevenueLak ?? 0)) }}</template><div class="fin-value text-green num-truncate">{{ truncNum(Number(dashboard?.totalRevenueLak ?? 0)) }}</div></a-tooltip>
-                </div>
-              </a-col>
-              <a-col :xs="12" :sm="8" :md="4">
-                <div class="fin-item">
-                  <div class="fin-label">{{ $t('merchant.dashboard.totalRevenueTHB') }}</div>
-                  <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatCurrency(Number(dashboard?.totalRevenueThb ?? 0)) }}</template><div class="fin-value text-green num-truncate">{{ truncNum(Number(dashboard?.totalRevenueThb ?? 0)) }}</div></a-tooltip>
-                </div>
-              </a-col>
-              <a-col :xs="12" :sm="8" :md="4">
-                <div class="fin-item">
-                  <div class="fin-label">{{ $t('merchant.dashboard.totalProfitLAK') }}</div>
-                  <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatCurrency(Number(dashboard?.totalProfitLak ?? 0)) }}</template><div class="fin-value text-blue num-truncate">{{ truncNum(Number(dashboard?.totalProfitLak ?? 0)) }}</div></a-tooltip>
-                </div>
-              </a-col>
-              <a-col :xs="12" :sm="8" :md="4">
-                <div class="fin-item">
-                  <div class="fin-label">{{ $t('merchant.dashboard.totalProfitTHB') }}</div>
-                  <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatCurrency(Number(dashboard?.totalProfitThb ?? 0)) }}</template><div class="fin-value text-blue num-truncate">{{ truncNum(Number(dashboard?.totalProfitThb ?? 0)) }}</div></a-tooltip>
-                </div>
-              </a-col>
-              <a-col :xs="12" :sm="8" :md="4">
-                <div class="fin-item">
-                  <div class="fin-label">{{ $t('merchant.dashboard.totalOutstanding') }}</div>
-                  <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatCurrency(Number(dashboard?.totalOutstandingAmountLak ?? 0)) }}</template><div class="fin-value text-red num-truncate">{{ truncNum(Number(dashboard?.totalOutstandingAmountLak ?? 0)) }}</div></a-tooltip>
-                </div>
-              </a-col>
-            </a-row>
+          <a-card :bordered="false" class="panel-card currency-card currency-card--full currency-lak" :class="{ 'currency-placeholder': !displayLakCurrency }">
+            <div class="currency-header">
+              <span class="currency-badge" :class="displayLakCurrency ? 'badge-lak' : 'badge-placeholder'">{{ displayLakCurrency ? (displayLakCurrency.baseCurrency || displayLakCurrency.targetCurrency || 'LAK') : 'LAK' }}</span>
+              <span class="currency-title">{{ displayLakCurrency ? $t('merchant.dashboard.priceInCurrency', { currency: displayLakCurrency.baseCurrency || displayLakCurrency.targetCurrency || 'LAK' }) : $t('merchant.dashboard.noData') }}</span>
+            </div>
+            <div class="lak-summary-rows">
+              <div class="currency-row">
+                <span class="c-label">{{ $t('merchant.dashboard.totalPrice') }}</span>
+                <a-tooltip v-if="displayLakCurrency" :overlay-class-name="'blue-tooltip'">
+                  <template #title>{{ fmtCurrency(displayLakCurrency.totalAll) }}</template>
+                  <span class="c-val num-truncate">{{ fmtCompact(displayLakCurrency.totalAll) }}</span>
+                </a-tooltip>
+                <span v-else class="c-val">{{ fmtCurrency(0) }}</span>
+              </div>
+              <div class="currency-row">
+                <span class="c-label">{{ $t('merchant.dashboard.pricePaid') }}</span>
+                <a-tooltip v-if="displayLakCurrency" :overlay-class-name="'blue-tooltip'">
+                  <template #title>{{ fmtCurrency(displayLakCurrency.totalPaid) }}</template>
+                  <span class="c-val text-green num-truncate">{{ fmtCompact(displayLakCurrency.totalPaid) }}</span>
+                </a-tooltip>
+                <span v-else class="c-val text-green">{{ fmtCurrency(0) }}</span>
+              </div>
+              <div class="currency-row">
+                <span class="c-label">{{ $t('merchant.dashboard.priceUnpaid') }}</span>
+                <a-tooltip v-if="displayLakCurrency" :overlay-class-name="'blue-tooltip'">
+                  <template #title>{{ fmtCurrency(displayLakCurrency.totalUnpaid) }}</template>
+                  <span class="c-val text-red num-truncate">{{ fmtCompact(displayLakCurrency.totalUnpaid) }}</span>
+                </a-tooltip>
+                <span v-else class="c-val text-red">{{ fmtCurrency(0) }}</span>
+              </div>
+              <!-- <div class="currency-divider" />
+              <div class="currency-row">
+                <span class="c-label">{{ $t('merchant.dashboard.totalInLak') }}</span>
+                <a-tooltip v-if="displayLakCurrency" :overlay-class-name="'blue-tooltip'">
+                  <template #title>{{ fmtCurrency(displayLakCurrency.totalAllConverted) }}</template>
+                  <span class="c-val text-blue num-truncate">{{ fmtCompact(displayLakCurrency.totalAllConverted) }}</span>
+                </a-tooltip>
+                <span v-else class="c-val text-blue">{{ fmtCurrency(0) }}</span>
+              </div> -->
+            </div>
           </a-card>
         </a-col>
       </a-row>
-
-      <!-- Row 4: Annual Report Chart -->
-      <a-row :gutter="[16, 16]" class="stats-row">
+      <!-- Chart: Revenue by Month (จาก API price-currency-summary-by-date) -->
+      <a-row :gutter="[16, 16]" class="stats-row" style="margin-top: 24px;">
         <a-col :xs="24">
-          <a-card :bordered="false" class="panel-card">
-            <div class="panel-header-row">
-              <div class="panel-title">{{ $t('merchant.dashboard.annualReport') }}</div>
-              <div class="chart-controls">
-                <div class="chart-legend">
-                  <span class="legend-item">
-                    <span class="legend-dot" style="background:#6366f1"></span>
-                    <span class="legend-text">{{ $t('merchant.dashboard.orders') }}</span>
-                  </span>
-                  <span class="legend-item">
-                    <span class="legend-dot" style="background:#22c55e"></span>
-                    <span class="legend-text">{{ $t('merchant.dashboard.totalRevenueLAK') }}</span>
-                  </span>
-                  <span class="legend-item">
-                    <span class="legend-dot" style="background:#3b82f6"></span>
-                    <span class="legend-text">{{ $t('merchant.dashboard.totalProfitLAK') }}</span>
-                  </span>
-                </div>
-                <a-input-number
-                  :value="selectedYear"
-                  :min="2020"
-                  :max="currentYear + 1"
-                  :controls="true"
-                  class="year-input"
-                  @change="onYearInputChange"
-                  @pressEnter="onYearInputEnter"
-                />
-              </div>
-            </div>
-
-            <div class="chart-legend-mobile">
-              <span class="legend-item">
-                <span class="legend-dot" style="background:#6366f1"></span>
-                <span class="legend-text">{{ $t('merchant.dashboard.orders') }}</span>
-              </span>
-              <span class="legend-item">
-                <span class="legend-dot" style="background:#22c55e"></span>
-                <span class="legend-text">{{ $t('merchant.dashboard.totalRevenueLAK') }}</span>
-              </span>
-              <span class="legend-item">
-                <span class="legend-dot" style="background:#3b82f6"></span>
-                <span class="legend-text">{{ $t('merchant.dashboard.totalProfitLAK') }}</span>
-              </span>
-            </div>
-
-            <div v-if="chartMonths.length" class="chart-area" @touchend="hideTooltip">
-              <div class="chart-scroll">
-                <svg
-                  :viewBox="`0 0 ${svgW} ${svgH}`"
-                  :style="{ width: svgW + 'px', minWidth: '100%' }"
-                  :height="svgH"
-                  class="bar-chart-svg"
-                  preserveAspectRatio="xMidYMid meet"
-                >
-                  <line
-                    v-for="(gl, gi) in gridLines"
-                    :key="'gl-' + gi"
-                    :x1="cPadL"
-                    :y1="gl.y"
-                    :x2="svgW - cPadR"
-                    :y2="gl.y"
-                    stroke="#f1f5f9"
-                    stroke-width="1"
-                  />
-                  <text
-                    v-for="(gl, gi) in gridLines"
-                    :key="'gt-' + gi"
-                    :x="cPadL - 6"
-                    :y="gl.y + 4"
-                    text-anchor="end"
-                    class="chart-axis-label"
-                  >{{ gl.label }}</text>
-
-                  <g v-for="(m, i) in chartMonths" :key="m.month">
-                    <rect
-                      :x="gx(i)"
-                      :y="by(m.orderCount, maxOrders)"
-                      :width="bw"
-                      :height="bh(m.orderCount, maxOrders)"
-                      rx="3" ry="3"
-                      fill="#6366f1"
-                      class="chart-bar"
-                      @mouseenter="onBarEnter($event, m)"
-                      @mousemove="onBarMove($event)"
-                      @mouseleave="hideTooltip"
-                      @touchstart.passive="onBarTouch($event, m)"
-                    />
-                    <rect
-                      :x="gx(i) + bw + bg"
-                      :y="by(Number(m.revenueLak), maxRevenue)"
-                      :width="bw"
-                      :height="bh(Number(m.revenueLak), maxRevenue)"
-                      rx="3" ry="3"
-                      fill="#22c55e"
-                      class="chart-bar"
-                      @mouseenter="onBarEnter($event, m)"
-                      @mousemove="onBarMove($event)"
-                      @mouseleave="hideTooltip"
-                      @touchstart.passive="onBarTouch($event, m)"
-                    />
-                    <rect
-                      :x="gx(i) + (bw + bg) * 2"
-                      :y="by(Number(m.profitLak), maxRevenue)"
-                      :width="bw"
-                      :height="bh(Number(m.profitLak), maxRevenue)"
-                      rx="3" ry="3"
-                      fill="#3b82f6"
-                      class="chart-bar"
-                      @mouseenter="onBarEnter($event, m)"
-                      @mousemove="onBarMove($event)"
-                      @mouseleave="hideTooltip"
-                      @touchstart.passive="onBarTouch($event, m)"
-                    />
-
-                    <text
-                      v-if="!isMobile"
-                      :x="gx(i) + bw / 2"
-                      :y="by(m.orderCount, maxOrders) - 4"
-                      text-anchor="middle"
-                      class="bar-val-label"
-                      fill="#6366f1"
-                    >{{ m.orderCount }}</text>
-
-                    <text
-                      :x="gx(i) + gw / 2"
-                      :y="svgH - 6"
-                      text-anchor="middle"
-                      class="chart-month-label"
-                    >{{ isMobile ? String(m.month) : shortMonthName(m.monthName) }}</text>
-                  </g>
-                </svg>
-              </div>
-
-              <Teleport to="body">
-                <div
-                  v-if="tt.show"
-                  class="chart-tooltip"
-                  :style="ttStyle"
-                >
-                  <div class="tooltip-title">{{ tt.monthName }}</div>
-                  <div class="tooltip-row">
-                    <span class="tooltip-dot" style="background:#6366f1"></span>
-                    {{ $t('merchant.dashboard.orders') }}: <strong>{{ tt.orders }}</strong>
-                  </div>
-                  <div class="tooltip-row">
-                    <span class="tooltip-dot" style="background:#22c55e"></span>
-                    {{ $t('merchant.dashboard.totalRevenueLAK') }}: <strong>{{ tt.revenue }}</strong>
-                  </div>
-                  <div class="tooltip-row">
-                    <span class="tooltip-dot" style="background:#3b82f6"></span>
-                    {{ $t('merchant.dashboard.totalProfitLAK') }}: <strong>{{ tt.profit }}</strong>
-                  </div>
-                </div>
-              </Teleport>
-            </div>
-            <a-empty v-else :description="$t('merchant.dashboard.noData')" />
-          </a-card>
+          <PriceCurrencyChart />
         </a-col>
       </a-row>
 
-      <!-- Row 5: Latest Orders -->
-      <a-row :gutter="[16, 16]" class="stats-row">
-        <a-col :xs="24">
-          <a-card :bordered="false" class="panel-card">
-            <div class="panel-header-row">
-              <div class="panel-title">{{ $t('merchant.dashboard.latestOrders.title') }}</div>
-              <a class="view-all-link" @click="goOrders">{{ $t('merchant.dashboard.latestOrders.viewAll') }}</a>
+      
+
+      
+
+      <div class="page-header !mt-5">
+        <div class="page-titlek">{{ $t('merchant.dashboard.sectionTopCustomersAndOrderItems') }}</div>
+        <div class="page-subtitle">{{ $t('merchant.dashboard.sectionTopCustomersAndOrderItemsDesc') }}</div>
+      </div>
+      <!-- Row 4: Top Customers (left) + Latest Order Items (right) -->
+      <a-row :gutter="[16, 16]" class="stats-row two-cards-row">
+        <a-col :xs="24" :sm="12" :lg="12">
+          <a-card :bordered="false" class="panel-card panel-card--equal">
+            <div class="panel-title">
+              <TrophyOutlined style="margin-right: 8px; color: #f59e0b;" />
+              {{ $t('merchant.dashboard.topCustomers') }}
             </div>
-
-            <a-empty v-if="!loading && latestOrders.length === 0" :description="$t('merchant.dashboard.latestOrders.noOrders')" class="py-6" />
-
-            <!-- Desktop table -->
-            <a-table
-              v-else-if="!isMobile"
-              :columns="latestColumns"
-              :data-source="mappedOrders"
-              :pagination="false"
-              row-key="id"
-              size="middle"
-            >
-              <template #bodyCell="{ column, record }">
-                <template v-if="column.key === 'customer'">
-                  <div class="order-cell">
-                    <a-avatar :style="{ backgroundColor: record.avatarColor, flexShrink: 0 }">{{ record.avatarText }}</a-avatar>
-                    <div>
-                      <div class="font-medium text-slate-900">{{ record.customerName }}</div>
-                      <div class="text-slate-500 text-xs">{{ record.orderCode }}</div>
+            <div v-if="dashboard?.topCustomers?.customers?.length" class="customers-grid">
+              <div v-for="customer in dashboard.topCustomers.customers.filter(c => c?.customerId)" :key="customer.customerId" class="customer-item">
+                <div class="customer-rank">#{{ customer.rank || 0 }}</div>
+                <div class="customer-info">
+                  <div class="customer-name">{{ customer.customerName || 'Unknown Customer' }}</div>
+                  <div class="customer-email">{{ customer.customerEmail || 'No email' }}</div>
+                </div>
+                <div class="customer-stats">
+                  <div class="customer-amount text-green">{{ fmtCurrency(customer.totalBuyAmountLak || 0) }} LAK</div>
+                  <div class="customer-orders">{{ customer.orderCount || 0 }} {{ $t('merchant.dashboard.orders') }}</div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="no-data">
+              <a-empty :description="$t('merchant.dashboard.noTopCustomers')" />
+            </div>
+          </a-card>
+        </a-col>
+        <a-col :xs="24" :sm="12" :lg="12">
+          <a-card :bordered="false" class="panel-card panel-card--equal">
+            <div class="panel-title">
+              <AppstoreOutlined style="margin-right: 8px; color: #8b5cf6;" />
+              {{ $t('merchant.dashboard.latestOrderItems') }}
+            </div>
+            <div v-if="latestOrderItemsLoading" class="no-data">
+              <a-spin size="large" />
+            </div>
+            <div v-else-if="latestOrderItems?.length" class="order-items-grid">
+              <RouterLink
+                v-for="item in latestOrderItems"
+                :key="item.id"
+                :to="{ name: 'merchant-order-detail', params: { id: item.orderId } }"
+                class="order-item-link"
+              >
+                <div class="order-item-card">
+                  <div class="order-item-product">
+                    <div class="order-item-name">{{ item.productName || '—' }}</div>
+                    <div class="order-item-meta">
+                      {{ item.variant ? `${item.variant} • ` : '' }}{{ $t('merchant.dashboard.qty') }}: {{ item.quantity }}
                     </div>
                   </div>
-                </template>
-                <template v-else-if="column.key === 'status'">
-                  <a-tag :color="record.statusColor" class="status-tag">{{ record.statusText }}</a-tag>
-                </template>
-                <template v-else-if="column.key === 'total'">
-                  <div class="font-semibold text-slate-900">{{ formatCurrency(record.totalAmount) }}</div>
-                </template>
-              </template>
-            </a-table>
-
-            <!-- Mobile card list -->
-            <div v-else class="latest-mobile">
-              <div v-for="o in mappedOrders" :key="o.id" class="mobile-order-card">
-                <div class="mobile-order-top">
-                  <a-avatar size="small" :style="{ backgroundColor: o.avatarColor }">{{ o.avatarText }}</a-avatar>
-                  <div class="mobile-order-info">
-                    <div class="mobile-order-code">#{{ o.orderCode }}</div>
-                    <div class="mobile-order-customer">{{ o.customerName }}</div>
+                  <div class="order-item-cost">
+                    <div class="order-item-final text-green">{{ fmtCurrency(Number(item.finalCost)) }} LAK</div>
+                    <div class="order-item-order">#{{ item.orderId }}</div>
                   </div>
-                  <a-tag :color="o.statusColor" class="status-tag">{{ o.statusText }}</a-tag>
                 </div>
-                <div class="mobile-order-bottom">
-                  <span class="mobile-order-label">{{ $t('merchant.dashboard.table.total') }}</span>
-                  <span class="mobile-order-amount">{{ formatCurrency(o.totalAmount) }}</span>
-                </div>
-              </div>
+              </RouterLink>
+            </div>
+            <div v-else class="no-data">
+              <a-empty :description="$t('merchant.dashboard.noLatestOrderItems')" />
             </div>
           </a-card>
         </a-col>
       </a-row>
+      </template>
     </a-spin>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useI18n } from 'vue-i18n';
+import { computed, onMounted, ref } from 'vue';
+import { RouterLink } from 'vue-router';
 import {
   ShoppingCartOutlined,
-  TeamOutlined,
   CheckCircleOutlined,
-  WalletOutlined,
+  TeamOutlined,
+  InboxOutlined,
+  AppstoreOutlined,
+  UserOutlined,
+  TrophyOutlined,
 } from '@ant-design/icons-vue';
 import { useMerchantDashboard } from '../../../composables/merchant/useMerchantDashboard';
+import { orderItemRepository } from '@/infrastructure/repositories/order-item.repository';
+import type { OrderItem } from '@/domain/entities/user.entity';
+import PriceCurrencyChart from './PriceCurrencyChart.vue';
 
-const router = useRouter();
-const { t } = useI18n();
-const {
-  loading,
-  dashboard,
-  annualReport,
-  selectedYear,
-  latestOrders,
-  fetchDashboard,
-  fetchAnnualReport,
-  changeYear,
-} = useMerchantDashboard();
+const { loading, dashboard, fetchDashboard } = useMerchantDashboard();
+const error = ref<string | null>(null);
+const latestOrderItems = ref<OrderItem[]>([]);
+const latestOrderItemsLoading = ref(false);
 
-const currentYear = new Date().getFullYear();
+/* แยก LAK กับสกุลเงินอื่น — LAK แสดง full width ด้านล่าง */
+const allCurrencies = computed(() =>
+  (dashboard.value?.priceCurrencySummary ?? []).filter((c) => c?.baseCurrency || c?.targetCurrency)
+);
+const nonLakCurrencies = computed(() =>
+  allCurrencies.value.filter((c) => {
+    const curr = (c.baseCurrency || c.targetCurrency || '').toUpperCase();
+    return curr !== 'LAK';
+  })
+);
+const lakCurrency = computed(() =>
+  allCurrencies.value.find((c) => (c.baseCurrency || c.targetCurrency || '').toUpperCase() === 'LAK')
+);
 
-const windowWidth = ref(window.innerWidth);
-const isMobile = computed(() => windowWidth.value < 768);
-function onResize() { windowWidth.value = window.innerWidth; }
-onMounted(() => window.addEventListener('resize', onResize));
-onUnmounted(() => window.removeEventListener('resize', onResize));
-
-onMounted(async () => {
-  await Promise.allSettled([fetchDashboard(), fetchAnnualReport()]);
+/* Financial Summary: stable grid 3 — เสมอ 3 cards (เติม placeholder ถ้ามีน้อยกว่า 3) */
+const displayNonLakCurrencies = computed(() => {
+  const list = nonLakCurrencies.value;
+  if (list.length >= 3) return list;
+  const placeholders = Array(Math.max(0, 3 - list.length)).fill(null);
+  return [...list, ...placeholders] as (typeof list[0] | null)[];
 });
+const displayLakCurrency = computed(() => lakCurrency.value ?? null);
 
-const totalPayment = computed(() => {
-  const s = dashboard.value?.ordersByPaymentStatus;
-  if (!s) return 1;
-  return (s.UNPAID + s.PARTIAL + s.PAID) || 1;
-});
-const paymentPercent = (key: 'UNPAID' | 'PARTIAL' | 'PAID') => {
-  const val = dashboard.value?.ordersByPaymentStatus?.[key] ?? 0;
-  return Math.round((val / totalPayment.value) * 100);
-};
-const totalArrival = computed(() => {
-  const s = dashboard.value?.ordersByArrivalStatus;
-  if (!s) return 1;
-  return (s.NOT_ARRIVED + s.ARRIVED) || 1;
-});
-const arrivalPercent = (key: 'NOT_ARRIVED' | 'ARRIVED') => {
-  const val = dashboard.value?.ordersByArrivalStatus?.[key] ?? 0;
-  return Math.round((val / totalArrival.value) * 100);
-};
-
-function formatCurrency(value?: number) {
-  if (value == null) return '0';
-  return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
-}
-const truncNum = (val: string | number, maxLen = 12) => {
-  const formatted = Number(val || 0).toLocaleString();
-  return formatted.length > maxLen ? formatted.slice(0, maxLen) + '…' : formatted;
-};
-
-function onYearInputChange(val: number | null) {
-  if (val && val >= 2000 && val <= currentYear + 5) changeYear(val);
-}
-function onYearInputEnter(e: KeyboardEvent) {
-  const target = e.target as HTMLInputElement;
-  const val = Number(target.value);
-  if (val && val >= 2000 && val <= currentYear + 5) changeYear(val);
-}
-
-const chartMonths = computed(() => annualReport.value?.months ?? []);
-
-const cPadL = computed(() => isMobile.value ? 44 : 66);
-const cPadR = computed(() => isMobile.value ? 8 : 16);
-const cPadTop = 16;
-const cPadBot = 28;
-const bw = computed(() => isMobile.value ? 8 : 14);
-const bg = computed(() => isMobile.value ? 2 : 4);
-const gg = computed(() => isMobile.value ? 10 : 24);
-const gw = computed(() => bw.value * 3 + bg.value * 2);
-const innerH = computed(() => isMobile.value ? 160 : 220);
-const svgH = computed(() => innerH.value + cPadTop + cPadBot);
-
-const svgW = computed(() => {
-  const n = chartMonths.value.length || 1;
-  const w = cPadL.value + cPadR.value + n * gw.value + (n - 1) * gg.value + 16;
-  const minW = isMobile.value ? windowWidth.value - 64 : 600;
-  return Math.max(w, minW);
-});
-
-const maxOrders = computed(() => Math.max(1, ...chartMonths.value.map(m => m.orderCount ?? 0)));
-const maxRevenue = computed(() => Math.max(1, ...chartMonths.value.map(m => Math.max(Number(m.revenueLak ?? 0), Number(m.profitLak ?? 0)))));
-
-const gx = (i: number) => cPadL.value + i * (gw.value + gg.value);
-const by = (val: number, max: number) => {
-  const pct = Math.min(val / (max || 1), 1);
-  return cPadTop + innerH.value * (1 - pct);
-};
-const bh = (val: number, max: number) => {
-  const pct = Math.min(val / (max || 1), 1);
-  return Math.max(innerH.value * pct, 2);
-};
-
-const gridLines = computed(() => {
-  const steps = isMobile.value ? 4 : 5;
-  const lines: { y: number; label: string }[] = [];
-  for (let i = 0; i <= steps; i++) {
-    const pct = i / steps;
-    lines.push({
-      y: cPadTop + innerH.value * pct,
-      label: formatCompact(maxRevenue.value * (1 - pct)),
-    });
+const safeFetchDashboard = async () => {
+  error.value = null;
+  try {
+    console.log('Fetching dashboard data...');
+    const result = await fetchDashboard();
+    console.log('Dashboard fetch result:', result);
+    if (!result) {
+      error.value = 'Failed to fetch dashboard data';
+    }
+  } catch (err) {
+    console.error('Dashboard fetch error:', err);
+    error.value = err instanceof Error ? err.message : 'Unknown error occurred';
   }
-  return lines;
+};
+
+// Add a timeout to prevent infinite loading
+const loadingTimeout = ref<number | null>(null);
+
+const fetchWithTimeout = async () => {
+  // Clear any existing timeout
+  if (loadingTimeout.value) {
+    clearTimeout(loadingTimeout.value);
+  }
+  
+  // Set a timeout to stop loading after 10 seconds
+  loadingTimeout.value = window.setTimeout(() => {
+    console.log('Dashboard loading timeout reached');
+    error.value = 'Loading timeout - Please check your connection';
+  }, 10000);
+  
+  await safeFetchDashboard();
+  
+  // Clear timeout when done
+  if (loadingTimeout.value) {
+    clearTimeout(loadingTimeout.value);
+    loadingTimeout.value = null;
+  }
+};
+
+async function fetchLatestOrderItems() {
+  latestOrderItemsLoading.value = true;
+  try {
+    const res = await orderItemRepository.getListByMerchant({ page: 1, limit: 5 });
+    latestOrderItems.value = res?.results ?? [];
+  } catch {
+    latestOrderItems.value = [];
+  } finally {
+    latestOrderItemsLoading.value = false;
+  }
+}
+
+onMounted(() => {
+  console.log('Dashboard component mounted');
+  fetchWithTimeout();
+  fetchLatestOrderItems();
 });
 
-function formatCompact(val: number): string {
-  if (val >= 1_000_000) return (val / 1_000_000).toFixed(1) + 'M';
-  if (val >= 1_000) return (val / 1_000).toFixed(0) + 'K';
-  return Math.round(val).toString();
+function fmt(val: number | undefined): string {
+  return (val ?? 0).toLocaleString();
 }
 
-function shortMonthName(name: string): string {
-  if (!name) return '';
-  return name.length > 3 ? name.slice(0, 3) : name;
+function fmtCurrency(val: number | undefined): string {
+  if (val == null) return '0';
+  return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(val);
 }
 
-const tt = reactive({
-  show: false,
-  pageX: 0,
-  pageY: 0,
-  monthName: '',
-  orders: '',
-  revenue: '',
-  profit: '',
-});
-
-const ttStyle = computed(() => ({
-  position: 'fixed' as const,
-  left: `${tt.pageX + 14}px`,
-  top: `${tt.pageY - 14}px`,
-  transform: 'translateY(-100%)',
-  zIndex: 9999,
-}));
-
-function fillTt(m: any) {
-  tt.monthName = m.monthName;
-  tt.orders = String(m.orderCount ?? 0);
-  tt.revenue = formatCurrency(Number(m.revenueLak ?? 0));
-  tt.profit = formatCurrency(Number(m.profitLak ?? 0));
+function fmtCompact(val: number | undefined): string {
+  const n = val ?? 0;
+  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(1) + 'B';
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+  return fmtCurrency(n);
 }
 
-function onBarEnter(e: MouseEvent, m: any) {
-  tt.show = true;
-  tt.pageX = e.pageX;
-  tt.pageY = e.pageY;
-  fillTt(m);
+/* ใช้เมื่อ uncomment Financial Summary section
+function getTotalRevenue(): number {
+  if (!dashboard.value?.priceCurrencySummary?.length) return 0;
+  return dashboard.value.priceCurrencySummary.reduce((sum, currency) => {
+    if (!currency?.totalAllConverted) return sum;
+    return sum + currency.totalAllConverted;
+  }, 0);
 }
-function onBarMove(e: MouseEvent) {
-  tt.pageX = e.pageX;
-  tt.pageY = e.pageY;
+function getTotalPaid(): number {
+  if (!dashboard.value?.priceCurrencySummary?.length) return 0;
+  return dashboard.value.priceCurrencySummary.reduce((sum, currency) => {
+    if (!currency?.totalPaidConverted) return sum;
+    return sum + currency.totalPaidConverted;
+  }, 0);
 }
-function onBarTouch(e: TouchEvent, m: any) {
-  const touch = e.touches[0];
-  if (!touch) return;
-  tt.show = true;
-  tt.pageX = touch.pageX;
-  tt.pageY = touch.pageY;
-  fillTt(m);
+function getTotalUnpaid(): number {
+  if (!dashboard.value?.priceCurrencySummary?.length) return 0;
+  return dashboard.value.priceCurrencySummary.reduce((sum, currency) => {
+    if (!currency?.totalUnpaidConverted) return sum;
+    return sum + currency.totalUnpaidConverted;
+  }, 0);
 }
-function hideTooltip() { tt.show = false; }
-
-const AVATAR_COLORS = ['#2563eb', '#f97316', '#a855f7', '#10b981', '#ef4444'];
-
-const latestColumns = computed(() => ([
-  { title: t('merchant.dashboard.table.orderCode'), key: 'customer' },
-  { title: t('merchant.dashboard.table.status'), key: 'status', align: 'center' as const, width: 140 },
-  { title: t('merchant.dashboard.table.total'), key: 'total', align: 'right' as const, width: 160 },
-]));
-
-const mappedOrders = computed(() => latestOrders.value.map((o, idx) => {
-  const isArrived = o.arrivalStatus === 'ARRIVED';
-  const name = o.customerName || t('merchant.dashboard.latestOrders.unknownCustomer');
-  const initials = name.trim().split(/\s+/).slice(0, 2).map(x => x[0]).join('').toUpperCase();
-  return {
-    id: String(o.id),
-    orderCode: o.orderCode,
-    customerName: name,
-    totalAmount: Number(o.totalAmount),
-    statusText: isArrived ? t('merchant.dashboard.status.arrived') : t('merchant.dashboard.status.notArrived'),
-    statusColor: isArrived ? 'green' : 'blue',
-    avatarColor: AVATAR_COLORS[idx % AVATAR_COLORS.length],
-    avatarText: initials || 'C',
-  };
-}));
-
-const goOrders = () => { router.push('/merchant/stock-order'); };
+function getTotalInLak(): number { return getTotalRevenue(); }
+*/
 </script>
 
 <style scoped>
@@ -574,61 +416,226 @@ const goOrders = () => { router.push('/merchant/stock-order'); };
 
 .page-header { margin-bottom: 20px; }
 .page-title { font-size: 22px; font-weight: 600; color: #0f172a; line-height: 1.25; }
+.page-titlek { font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.25; }
 .page-subtitle { font-size: 13px; color: #64748b; margin-top: 2px; }
+
+.error-state {
+  padding: 40px 20px;
+  text-align: center;
+}
 
 .stats-row { margin-bottom: 4px; }
 
+/* ===== Stat Cards ===== */
 .stat-card {
   border-radius: 16px;
-  padding: 20px;
+  padding: 16px;
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: 12px;
   box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 4px 16px rgba(15,23,42,0.04);
   background: #fff;
   transition: transform 200ms ease, box-shadow 200ms ease;
+  height: 100%;
 }
 .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(15,23,42,0.10); }
 .stat-icon {
-  width: 44px; height: 44px;
-  border-radius: 12px;
+  width: 40px; height: 40px;
+  border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
+  font-size: 18px;
   flex-shrink: 0;
 }
 .stat-purple .stat-icon { background: rgba(139,92,246,0.12); color: #8b5cf6; }
 .stat-blue .stat-icon   { background: rgba(59,130,246,0.12);  color: #3b82f6; }
 .stat-green .stat-icon  { background: rgba(34,197,94,0.12);   color: #22c55e; }
+.stat-teal .stat-icon   { background: rgba(20,184,166,0.12);  color: #14b8a6; }
 .stat-orange .stat-icon { background: rgba(245,158,11,0.12);  color: #f59e0b; }
+.stat-indigo .stat-icon { background: rgba(99,102,241,0.12);  color: #6366f1; }
 
 .stat-body { flex: 1; min-width: 0; }
-.stat-value { font-size: 26px; font-weight: 700; color: #0f172a; line-height: 1.2; }
-.stat-label { font-size: 13px; color: #64748b; margin-top: 2px; }
-.stat-sub   { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+.stat-value { font-size: 22px; font-weight: 700; color: #0f172a; line-height: 1.2; }
+.stat-label { font-size: 12px; color: #64748b; margin-top: 2px; }
 
+/* ===== Panel Card ===== */
 .panel-card {
   border-radius: 16px;
   box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 4px 16px rgba(15,23,42,0.04);
 }
+.panel-card--equal { height: 100%; }
+@media (min-width: 768px) {
+  .panel-card--equal { min-height: 280px; }
+}
+.two-cards-row .ant-col { display: flex; }
+.two-cards-row .ant-col .panel-card { flex: 1; }
 .panel-title { font-size: 16px; font-weight: 600; color: #0f172a; margin-bottom: 16px; }
-.panel-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
-.panel-header-row .panel-title { margin-bottom: 0; }
 
-.status-equal-row { align-items: stretch; }
-.status-equal-row :deep(.ant-col) { display: flex; flex-direction: column; }
-.status-equal-row :deep(.ant-col) > .panel-card { flex: 1; display: flex; flex-direction: column; }
-.status-equal-row :deep(.ant-col) > .panel-card :deep(.ant-card-body) { flex: 1; display: flex; flex-direction: column; }
-.status-equal-row .status-bars { flex: 1; justify-content: space-around; }
+/* ===== Currency Cards ===== */
+.currency-card { height: 100%; }
+.currency-card--full { height: auto; }
+.currency-card--full .currency-header { margin-bottom: 16px; }
+.currency-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px; padding-bottom: 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+.currency-badge {
+  padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.5px;
+  background: rgba(59, 130, 246, 0.12); color: #3b82f6;
+}
+.badge-thb { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+.badge-lak { background: rgba(34, 197, 94, 0.12); color: #22c55e; }
+.badge-usdt { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+.badge-placeholder { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+.currency-placeholder .currency-title { color: #94a3b8; }
+.currency-title { font-size: 14px; font-weight: 700; color: #0f172a; }
+.currency-rows { display: flex; flex-direction: column; gap: 10px; }
+.lak-summary-rows { display: flex; flex-direction: column; gap: 10px; }
+.currency-row { display: flex; justify-content: space-between; align-items: center; }
+.currency-divider {
+  height: 1px;
+  background: rgba(148, 163, 184, 0.15);
+  margin: 8px 0;
+}
+.c-label { font-size: 12px; color: #64748b; }
+.c-val { font-size: 14px; font-weight: 700; color: #0f172a; }
 
-.status-bars { display: flex; flex-direction: column; gap: 12px; }
-.bar-item { display: flex; align-items: center; gap: 10px; }
-.bar-label { font-size: 13px; color: #64748b; width: 100px; flex-shrink: 0; }
-.bar-count { font-size: 13px; font-weight: 700; color: #0f172a; width: 36px; text-align: right; flex-shrink: 0; }
-.bar-item :deep(.ant-progress) { flex: 1; }
+/* ===== Top Customers ===== */
+.customers-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.customer-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+.customer-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+.customer-rank {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.customer-info {
+  flex: 1;
+  min-width: 0;
+}
+.customer-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+.customer-email {
+  font-size: 12px;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.customer-stats {
+  text-align: right;
+  flex-shrink: 0;
+}
+.customer-amount {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.customer-orders {
+  font-size: 11px;
+  color: #64748b;
+}
 
-.fin-item  { text-align: center; padding: 10px 0; }
-.fin-label { font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
-.fin-value { font-size: 18px; font-weight: 700; color: #0f172a; }
+.no-data {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+/* ===== Latest Order Items ===== */
+.order-items-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.order-item-link {
+  text-decoration: none;
+  color: inherit;
+}
+.order-item-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+.order-item-link:hover .order-item-card {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+.order-item-product {
+  flex: 1;
+  min-width: 0;
+}
+.order-item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+.order-item-meta {
+  font-size: 12px;
+  color: #64748b;
+}
+.order-item-cost {
+  text-align: right;
+  flex-shrink: 0;
+}
+.order-item-final {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.order-item-order {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* ===== Financial Grid ===== */
+.fin-item { text-align: center; padding: 10px 6px; }
+.fin-label { font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 600; letter-spacing: 0.2px; }
+.fin-value { font-size: 17px; font-weight: 700; color: #0f172a; cursor: pointer; }
+
+/* Colors */
+.text-green  { color: #22c55e !important; }
+.text-blue   { color: #3b82f6 !important; }
+.text-red    { color: #ef4444 !important; }
+.text-orange { color: #f59e0b !important; }
+
 .num-truncate {
   display: inline-block;
   max-width: 100%;
@@ -636,109 +643,78 @@ const goOrders = () => { router.push('/merchant/stock-order'); };
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.text-green { color: #22c55e !important; }
-.text-blue  { color: #3b82f6 !important; }
-.text-red   { color: #ef4444 !important; }
 
-.chart-controls { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-.chart-legend { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-.chart-legend-mobile { display: none; }
-.legend-item { display: inline-flex; align-items: center; gap: 5px; margin-right: 12px; }
-.legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
-.legend-text { font-size: 12px; color: #64748b; }
-
-.year-input { width: 110px; }
-.year-input :deep(.ant-input-number-input) { text-align: center; font-weight: 600; font-size: 14px; }
-
-.chart-area { position: relative; }
-.chart-scroll {
-  overflow-x: auto; overflow-y: visible;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 4px;
-  scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent;
+/* ===== Responsive ===== */
+/* Galaxy Tab S7 (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .page-title { font-size: 18px; }
+  .page-subtitle { font-size: 12px; }
+  .stat-value { font-size: 18px; }
+  .stat-label { font-size: 11px; }
+  .currency-title { font-size: 13px; }
+  .c-val { font-size: 13px; }
+  .c-label { font-size: 11px; }
+  .customer-name { font-size: 13px; }
+  .customer-email { font-size: 11px; }
+  .customer-amount { font-size: 14px; }
+  .fin-value { font-size: 14px; }
+  .fin-label { font-size: 10px; }
+  
+  /* Adjust grid for tablet */
+  .stats-row .ant-col {
+    margin-bottom: 12px;
+  }
 }
-.chart-scroll::-webkit-scrollbar { height: 6px; }
-.chart-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
-.bar-chart-svg { display: block; }
-.chart-bar { cursor: pointer; transition: opacity 150ms ease, filter 150ms ease; }
-.chart-bar:hover { opacity: 0.82; filter: brightness(1.1); }
-.bar-val-label { font-size: 10px; font-weight: 600; font-family: inherit; }
-.chart-axis-label { font-size: 11px; fill: #94a3b8; font-family: inherit; }
-.chart-month-label { font-size: 12px; fill: #475569; font-weight: 500; font-family: inherit; }
-
-.chart-tooltip {
-  pointer-events: none;
-  background: #0f172a; color: #fff;
-  border-radius: 10px; padding: 10px 14px;
-  font-size: 12px; line-height: 1.6;
-  box-shadow: 0 8px 24px rgba(15,23,42,0.28);
-  white-space: nowrap; max-width: 260px;
-}
-.tooltip-title { font-weight: 700; margin-bottom: 4px; font-size: 13px; }
-.tooltip-row { display: flex; align-items: center; gap: 6px; }
-.tooltip-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
-
-.view-all-link { color: #3b82f6; font-weight: 600; cursor: pointer; font-size: 13px; }
-.view-all-link:hover { color: #1d4ed8; }
-
-.status-tag { border-radius: 999px; padding: 2px 10px; font-weight: 700; }
-
-.order-cell { display: flex; align-items: center; gap: 10px; }
-
-/* Latest orders mobile */
-.latest-mobile { display: flex; flex-direction: column; gap: 8px; }
-.mobile-order-card {
-  background: #f8fafc;
-  border-radius: 12px;
-  padding: 12px 14px;
-  border: 1px solid rgba(148, 163, 184, 0.15);
-}
-.mobile-order-top { display: flex; align-items: center; gap: 10px; }
-.mobile-order-info { flex: 1; min-width: 0; }
-.mobile-order-code { font-size: 13px; font-weight: 700; color: #0f172a; }
-.mobile-order-customer { font-size: 11px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mobile-order-bottom {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-top: 8px; padding-top: 8px;
-  border-top: 1px solid rgba(148, 163, 184, 0.15);
-}
-.mobile-order-label { font-size: 12px; color: #64748b; }
-.mobile-order-amount { font-size: 14px; font-weight: 700; color: #0f172a; }
-
+/* Mobile < 768px */
 @media (max-width: 767px) {
   .page-title { font-size: 16px; }
   .page-subtitle { display: none; }
-  .stat-card { padding: 14px; gap: 10px; flex-direction: column; align-items: flex-start; }
-  .stat-icon { width: 36px; height: 36px; font-size: 16px; border-radius: 10px; }
-  .stat-value {
-    font-size: 20px;
-    max-width: 100%; overflow-x: auto; overflow-y: hidden;
-    white-space: nowrap; scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent;
-    -webkit-overflow-scrolling: touch;
-  }
-  .stat-value::-webkit-scrollbar { height: 3px; }
-  .stat-value::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+  .stat-card { padding: 12px; gap: 10px; }
+  .stat-icon { width: 34px; height: 34px; font-size: 15px; }
+  .stat-value { font-size: 18px; }
   .stat-label { font-size: 11px; }
-  .stat-sub { font-size: 10px; }
-  .fin-value { font-size: 14px; }
-  .fin-label { font-size: 10px; }
-  .bar-label { width: 70px; font-size: 11px; }
-
-  .panel-header-row { flex-direction: row; align-items: center; justify-content: space-between; }
-  .chart-legend { display: none; }
-  .chart-legend-mobile {
-    display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px;
+  
+  /* Currency cards mobile */
+  .currency-header {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
   }
-  .chart-legend-mobile .legend-item { margin-right: 10px; }
-  .chart-legend-mobile .legend-text { font-size: 10px; }
-  .chart-legend-mobile .legend-dot { width: 8px; height: 8px; }
-
-  .year-input { width: 90px; }
-  .year-input :deep(.ant-input-number-input) { font-size: 13px; }
-  .chart-month-label { font-size: 10px; }
-  .chart-axis-label { font-size: 9px; }
-  .chart-tooltip { font-size: 11px; padding: 8px 10px; max-width: 220px; }
+  .currency-title { font-size: 13px; }
+  .currency-badge { font-size: 11px; padding: 1px 8px; }
+  .c-val { font-size: 13px; }
+  .c-label { font-size: 11px; }
+  
+  /* Financial grid mobile */
+  .fin-value { font-size: 13px; }
+  .fin-label { font-size: 10px; }
+  .fin-item { padding: 8px 4px; }
+  
+  /* Top customers mobile */
+  .customer-item {
+    padding: 12px;
+    gap: 12px;
+  }
+  .customer-rank {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+  .customer-name { font-size: 13px; }
+  .customer-email { font-size: 11px; }
+  .customer-amount { font-size: 14px; }
+  .customer-orders { font-size: 10px; }
+  
+  /* Latest order items mobile */
+  .order-item-card { padding: 12px; gap: 12px; }
+  .order-item-name { font-size: 13px; }
+  .order-item-meta { font-size: 11px; }
+  .order-item-final { font-size: 14px; }
+  
+  /* Error state mobile */
+  .error-state {
+    padding: 20px 16px;
+  }
 }
 </style>
 

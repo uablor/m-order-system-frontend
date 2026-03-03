@@ -16,11 +16,17 @@
         <a-input v-model:value="formState.email" type="email" />
       </a-form-item>
 
-      <a-form-item name="password" :label="$t('users.password')" :extra="mode === 'edit' ? $t('users.passwordHelper') : undefined">
+      <a-form-item
+        name="password"
+        :label="$t('users.password')"
+        :rules="mode === 'create' ? [{ required: true, min: 6, message: $t('users.password') + ' ต้องอย่างน้อย 6 ตัวอักษร' }] : []"
+        :extra="mode === 'edit' ? $t('users.passwordHelper') : undefined"
+      >
         <a-input-password v-model:value="formState.password" :placeholder="mode === 'edit' ? $t('users.passwordHelper') : undefined" />
       </a-form-item>
 
-      <a-form-item name="roleId" :label="$t('users.role')" :rules="[{ required: true, message: $t('users.selectRole') }]">
+      <!-- Role selector: แสดงเฉพาะตอน edit เพราะ create กำหนด role อัตโนมัติจาก API -->
+      <a-form-item v-if="mode === 'edit'" name="roleId" :label="$t('users.role')" :rules="[{ required: true, message: $t('users.selectRole') }]">
         <a-select v-model:value="formState.roleId" :placeholder="$t('users.selectRole')">
           <a-select-option v-for="role in roles" :key="role.id" :value="role.id">
             {{ role.roleName }}
@@ -28,7 +34,8 @@
         </a-select>
       </a-form-item>
 
-      <a-form-item name="isActive" :label="$t('users.isActive')">
+      <!-- isActive: แสดงเฉพาะตอน edit เพราะ create กำหนด default active อัตโนมัติจาก API -->
+      <a-form-item v-if="mode === 'edit'" name="isActive" :label="$t('users.isActive')">
         <a-switch v-model:checked="formState.isActive" />
       </a-form-item>
     </a-form>
@@ -49,7 +56,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'submit', payload: { email: string; password?: string; fullName: string; roleId: number; isActive: boolean }): void;
+  (e: 'submit', payload: { email: string; password?: string; fullName: string; roleId?: number; isActive: boolean }): void;
   (e: 'cancel'): void;
 }>();
 
@@ -93,7 +100,7 @@ const submit = async () => {
       email: formState.email,
       password: formState.password || undefined,
       fullName: formState.fullName,
-      roleId: Number(formState.roleId),
+      ...(props.mode === 'edit' && formState.roleId ? { roleId: Number(formState.roleId) } : {}),
       isActive: !!formState.isActive,
     });
   } catch {

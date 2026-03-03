@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { exchangeRateRepository } from '@/infrastructure/repositories/exchange-rate.repository';
+import { extractArrayResult } from '@/shared/types/backend-response.types';
 import type { ExchangeRate } from '@/domain/entities/user.entity';
 
 export function useExchangeRates() {
@@ -30,9 +31,9 @@ export function useExchangeRates() {
   const fetchTodayRates = async () => {
     try {
       const res = await exchangeRateRepository.getToday();
-      const results = res.results ?? [];
-      todayBuyRate.value = results.find(r => r.rateType === 'BUY') ?? null;
-      todaySellRate.value = results.find(r => r.rateType === 'SELL') ?? null;
+      const results = extractArrayResult<ExchangeRate>(res);
+      todayBuyRate.value = results.find((r: ExchangeRate) => r.rateType === 'BUY') ?? null;
+      todaySellRate.value = results.find((r: ExchangeRate) => r.rateType === 'SELL') ?? null;
     } catch { /* handled in StockOrderPage via modal */ }
   };
 

@@ -2,7 +2,8 @@ import { ApiClient } from '@/infrastructure/apis/api';
 import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
 import type { MerchantCreateDto, MerchantListQueryDto, MerchantUpdateDto } from '@/application/dto/merchant.dto';
 import type { Merchant, MerchantDetail } from '@/domain/entities/user.entity';
-import type { BackendPaginatedResponse, BackendResponse } from '@/shared/types/backend-response.types';
+import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
+import { extractSingleResult } from '@/shared/types/backend-response.types';
 
 export class MerchantRepository {
   private apiClient: ApiClient;
@@ -23,14 +24,17 @@ export class MerchantRepository {
   }
 
   async getById(id: number): Promise<Merchant> {
-    const res = await this.apiClient.get<BackendResponse<Merchant>>(API_ENDPOINTS.MERCHANTS.GET_BY_ID(id));
-    const merchant = res.results?.[0];
+    const res = await this.apiClient.get<any>(API_ENDPOINTS.MERCHANTS.GET_BY_ID(id));
+    const merchant = extractSingleResult<Merchant>(res);
     if (!merchant) throw new Error('Merchant not found in response');
     return merchant;
   }
 
-  async getDetail(id: number): Promise<BackendResponse<MerchantDetail>> {
-    return await this.apiClient.get<BackendResponse<MerchantDetail>>(API_ENDPOINTS.MERCHANTS.GET_DETAIL(id));
+  async getDetail(id: number): Promise<MerchantDetail> {
+    const res = await this.apiClient.get<any>(API_ENDPOINTS.MERCHANTS.GET_DETAIL(id));
+    const detail = extractSingleResult<MerchantDetail>(res);
+    if (!detail) throw new Error('Merchant detail not found in response');
+    return detail;
   }
 
   async update(id: number, data: MerchantUpdateDto): Promise<void> {

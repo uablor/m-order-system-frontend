@@ -4,7 +4,7 @@
       <div class="title-block">
         <div class="page-title">{{ $t('access.permissions.title') }}</div>
       </div>
-      <div class="btn-group">
+      <!-- <div class="btn-group">
         <a-button type="default" class="add-btn" @click="$emit('generate')">
           {{ $t('access.permissions.generate') }}
         </a-button>
@@ -12,7 +12,7 @@
           <template #icon><PlusOutlined /></template>
           {{ $t('access.permissions.create') }}
         </a-button>
-      </div>
+      </div> -->
     </div>
 
     <!-- Desktop: table inside card -->
@@ -142,7 +142,7 @@ const columns = computed<TableColumnsType>(() => [
   { title: 'Description', dataIndex: 'description', key: 'description', width: 320 },
   { title: 'Created At', key: 'createdAt', width: 180 },
   { title: 'Updated At', key: 'updatedAt', width: 180 },
-  { title: 'Actions', key: 'actions', fixed: 'right' as const, width: 140 },
+  // { title: 'Actions', key: 'actions', fixed: 'right' as const, width: 140 },
 ]);
 </script>
 

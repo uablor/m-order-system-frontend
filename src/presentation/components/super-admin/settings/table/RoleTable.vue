@@ -4,10 +4,10 @@
       <div class="title-block">
         <div class="page-title">{{ $t('access.roles.title') }}</div>
       </div>
-      <a-button type="primary" class="add-btn" @click="$emit('create')">
+      <!-- <a-button type="primary" class="add-btn" @click="$emit('create')">
         <template #icon><PlusOutlined /></template>
         {{ $t('access.roles.create') }}
-      </a-button>
+      </a-button> -->
     </div>
 
     <!-- Desktop: table inside card -->
@@ -136,7 +136,7 @@ const columns = computed<TableColumnsType>(() => [
   { title: 'Description', dataIndex: 'description', key: 'description', width: 360 },
   { title: 'Created At', key: 'createdAt', width: 180 },
   { title: 'Updated At', key: 'updatedAt', width: 180 },
-  { title: 'Actions', key: 'actions', fixed: 'right' as const, width: 140 },
+  // { title: 'Actions', key: 'actions', fixed: 'right' as const, width: 140 },
 ]);
 </script>
 

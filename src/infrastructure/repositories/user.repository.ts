@@ -2,7 +2,8 @@ import { ApiClient } from '@/infrastructure/apis/api';
 import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
 import type { UserCreateDto, UserUpdateDto, UserListQueryDto, UserMerchantCreateDto } from '@/application/dto/user.dto';
 import type { User } from '@/domain/entities/user.entity';
-import type { BackendPaginatedResponse, BackendResponse } from '@/shared/types/backend-response.types';
+import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
+import { extractSingleResult } from '@/shared/types/backend-response.types';
 
 export class UserRepository {
   private apiClient: ApiClient;
@@ -23,9 +24,9 @@ export class UserRepository {
   }
 
   async getById(id: number): Promise<User> {
-    const res = await this.apiClient.get<BackendResponse<User>>(API_ENDPOINTS.USERS.GET_BY_ID(id));
-    const user = res.results?.[0];
-    if (!user) throw new Error('User not found in response');
+    const res = await this.apiClient.get<any>(API_ENDPOINTS.USERS.GET_BY_ID(id));
+    const user = extractSingleResult<User>(res) ?? (res as User);
+    if (!user?.id) throw new Error('User not found in response');
     return user;
   }
 
@@ -58,6 +59,20 @@ export class UserRepository {
       API_ENDPOINTS.USERS.BY_MERCHANT,
       query,
     );
+  }
+
+  async getSummaryByMerchant(query: Omit<Record<string, any>, 'page' | 'limit'>): Promise<{
+    totalUsers: number;
+    totalActive: number;
+    totalInactive: number;
+  }> {
+    const res = await this.apiClient.getParams<any>(API_ENDPOINTS.USERS.BY_MERCHANT_SUMMARY, query);
+    const data = extractSingleResult(res) ?? res;
+    return {
+      totalUsers: data?.totalUsers ?? 0,
+      totalActive: data?.totalActive ?? 0,
+      totalInactive: data?.totalInactive ?? 0,
+    };
   }
 }
 

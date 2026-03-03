@@ -1,6 +1,6 @@
 import type { IMerchantService } from '@/application/services/merchant.service.interface';
 import type { Merchant, MerchantDetail } from '@/domain/entities/user.entity';
-import type { BackendPaginatedResponse, BackendResponse } from '@/shared/types/backend-response.types';
+import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
 import type { MerchantCreateDto, MerchantUpdateDto, MerchantListQueryDto } from '@/application/dto/merchant.dto';
 import { merchantRepository } from '@/infrastructure/repositories/merchant.repository';
 
@@ -15,7 +15,7 @@ export class MerchantServiceImpl implements IMerchantService {
     return this.repository.getById(id);
   }
 
-  async getDetail(id: number): Promise<BackendResponse<MerchantDetail>> {
+  async getDetail(id: number): Promise<MerchantDetail> {
     return this.repository.getDetail(id);
   }
 

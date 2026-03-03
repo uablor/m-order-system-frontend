@@ -5,75 +5,96 @@
         <div class="page-title">{{ $t('merchant.arrivals.title') }}</div>
         <div class="page-subtitle">{{ $t('merchant.arrivals.subtitle') }}</div>
       </div>
-
-      <a-input
-        v-model:value="filters.search"
-        allow-clear
-        class="search-input"
-        :placeholder="$t('merchant.arrivals.searchPlaceholder')"
-        @pressEnter="triggerSearch"
-      >
-        <template #prefix><SearchOutlined /></template>
-      </a-input>
-
       <a-button
         v-if="isMobile"
         type="default"
-        class="filter-toggle-btn"
+        class="filter-toggle-btn filter-toggle-btn--header"
         :class="{ active: showFilters }"
         @click="showFilters = !showFilters"
       >
         <FilterOutlined />
       </a-button>
-
-      <a-button type="primary" class="add-btn" @click="openCreateModal">
+      <a-button type="primary" class="add-btn" @click="goToCreateMultiple">
         <template #icon><PlusOutlined /></template>
         {{ $t('merchant.arrivals.recordArrival') }}
       </a-button>
     </div>
 
-    <!-- Filter Panel -->
-    <a-card
-      v-if="!isMobile || showFilters"
-      :bordered="false"
-      class="filter-card mb-4"
-    >
-      <div class="filter-bar">
-        <a-date-picker
-          v-model:value="startDate"
-          class="filter-date-single"
-          :placeholder="$t('merchant.arrivals.startDate')"
-          :popup-class-name="'blue-picker-popup'"
-          @change="onFilterChange"
-        />
-        <a-date-picker
-          v-model:value="endDate"
-          class="filter-date-single"
-          :placeholder="$t('merchant.arrivals.endDate')"
-          :popup-class-name="'blue-picker-popup'"
-          @change="onFilterChange"
-        />
-
-        <a-select
-          v-model:value="filters.orderId"
-          allow-clear
-          show-search
-          option-filter-prop="label"
-          class="filter-select"
-          :placeholder="$t('merchant.arrivals.orderFilter')"
-          @change="onFilterChange"
+    <!-- Filter: แถวเดียว — Date, Sort, Order Item, Search, Customer -->
+    <div class="filter-wrapper mb-4">
+      <Transition name="filter-panel">
+        <a-card
+          v-if="!isMobile || showFilters"
+          :bordered="false"
+          class="filter-card filter-card--single"
         >
-          <a-select-option
-            v-for="o in orderOptions"
-            :key="o.id"
-            :value="o.id"
-            :label="o.orderCode"
-          >
-            {{ o.orderCode }}
-          </a-select-option>
-        </a-select>
-      </div>
-    </a-card>
+          <div class="filter-bar filter-bar--single">
+            <a-date-picker
+              v-model:value="startDate"
+              class="filter-date-single"
+              :placeholder="$t('merchant.arrivals.startDate')"
+              :popup-class-name="'blue-picker-popup'"
+              @change="onFilterChange"
+            />
+            <a-date-picker
+              v-model:value="endDate"
+              class="filter-date-single"
+              :placeholder="$t('merchant.arrivals.endDate')"
+              :popup-class-name="'blue-picker-popup'"
+              @change="onFilterChange"
+            />
+            <a-select
+              v-model:value="filters.sort"
+              allow-clear
+              class="filter-select filter-select--sort"
+              :placeholder="$t('merchant.arrivals.sortDirection')"
+              @change="onFilterChange"
+            >
+              <a-select-option value="DESC">{{ $t('merchant.arrivals.sortDesc') }}</a-select-option>
+              <a-select-option value="ASC">{{ $t('merchant.arrivals.sortAsc') }}</a-select-option>
+            </a-select>
+            <a-select
+              v-model:value="filters.orderItemId"
+              allow-clear
+              show-search
+              option-filter-prop="label"
+              class="filter-select filter-select--order-item"
+              :placeholder="$t('merchant.arrivals.orderItemFilter')"
+              :loading="loadingOrders"
+              @change="onFilterChange"
+            >
+              <a-select-option
+                v-for="opt in orderItemOptions"
+                :key="opt.id"
+                :value="opt.id"
+                :label="opt.label"
+              >
+                {{ opt.label }}
+              </a-select-option>
+            </a-select>
+            <a-input
+              v-model:value="filters.search"
+              allow-clear
+              class="filter-input filter-input--search"
+              :placeholder="$t('merchant.arrivals.searchPlaceholder')"
+              @pressEnter="triggerSearch"
+            >
+              <template #prefix><SearchOutlined /></template>
+            </a-input>
+            <!-- <a-input
+              v-model:value="filters.customerName"
+              allow-clear
+              class="filter-input filter-input--customer"
+              :placeholder="$t('merchant.arrivals.customerNameFilterShort')"
+              @pressEnter="onFilterChange"
+              @change="onCustomerNameChange"
+            >
+              <template #prefix><UserOutlined /></template>
+            </a-input> -->
+          </div>
+        </a-card>
+      </Transition>
+    </div>
 
     <!-- Desktop: table inside card -->
     <a-card v-if="!isMobile" :bordered="false" class="panel-card">
@@ -179,113 +200,6 @@
       </a-spin>
     </div>
 
-    <!-- Create Arrival Modal -->
-    <a-modal
-      v-model:open="createModalVisible"
-      :title="$t('merchant.arrivals.createTitle')"
-      :width="720"
-      :ok-text="$t('merchant.arrivals.submit')"
-      :cancel-text="$t('merchant.arrivals.cancel')"
-      :confirm-loading="submitting"
-      :ok-button-props="{ disabled: !canSubmit }"
-      @ok="handleCreate"
-      @cancel="resetCreateForm"
-    >
-      <div class="create-form">
-        <div class="form-group">
-          <label class="form-label">{{ $t('merchant.arrivals.selectOrder') }} <span class="required">*</span></label>
-          <a-select
-            v-model:value="createForm.orderId"
-            show-search
-            option-filter-prop="label"
-            :placeholder="$t('merchant.arrivals.selectOrderPlaceholder')"
-            class="form-input"
-            :loading="loadingOrders"
-            @change="onOrderSelected"
-          >
-            <a-select-option
-              v-for="o in orderOptions"
-              :key="o.id"
-              :value="o.id"
-              :label="o.orderCode"
-            >
-              {{ o.orderCode }} — {{ formatDate(o.orderDate) }}
-            </a-select-option>
-          </a-select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">{{ $t('merchant.arrivals.notes') }}</label>
-          <a-textarea
-            v-model:value="createForm.notes"
-            :rows="2"
-            :placeholder="$t('merchant.arrivals.notesPlaceholder')"
-            class="form-input"
-          />
-        </div>
-
-        <a-spin v-if="loadingOrderDetail" class="order-detail-spinner" />
-
-        <template v-if="selectedOrderItems.length > 0">
-          <div class="items-section-title">{{ $t('merchant.arrivals.arrivalItems') }}</div>
-
-          <div class="arrival-items-list">
-            <div
-              v-for="(item, idx) in createForm.arrivalItems"
-              :key="idx"
-              class="arrival-item-row"
-            >
-              <a-checkbox v-model:checked="item.selected" class="item-checkbox">
-                <span class="item-product-name">
-                  {{ getOrderItemLabel(item.orderItemId) }}
-                </span>
-              </a-checkbox>
-
-              <div v-if="item.selected" class="item-fields">
-                <div class="item-field">
-                  <label class="field-label">{{ $t('merchant.arrivals.quantity') }}</label>
-                  <a-input-number
-                    v-model:value="item.arrivedQuantity"
-                    :min="1"
-                    :max="getOrderItemQty(item.orderItemId)"
-                    size="small"
-                    class="qty-input"
-                  />
-                </div>
-                <div class="item-field">
-                  <label class="field-label">{{ $t('merchant.arrivals.condition') }}</label>
-                  <a-select
-                    v-model:value="item.condition"
-                    size="small"
-                    class="condition-select"
-                    :placeholder="$t('merchant.arrivals.conditionPlaceholder')"
-                    allow-clear
-                  >
-                    <a-select-option value="OK">OK</a-select-option>
-                    <a-select-option value="DAMAGED">DAMAGED</a-select-option>
-                    <a-select-option value="LOST">LOST</a-select-option>
-                  </a-select>
-                </div>
-                <div class="item-field">
-                  <label class="field-label">{{ $t('merchant.arrivals.itemNotes') }}</label>
-                  <a-input
-                    v-model:value="item.notes"
-                    size="small"
-                    :placeholder="$t('merchant.arrivals.itemNotesPlaceholder')"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </template>
-
-        <a-empty
-          v-if="createForm.orderId && selectedOrderItems.length === 0 && !loadingOrderDetail"
-          :description="$t('merchant.arrivals.noOrderItems')"
-          class="mt-3"
-        />
-      </div>
-    </a-modal>
   </div>
 </template>
 
@@ -293,7 +207,6 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { message } from 'ant-design-vue';
 import type { Dayjs } from 'dayjs';
 import type { TableColumnsType, TablePaginationConfig } from 'ant-design-vue';
 import {
@@ -305,8 +218,8 @@ import {
 } from '@ant-design/icons-vue';
 import { arrivalRepository } from '@/infrastructure/repositories/arrival.repository';
 import { orderRepository } from '@/infrastructure/repositories/order.repository';
-import type { Arrival, Order, OrderItem, ArrivalItemCondition } from '@/domain/entities/user.entity';
-import type { ArrivalListQueryDto, CreateArrivalDto } from '@/application/dto/arrival.dto';
+import type { Arrival, Order } from '@/domain/entities/user.entity';
+import type { ArrivalListQueryDto } from '@/application/dto/arrival.dto';
 import { useAuthStore } from '@/store/auth.store';
 import { storeToRefs } from 'pinia';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
@@ -329,42 +242,37 @@ const showFilters = ref(false);
 
 const filters = reactive<{
   search: string;
+  searchField: string;
   orderId: number | undefined;
+  orderItemId: number | undefined;
+  sort: 'ASC' | 'DESC' | undefined;
+  customerName: string;
 }>({
   search: '',
+  searchField: 'orderCode',
   orderId: undefined,
+  orderItemId: undefined,
+  sort: undefined,
+  customerName: '',
 });
 
 const orderOptions = ref<Order[]>([]);
+const orderOptionsForFilter = ref<Order[]>([]);
 const loadingOrders = ref(false);
 
-const createModalVisible = ref(false);
-const submitting = ref(false);
-const loadingOrderDetail = ref(false);
-const selectedOrderItems = ref<OrderItem[]>([]);
-
-interface CreateArrivalItemForm {
-  orderItemId: number;
-  arrivedQuantity: number;
-  condition: ArrivalItemCondition | undefined;
-  notes: string;
-  selected: boolean;
-}
-
-const createForm = reactive<{
-  orderId: number | undefined;
-  notes: string;
-  arrivalItems: CreateArrivalItemForm[];
-}>({
-  orderId: undefined,
-  notes: '',
-  arrivalItems: [],
-});
-
-const canSubmit = computed(() => {
-  if (!createForm.orderId) return false;
-  const selected = createForm.arrivalItems.filter(i => i.selected);
-  return selected.length > 0 && selected.every(i => i.arrivedQuantity > 0);
+const orderItemOptions = computed(() => {
+  const items: { id: number; label: string }[] = [];
+  const orders = orderOptionsForFilter.value.length > 0 ? orderOptionsForFilter.value : orderOptions.value;
+  for (const o of orders) {
+    const itemsList = o.orderItems ?? [];
+    for (const oi of itemsList) {
+      items.push({
+        id: oi.id,
+        label: `${oi.productName}${oi.variant ? ` (${oi.variant})` : ''} - ${o.orderCode}`,
+      });
+    }
+  }
+  return items;
 });
 
 const columns = computed<TableColumnsType>(() => [
@@ -422,6 +330,17 @@ watch(() => filters.search, () => {
   }, 450);
 });
 
+/* ใช้เมื่อ uncomment customer name filter input
+let customerNameTimer: ReturnType<typeof setTimeout> | undefined;
+const onCustomerNameChange = () => {
+  clearTimeout(customerNameTimer);
+  customerNameTimer = setTimeout(() => {
+    currentPage.value = 1;
+    fetchArrivals();
+  }, 450);
+};
+*/
+
 const buildQuery = (): ArrivalListQueryDto => {
   const query: ArrivalListQueryDto = {
     page: currentPage.value,
@@ -429,7 +348,11 @@ const buildQuery = (): ArrivalListQueryDto => {
     merchantId: authPayload.value?.merchantId,
   };
   if (filters.search?.trim()) query.search = filters.search.trim();
+  if (filters.searchField) query.searchField = filters.searchField;
   if (filters.orderId) query.orderId = filters.orderId;
+  if (filters.orderItemId) query.orderItemId = filters.orderItemId;
+  if (filters.sort) query.sort = filters.sort;
+  if (filters.customerName?.trim()) query.customerName = filters.customerName.trim();
   if (startDate.value) query.startDate = startDate.value.format('YYYY-MM-DD');
   if (endDate.value) query.endDate = endDate.value.format('YYYY-MM-DD');
   return query;
@@ -438,7 +361,7 @@ const buildQuery = (): ArrivalListQueryDto => {
 const fetchArrivals = async () => {
   loading.value = true;
   try {
-    const res = await arrivalRepository.getList(buildQuery());
+    const res = await arrivalRepository.getListByMerchant(buildQuery());
     arrivals.value = res.results ?? [];
     total.value = res.pagination?.total ?? 0;
   } catch (err) {
@@ -451,11 +374,19 @@ const fetchArrivals = async () => {
 const fetchOrders = async () => {
   loadingOrders.value = true;
   try {
-    const res = await orderRepository.getList({
-      limit: 200,
-      merchantId: authPayload.value?.merchantId,
-    });
-    orderOptions.value = res.results ?? [];
+    const [listRes, filterRes] = await Promise.all([
+      orderRepository.getListByMerchant({
+        limit: 200,
+        merchantId: authPayload.value?.merchantId,
+        arrivalStatus: 'NOT_ARRIVED',
+      }),
+      orderRepository.getListByMerchant({
+        limit: 500,
+        merchantId: authPayload.value?.merchantId,
+      }),
+    ]);
+    orderOptions.value = listRes.results ?? [];
+    orderOptionsForFilter.value = filterRes.results ?? [];
   } catch (err) {
     handleApiError(err, t);
   } finally {
@@ -473,87 +404,18 @@ const viewDetail = (id: number) => {
   router.push(`/merchant/arrivals/${id}`);
 };
 
-const openCreateModal = () => {
-  createModalVisible.value = true;
-  if (orderOptions.value.length === 0) fetchOrders();
-};
-
-const onOrderSelected = async (orderId: number) => {
-  if (!orderId) {
-    selectedOrderItems.value = [];
-    createForm.arrivalItems = [];
-    return;
-  }
-  loadingOrderDetail.value = true;
-  try {
-    const order = await orderRepository.getById(orderId);
-    const items = order.orderItems ?? [];
-    selectedOrderItems.value = items;
-    createForm.arrivalItems = items.map(item => ({
-      orderItemId: item.id,
-      arrivedQuantity: item.quantity,
-      condition: 'OK' as ArrivalItemCondition,
-      notes: '',
-      selected: true,
-    }));
-  } catch (err) {
-    handleApiError(err, t);
-    selectedOrderItems.value = [];
-    createForm.arrivalItems = [];
-  } finally {
-    loadingOrderDetail.value = false;
-  }
-};
-
-const getOrderItemLabel = (orderItemId: number) => {
-  const item = selectedOrderItems.value.find(i => i.id === orderItemId);
-  if (!item) return `#${orderItemId}`;
-  return item.variant ? `${item.productName} (${item.variant})` : item.productName;
-};
-
-const getOrderItemQty = (orderItemId: number) => {
-  const item = selectedOrderItems.value.find(i => i.id === orderItemId);
-  return item?.quantity ?? 999;
-};
-
-const resetCreateForm = () => {
-  createForm.orderId = undefined;
-  createForm.notes = '';
-  createForm.arrivalItems = [];
-  selectedOrderItems.value = [];
-};
-
-const handleCreate = async () => {
-  if (!canSubmit.value) return;
-  submitting.value = true;
-  try {
-    const payload: CreateArrivalDto = {
-      orderId: createForm.orderId!,
-      notes: createForm.notes || undefined,
-      arrivalItems: createForm.arrivalItems
-        .filter(i => i.selected)
-        .map(i => ({
-          orderItemId: i.orderItemId,
-          arrivedQuantity: i.arrivedQuantity,
-          condition: i.condition || undefined,
-          notes: i.notes || undefined,
-        })),
-    };
-    await arrivalRepository.create(payload);
-    message.success(t('merchant.arrivals.createSuccess'));
-    createModalVisible.value = false;
-    resetCreateForm();
-    await fetchArrivals();
-  } catch (err) {
-    handleApiError(err, t);
-  } finally {
-    submitting.value = false;
-  }
+const goToCreateMultiple = () => {
+  router.push('/merchant/arrivals/create-multiple');
 };
 
 onMounted(() => {
   fetchArrivals();
   fetchOrders();
+});
+
+// โหลด order items สำหรับ filter (ใช้ orderOptions ที่มี orderItems)
+watch(showFilters, (visible) => {
+  if (visible && orderOptions.value.length === 0) fetchOrders();
 });
 </script>
 
@@ -572,7 +434,10 @@ onMounted(() => {
 .page-title { font-size: 22px; font-weight: 600; color: #0f172a; line-height: 1.25; }
 .page-subtitle { font-size: 13px; color: #64748b; margin-top: 2px; }
 
-.search-input { height: 44px; border-radius: 12px; width: min(320px, 100%); }
+.search-input { height: 44px; border-radius: 12px; width: min(200px, 100%); flex: 0 1 200px; }
+.search-field-select { height: 44px; min-width: 140px; }
+.search-field-select :deep(.ant-select-selector) { border-radius: 12px !important; height: 44px !important; }
+.search-field-select :deep(.ant-select-selection-item) { line-height: 42px !important; }
 .add-btn { height: 44px; border-radius: 12px; font-weight: 700; flex-shrink: 0; }
 
 .filter-toggle-btn {
@@ -583,37 +448,140 @@ onMounted(() => {
 .filter-toggle-btn.active {
   background: #1677ff; color: #fff; border-color: #1677ff;
 }
+.filter-toggle-btn--header {
+  flex-shrink: 0;
+}
 
 @media (max-width: 767px) {
   .page-header { flex-wrap: wrap; }
   .title-block { order: 1; flex: 1 1 auto; }
-  .filter-toggle-btn { order: 2; }
+  .filter-toggle-btn--header { order: 2; }
   .add-btn { order: 3; flex-shrink: 0; height: 36px; font-size: 12px; padding: 0 10px; }
-  .search-input { order: 4; flex: 1 1 100%; width: 100%; }
+  .search-field-select { order: 4; flex: 1 1 100%; width: 100%; }
+  .search-input { order: 5; flex: 1 1 100%; width: 100%; }
   .page-title { font-size: 15px; }
   .page-subtitle { display: none; }
 }
 
-/* ===== Filter Card ===== */
+/* ===== Filter Wrapper ===== */
+.filter-wrapper { display: flex; flex-direction: column; gap: 10px; }
+.filter-wrapper .mb-4 { margin-bottom: 0; }
+
+/* ===== Filter Card Row 1 ===== */
 .filter-card {
   border-radius: 14px;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 10px 25px rgba(15, 23, 42, 0.04);
 }
+.filter-card--single :deep(.ant-card-body) { padding: 12px 16px !important; }
 .filter-bar {
   display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
 }
-.filter-date-single { border-radius: 10px; min-width: 160px; }
-.filter-date-single :deep(.ant-picker) { border-radius: 10px !important; }
-.filter-select { min-width: 180px; }
-.filter-select :deep(.ant-select-selector) { border-radius: 10px !important; }
+.filter-bar--single { flex-wrap: wrap; }
+/* แถว 1: ทุก filter ขนาดเท่ากันและกว้างขึ้น */
+.filter-date-single { border-radius: 10px; min-width: 180px; width: 180px; flex-shrink: 0; height: 44px; }
+.filter-date-single :deep(.ant-picker) {
+  border-radius: 10px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+}
+.filter-date-single :deep(.ant-picker-input) {
+  height: 44px !important;
+  min-height: 44px !important;
+}
+.filter-date-single :deep(.ant-picker-input > input) {
+  height: 42px !important;
+  line-height: 42px !important;
+}
+.filter-select {
+  min-width: 180px; width: 180px; flex-shrink: 0;
+  height: 44px;
+}
+.filter-select :deep(.ant-select-selector) { border-radius: 10px !important; height: 44px !important; line-height: 42px !important; }
+.filter-select--sort { min-width: 180px; width: 180px; }
+.filter-select--order-item { min-width: 200px; width: 200px; }
+
+/* Search และ Customer — ความกว้างเท่ากัน แก้ white padding ที่บัง border */
+.filter-input {
+  height: 44px; border-radius: 10px;
+  flex: 1 1 200px; min-width: 160px;
+}
+.filter-input--search,
+.filter-input--customer {
+  flex: 1 1 200px;
+  min-width: 160px;
+  max-width: none;
+}
+/* แก้แถบสีขาวที่บัง border บน-ล่าง — ใช้ border ชัดเจนและลบ padding ที่เกิน */
+.filter-bar :deep(.ant-input-affix-wrapper) {
+  border-radius: 10px !important;
+  border: 1px solid #d9d9d9 !important;
+  padding: 0 11px !important;
+  padding-inline-start: 36px !important;
+  height: 44px !important;
+  box-sizing: border-box !important;
+}
+.filter-bar :deep(.ant-input-affix-wrapper:hover) {
+  border-color: #4096ff !important;
+}
+.filter-bar :deep(.ant-input-affix-wrapper .ant-input) {
+  padding: 0 !important;
+  height: 42px !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+.filter-toggle-btn--inline {
+  height: 44px; width: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 18px;
+}
+.filter-toggle-btn--inline.active {
+  background: #1677ff; color: #fff; border-color: #1677ff;
+}
+
+/* Animation สำหรับ filter panel (mobile) */
+.filter-panel-enter-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.filter-panel-leave-active {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.filter-panel-enter-from,
+.filter-panel-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+.filter-panel-enter-to,
+.filter-panel-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
 
 @media (max-width: 767px) {
-  .filter-card { border-radius: 10px; }
-  .filter-card :deep(.ant-card-body) { padding: 12px !important; }
-  .filter-bar { flex-direction: column; }
-  .filter-date-single { width: 100%; }
-  .filter-select { width: 100%; }
+  .filter-card--single { border-radius: 10px; }
+  .filter-card--single :deep(.ant-card-body) { padding: 12px !important; }
+  .filter-bar--single { flex-direction: column; }
+  .filter-date-single,
+  .filter-select,
+  .filter-select--order-item { min-width: 100%; width: 100%; }
+  .filter-input--search,
+  .filter-input--customer { min-width: 100%; flex: 1 1 100%; }
 }
+
+/* Tablet (Galaxy Tab S7 ~800px) — filter แสดง 2 คอลัมน์ */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .filter-bar--single { flex-wrap: wrap; }
+  .filter-date-single,
+  .filter-select,
+  .filter-select--order-item { min-width: 160px; flex: 1 1 160px; }
+  .filter-input--search,
+  .filter-input--customer { min-width: 140px; flex: 1 1 180px; }
+}
+
+.filter-slide-enter-active,
+.filter-slide-leave-active { transition: all 0.25s ease; }
+.filter-slide-enter-from,
+.filter-slide-leave-to { opacity: 0; transform: translateY(-8px); }
 
 /* ===== Desktop card ===== */
 .panel-card {
@@ -709,8 +677,11 @@ onMounted(() => {
   background: #f8fafc; border-radius: 12px;
   padding: 12px 14px; border: 1px solid rgba(148, 163, 184, 0.15);
 }
-.item-checkbox { font-weight: 700; color: #0f172a; }
-.item-product-name { font-weight: 700; color: #0f172a; font-size: 14px; }
+.item-product-name {
+  font-weight: 700; color: #0f172a; font-size: 14px;
+  margin-bottom: 10px; padding-bottom: 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+}
 .item-fields {
   display: flex; flex-wrap: wrap; gap: 10px;
   margin-top: 10px; padding-top: 10px;

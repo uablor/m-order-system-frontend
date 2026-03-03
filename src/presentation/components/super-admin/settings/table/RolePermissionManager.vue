@@ -18,10 +18,10 @@
         </a-select-option>
       </a-select>
 
-      <a-button type="primary" class="add-btn" :disabled="!selectedRoleId" @click="openAssignModal">
-        <template #icon><PlusOutlined /></template>
+      <!-- <a-button type="primary" class="add-btn" :disabled="!selectedRoleId" @click="openAssignModal"> -->
+        <!-- <template #icon><PlusOutlined /></template>
         {{ $t('access.rolePermissions.assign') }}
-      </a-button>
+      </a-button> -->
     </div>
 
     <!-- Desktop: table inside card -->
@@ -119,6 +119,7 @@ import { rolePermissionRepository } from '@/infrastructure/repositories/role-per
 import type { Role, Permission } from '@/domain/entities/user.entity';
 import { handleApiError } from '@/shared/utils/error';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
+import { extractArrayResult } from '@/shared/types/backend-response.types';
 
 const { t } = useI18n();
 const { isMobile } = useIsMobile();
@@ -141,7 +142,7 @@ const columns = computed<TableColumnsType>(() => [
   { title: '#', key: 'index', width: 70 },
   { title: 'Code', dataIndex: 'permissionCode', key: 'permissionCode', width: 260 },
   { title: 'Description', dataIndex: 'description', key: 'description', width: 380 },
-  { title: 'Actions', key: 'actions', fixed: 'right' as const, width: 120 },
+  // { title: 'Actions', key: 'actions', fixed: 'right' as const, width: 120 },
 ]);
 
 const loadRoles = async () => {
@@ -173,7 +174,7 @@ const loadAssigned = async (roleId: number) => {
   loadingAssigned.value = true;
   try {
     const res = await rolePermissionRepository.getByRoleId(roleId);
-    assignedPermissions.value = res.results || [];
+    assignedPermissions.value = extractArrayResult(res);
   } catch (error) {
     handleApiError(error, t);
   } finally {

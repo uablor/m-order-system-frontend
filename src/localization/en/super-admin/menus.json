@@ -1,14 +1,14 @@
 {
   "dashboard": "Dashboard",
   "users": "Users",
-  "merchantManagement": "Merchant Management",
-  "merchantList": "Merchant List",
-  "merchantDetails": "Merchant Details",
-  "addMerchant": "Add Merchant",
+  "merchantManagement": "Store Management",
+  "merchantList": "Store List",
+  "merchantDetails": "Store Details",
+  "addMerchant": "Add Store",
   "customers": "Customers",
   "exchangeRates": "Exchange Rates",
   "reports": "Reports",
-  "merchantReports": "Merchant Reports",
+  "merchantReports": "Store Reports",
   "notifications": "Notifications",
   "settings": "Settings"
 }

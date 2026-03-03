@@ -18,9 +18,9 @@
             :slip-preview="slipPreview"
             :is-dragging="isDragging"
             :submitting="submitting"
+            :can-submit="canSubmit"
             :is-mobile="true"
             @update:message="message = $event"
-            @trigger-file="triggerFile"
             @file-change="handleFileChange"
             @drop="handleDrop"
             @drag-over="isDragging = true"
@@ -44,6 +44,7 @@
           :slip-preview="slipPreview"
           :is-dragging="isDragging"
           :submitting="submitting"
+          :can-submit="canSubmit"
           :is-mobile="false"
           @update:message="message = $event"
           @trigger-file="triggerFile"
@@ -60,17 +61,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { message as antMessage } from 'ant-design-vue';
 import { ArrowLeftOutlined, EllipsisOutlined } from '@ant-design/icons-vue';
 import DetailBody from './CustomerOrderDetailBody.vue';
+import { ApiClient } from '@/infrastructure/apis/api';
+import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
+import { uploadFilesForCustomer } from '@/infrastructure/repositories/upload.repository';
 import type { CustomerOrder } from '@/infrastructure/repositories/customer-order.repository';
-
-const DEMO_PROOF_URL = 'thisisthetextfordemothisurlimage';
 
 const props = defineProps<{
   order: CustomerOrder | null;
+  customerToken: string;
   isMobile: boolean;
 }>();
 
@@ -86,7 +89,15 @@ const slipFile = ref<File | null>(null);
 const slipPreview = ref('');
 const isDragging = ref(false);
 const submitting = ref(false);
-const fileInputRef = ref<HTMLInputElement | null>(null);
+
+const canSubmit = computed(() => {
+  const o = props.order;
+  if (!o) return false;
+  if (o.paymentStatus === 'PAID') return false;
+  if (parseFloat(o.remainingAmount) <= 0) return false;
+  if (o.hasPendingPayment) return false;
+  return true;
+});
 
 watch(() => props.order?.id, () => {
   message.value = '';
@@ -94,11 +105,6 @@ watch(() => props.order?.id, () => {
   slipPreview.value = '';
   isDragging.value = false;
 });
-
-const triggerFile = (input: HTMLInputElement | null) => {
-  if (input) fileInputRef.value = input;
-  fileInputRef.value?.click();
-};
 
 const setFile = (file: File) => {
   if (!file.type.match(/image\/(jpeg|png)/)) {
@@ -123,20 +129,29 @@ const handleDrop = (e: DragEvent) => {
 const removeSlip = () => {
   slipFile.value = null;
   slipPreview.value = '';
-  if (fileInputRef.value) fileInputRef.value.value = '';
 };
 
 const handleSubmit = async () => {
-  if (!props.order) return;
+  if (!props.order || !canSubmit.value) return;
+  if (!slipFile.value) {
+    antMessage.error(t('customer.toast.uploadRequired'));
+    return;
+  }
+  if (!props.customerToken) {
+    antMessage.error('Customer token is required');
+    return;
+  }
+
   submitting.value = true;
   try {
-    const { ApiClient } = await import('@/infrastructure/apis/api');
-    const { API_ENDPOINTS } = await import('@/shared/constants/api-endpoints');
+    const images = await uploadFilesForCustomer([slipFile.value], props.customerToken);
+    const imageId = images[0]?.id;
+
     const client = new ApiClient();
     await client.post(API_ENDPOINTS.PAYMENTS.CREATE, {
       customerOrderId: props.order.id,
       paymentAmount: parseFloat(props.order.remainingAmount) || 0,
-      paymentProofUrl: DEMO_PROOF_URL,
+      paymentProofImageId: imageId,
       customerMessage: message.value.trim() || undefined,
     });
     antMessage.success(t('customer.toast.submitSuccess'));

@@ -1,33 +1,31 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import type { AdminDashboard, AnnualReport } from '@/domain/entities/user.entity';
+import type { AdminDashboard, AdminDashboardSummary, AdminDashboardDetails } from '@/domain/entities/user.entity';
 
 export const useSuperAdminDashboardStore = defineStore('superAdminDashboardStore', () => {
   const loading = ref(false);
-  const dashboard = ref<AdminDashboard | null>(null);
-  const annualReport = ref<AnnualReport | null>(null);
-  const selectedYear = ref<number>(new Date().getFullYear());
+  const summary = ref<AdminDashboardSummary | null>(null);
+  const details = ref<AdminDashboardDetails | null>(null);
 
-  const dashboardData = computed(() => dashboard.value);
-  const reportData = computed(() => annualReport.value);
-  const currentYear = computed(() => selectedYear.value);
+  const dashboardData = computed((): AdminDashboard | null => {
+    if (!summary.value && !details.value) return null;
+    return {
+      summary: summary.value ?? { totalMerchants: 0, totalAdminUsers: 0, totalMerchantUsers: 0, totalOrders: 0 },
+      details: details.value ?? { topMerchants: [], recentUserLogins: [] },
+    };
+  });
 
   const setLoading = (value: boolean) => { loading.value = value; };
-  const setDashboard = (value: AdminDashboard | null) => { dashboard.value = value; };
-  const setAnnualReport = (value: AnnualReport | null) => { annualReport.value = value; };
-  const setSelectedYear = (value: number) => { selectedYear.value = value; };
+  const setSummary = (value: AdminDashboardSummary | null) => { summary.value = value; };
+  const setDetails = (value: AdminDashboardDetails | null) => { details.value = value; };
 
   return {
     loading,
-    dashboard,
-    annualReport,
-    selectedYear,
+    summary,
+    details,
     dashboardData,
-    reportData,
-    currentYear,
     setLoading,
-    setDashboard,
-    setAnnualReport,
-    setSelectedYear,
+    setSummary,
+    setDetails,
   };
 });

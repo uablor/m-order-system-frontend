@@ -140,7 +140,6 @@ import type { MerchantCurrency } from '@/domain/entities/user.entity';
 import type { MerchantUpdateDto } from '@/application/dto/merchant.dto';
 import { merchantRepository } from '@/infrastructure/repositories/merchant.repository';
 import { useSuperAdminMerchants } from '@/presentation/composables/super-admin/useSuperAdminMerchants';
-import type { BackendResponse } from '@/shared/types/backend-response.types';
 import { handleApiError } from '@/shared/utils/error';
 import { useI18n } from 'vue-i18n';
 
@@ -192,22 +191,13 @@ const readMerchantFromLocalStorage = () => {
   }
 };
 
-const unwrapMaybeBackendResponse = (res: any) => {
-  // บาง endpoint อาจส่งแบบ { success, results: [entity] }
-  if (res && typeof res === 'object' && Array.isArray((res as BackendResponse<any>).results)) {
-    return (res as BackendResponse<any>).results?.[0];
-  }
-  return res;
-};
-
 const loadMerchant = async () => {
   // เติมข้อมูลเร็วจาก localStorage ก่อน (กันหน้าฟอร์มว่าง)
   const cached = readMerchantFromLocalStorage();
   if (cached) applyMerchantToForm(cached);
 
   try {
-    const res = await merchantRepository.getById(id);
-    const m = unwrapMaybeBackendResponse(res);
+    const m = await merchantRepository.getById(id);
     applyMerchantToForm(m);
   } catch (error) {
     handleApiError(error, t);

@@ -1,13 +1,12 @@
 import { watch } from 'vue';
 import type { Ref } from 'vue';
-import type { ItemForm, CustomerOrderForm, DraftData } from '../types';
+import type { ItemForm, DraftData } from '../types';
 
 const LS_DRAFT_KEY = 'stock_order_draft';
 
 export function useDraftStorage(
   orderCode: Ref<string>,
   items: Ref<ItemForm[]>,
-  customerOrders: Ref<CustomerOrderForm[]>,
 ) {
   let skipNextSave = false;
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
@@ -18,7 +17,6 @@ export function useDraftStorage(
       const draft: DraftData = {
         orderCode: orderCode.value,
         items: JSON.parse(JSON.stringify(items.value)),
-        customerOrders: JSON.parse(JSON.stringify(customerOrders.value)),
       };
       localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(draft));
     } catch { /* ignore */ }
@@ -31,7 +29,6 @@ export function useDraftStorage(
 
   watch(orderCode, debounceSave);
   watch(items, debounceSave, { deep: true });
-  watch(customerOrders, debounceSave, { deep: true });
 
   const restoreDraft = () => {
     try {
@@ -40,8 +37,10 @@ export function useDraftStorage(
       const draft: DraftData = JSON.parse(raw);
       skipNextSave = true;
       orderCode.value = draft.orderCode || '';
-      items.value = draft.items || [];
-      customerOrders.value = draft.customerOrders || [];
+      items.value = (draft.items || []).map(item => ({
+        ...item,
+        customers: item.customers || [],
+      }));
     } catch { /* ignore */ }
   };
 

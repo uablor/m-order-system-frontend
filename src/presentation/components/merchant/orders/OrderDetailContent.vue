@@ -33,7 +33,7 @@
             </div>
             <div class="info-item">
               <span class="info-label">{{ $t('merchant.orderDetail.orderDate') }}</span>
-              <span class="info-value">{{ formatDate(order.orderDate) }}</span>
+              <span class="info-value">{{ formatDateOnly(order.orderDate) }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">{{ $t('merchant.orderDetail.arrivalStatus') }}</span>
@@ -70,6 +70,36 @@
           </div>
         </a-card>
 
+        <!-- Exchange Rates Card -->
+        <a-card :bordered="false" class="panel-card mb-4">
+          <div class="panel-title">
+            <SwapOutlined class="icon-blue" />
+            <span>{{ $t('merchant.orderDetail.exchangeRates') }}</span>
+          </div>
+          <div class="rate-grid">
+            <!-- Buy Rate -->
+            <div v-if="order.exchangeRateBuy" class="rate-card rate-buy">
+              <div class="rate-card-header">
+                <span class="rate-type-badge buy">{{ order.exchangeRateBuy.rateType }}</span>
+                <span class="rate-pair">{{ order.exchangeRateBuy.baseCurrency }} → {{ order.exchangeRateBuy.targetCurrency }}</span>
+              </div>
+              <div class="rate-value">{{ formatNumber(order.exchangeRateBuy.rate) }}</div>
+              <div class="rate-label">{{ $t('merchant.orderDetail.buyRateLabel') }}</div>
+              <div class="rate-date">{{ $t('merchant.orderDetail.rateDate') }}: {{ formatDateOnly(order.exchangeRateBuy.rateDate) }}</div>
+            </div>
+            <!-- Sell Rate -->
+            <div v-if="order.exchangeRateSell" class="rate-card rate-sell">
+              <div class="rate-card-header">
+                <span class="rate-type-badge sell">{{ order.exchangeRateSell.rateType }}</span>
+                <span class="rate-pair">{{ order.exchangeRateSell.baseCurrency }} → {{ order.exchangeRateSell.targetCurrency }}</span>
+              </div>
+              <div class="rate-value">{{ formatNumber(order.exchangeRateSell.rate) }}</div>
+              <div class="rate-label">{{ $t('merchant.orderDetail.sellRateLabel') }}</div>
+              <div class="rate-date">{{ $t('merchant.orderDetail.rateDate') }}: {{ formatDateOnly(order.exchangeRateSell.rateDate) }}</div>
+            </div>
+          </div>
+        </a-card>
+
         <!-- Financial Summary: Purchase Cost -->
         <a-card :bordered="false" class="panel-card mb-4">
           <div class="panel-title">
@@ -77,26 +107,40 @@
             <span>{{ $t('merchant.orderDetail.financialSummary') }} — {{ $t('merchant.orderDetail.purchaseCostTitle') }}</span>
           </div>
           <div class="finance-grid">
-            <div class="finance-item">
+            <div class="finance-item purchase-cost">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalPurchaseCost') }}</span>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalPurchaseCostLak) }} LAK</template><span class="finance-value num-truncate">{{ truncNum(order.totalPurchaseCostLak) }} LAK</span></a-tooltip>
+              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalPurchaseCost) }} {{ buyCurrency }}</template>
+                <span class="finance-value num-truncate">{{ truncNum(order.totalPurchaseCost) }} <span class="fin-currency">{{ buyCurrency }}</span></span>
+              </a-tooltip>
+              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalPurchaseCost) }}</span>
             </div>
-            <div class="finance-item">
+            <div class="finance-item shipping-cost">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalShippingCost') }}</span>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalShippingCostLak) }} LAK</template><span class="finance-value num-truncate">{{ truncNum(order.totalShippingCostLak) }} LAK</span></a-tooltip>
+              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalShippingCost) }} {{ buyCurrency }}</template>
+                <span class="finance-value num-truncate">{{ truncNum(order.totalShippingCost) }} <span class="fin-currency">{{ buyCurrency }}</span></span>
+              </a-tooltip>
+              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalShippingCost) }}</span>
             </div>
-            <div class="finance-item">
+            <div class="finance-item cost-before-discount">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalCostBeforeDiscount') }}</span>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalCostBeforeDiscountLak) }} LAK</template><span class="finance-value num-truncate">{{ truncNum(order.totalCostBeforeDiscountLak) }} LAK</span></a-tooltip>
+              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalCostBeforeDiscount) }} {{ buyCurrency }}</template>
+                <span class="finance-value num-truncate">{{ truncNum(order.totalCostBeforeDiscount) }} <span class="fin-currency">{{ buyCurrency }}</span></span>
+              </a-tooltip>
+              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalCostBeforeDiscount) }}</span>
             </div>
-            <div class="finance-item">
+            <div class="finance-item discount">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalDiscount') }}</span>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalDiscountLak) }} LAK</template><span class="finance-value num-truncate">-{{ truncNum(order.totalDiscountLak) }} LAK</span></a-tooltip>
+              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>-{{ formatNumber(order.totalDiscount) }} {{ buyCurrency }}</template>
+                <span class="finance-value num-truncate">-{{ truncNum(order.totalDiscount) }} <span class="fin-currency">{{ buyCurrency }}</span></span>
+              </a-tooltip>
+              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} -{{ truncNum(order.targetCurrencyTotalDiscount) }}</span>
             </div>
-            <div class="finance-item highlight">
+            <div class="finance-item final-cost">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalFinalCost') }}</span>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalFinalCostLak) }} LAK</template><span class="finance-value num-truncate">{{ truncNum(order.totalFinalCostLak) }} LAK</span></a-tooltip>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalFinalCostThb) }} THB</template><span class="finance-sub num-truncate">{{ truncNum(order.totalFinalCostThb) }} THB</span></a-tooltip>
+              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalFinalCost) }} {{ buyCurrency }}</template>
+                <span class="finance-value num-truncate">{{ truncNum(order.totalFinalCost) }} <span class="fin-currency">{{ buyCurrency }}</span></span>
+              </a-tooltip>
+              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalFinalCost) }}</span>
             </div>
           </div>
         </a-card>
@@ -108,27 +152,39 @@
             <span>{{ $t('merchant.orderDetail.financialSummary') }} — {{ $t('merchant.orderDetail.sellingProfitTitle') }}</span>
           </div>
           <div class="finance-grid">
-            <div class="finance-item">
+            <div class="finance-item selling-amount">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalSellingAmount') }}</span>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalSellingAmountLak) }} LAK</template><span class="finance-value num-truncate">{{ truncNum(order.totalSellingAmountLak) }} LAK</span></a-tooltip>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalSellingAmountThb) }} THB</template><span class="finance-sub num-truncate">{{ truncNum(order.totalSellingAmountThb) }} THB</span></a-tooltip>
+              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalSellingAmount) }} {{ sellCurrency }}</template>
+                <span class="finance-value num-truncate">{{ truncNum(order.totalSellingAmount) }} <span class="fin-currency">{{ sellCurrency }}</span></span>
+              </a-tooltip>
+              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalSellingAmount) }} </span>
             </div>
-            <div class="finance-item" :class="{ 'profit-positive-bg': Number(order.totalProfitLak) >= 0, 'profit-negative-bg': Number(order.totalProfitLak) < 0 }">
+            <div class="finance-item" :class="{ 'profit-positive-bg': Number(order.totalProfit) >= 0, 'profit-negative-bg': Number(order.totalProfit) < 0 }">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalProfit') }}</span>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalProfitLak) }} LAK</template><span class="finance-value num-truncate">{{ truncNum(order.totalProfitLak) }} LAK</span></a-tooltip>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalProfitThb) }} THB</template><span class="finance-sub num-truncate">{{ truncNum(order.totalProfitThb) }} THB</span></a-tooltip>
+              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalProfit) }} {{ sellCurrency }}</template>
+                <span class="finance-value num-truncate">{{ truncNum(order.totalProfit) }} <span class="fin-currency">{{ sellCurrency }}</span></span>
+              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalProfit) }} </span>
+              <!-- <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalSellingAmount) }}</span> -->
+
+
+              </a-tooltip>
+              <!-- <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.targetCurrencyTotalProfit) }} LAK</template>
+                <span class="finance-value num-truncate">{{ truncNum(order.targetCurrencyTotalProfit) }} <span class="fin-currency">LAK</span></span>
+              </a-tooltip> -->
             </div>
-            <div class="finance-item">
-              <span class="finance-label">{{ $t('merchant.orderDetail.depositAmount') }}</span>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.depositAmount) }} LAK</template><span class="finance-value num-truncate">{{ truncNum(order.depositAmount) }} LAK</span></a-tooltip>
-            </div>
-            <div class="finance-item">
+            <div class="finance-item paid">
               <span class="finance-label">{{ $t('merchant.orderDetail.paidAmount') }}</span>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.paidAmount) }} LAK</template><span class="finance-value num-truncate">{{ truncNum(order.paidAmount) }} LAK</span></a-tooltip>
+              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(computedTotalPaid) }} {{ sellCurrency }}</template>
+                <span class="finance-value num-truncate">{{ truncNum(computedTotalPaid) }} <span class="fin-currency">{{ sellCurrency }}</span></span>
+              </a-tooltip>
+              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(computedTotalPaidLak) }}</span>
             </div>
-            <div class="finance-item">
+            <div class="finance-item remaining">
               <span class="finance-label">{{ $t('merchant.orderDetail.remainingAmount') }}</span>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.remainingAmount) }} LAK</template><span class="finance-value remaining num-truncate">{{ truncNum(order.remainingAmount) }} LAK</span></a-tooltip>
+              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(computedTotalRemaining) }} {{ sellCurrency }}</template>
+                <span class="finance-value remaining num-truncate">{{ truncNum(computedTotalRemaining) }} <span class="fin-currency">{{ sellCurrency }}</span></span>
+              </a-tooltip>
+              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(computedTotalRemainingLak) }}</span>
             </div>
           </div>
         </a-card>
@@ -153,21 +209,38 @@
 
               <div class="oi-info-row">
                 <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.quantity') }}</span><span class="oi-val">{{ item.quantity }}</span></div>
-                <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.quantityRemaining') }}</span><span class="oi-val">{{ item.quantityRemaining ?? '-' }}</span></div>
               </div>
 
               <!-- Purchase Section -->
               <div class="oi-section">
                 <div class="oi-section-title purchase">{{ $t('merchant.orderDetail.sectionPurchase') }}</div>
                 <div class="oi-info-row">
-                  <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.purchasePrice') }} ({{ item.purchaseCurrency || '-' }})</span><span class="oi-val">{{ formatNumber(item.purchasePrice) }}</span></div>
-                  <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.purchaseExchangeRate') }}</span><span class="oi-val">{{ formatNumber(item.purchaseExchangeRate) }}</span></div>
-                  <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.purchaseTotalLak') }}</span><span class="oi-val">{{ formatNumber(item.purchaseTotalLak) }}</span></div>
+                  <div class="oi-info-item">
+                    <span class="oi-label">{{ $t('merchant.orderDetail.purchasePrice') }} ({{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '-' }})</span>
+                    <span class="oi-val">{{ formatNumber(item.purchasePrice) }} <span class="oi-currency">{{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencyPurchasePrice) }}</span>
+                  </div>
+                  <div class="oi-info-item">
+                    <span class="oi-label">{{ $t('merchant.orderDetail.purchaseExchangeRate') }}</span>
+                    <span class="oi-val">{{ formatNumber(item.exchangeRateBuyValue || order.exchangeRateBuyValue || '0') }}</span>
+                  </div>
+                  <div class="oi-info-item">
+                    <span class="oi-label">{{ $t('merchant.orderDetail.purchaseTotalLak') }}</span>
+                    <span class="oi-val">{{ formatNumber(item.purchaseTotal) }} <span class="oi-currency">{{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencyPurchaseTotal) }}</span>
+                  </div>
                 </div>
                 <div class="oi-info-row">
-                  <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.shippingPrice') }} ({{ item.purchaseCurrency || '-' }})</span><span class="oi-val">{{ formatNumber(item.shippingPrice) }}</span></div>
-                  <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.shippingLak') }}</span><span class="oi-val">{{ formatNumber(item.shippingLak) }}</span></div>
-                  <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.costBeforeDiscount') }}</span><span class="oi-val">{{ formatNumber(item.totalCostBeforeDiscountLak) }}</span></div>
+                  <div class="oi-info-item">
+                    <span class="oi-label">{{ $t('merchant.orderDetail.shippingPrice') }} ({{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '-' }})</span>
+                    <span class="oi-val">{{ formatNumber(item.shippingPrice ?? '0') }} <span class="oi-currency">{{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencyShippingPrice) }}</span>
+                  </div>
+                  <div class="oi-info-item">
+                    <span class="oi-label">{{ $t('merchant.orderDetail.costBeforeDiscount') }}</span>
+                    <span class="oi-val">{{ formatNumber(item.totalCostBeforeDiscount) }} <span class="oi-currency">{{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencyTotalCostBeforeDiscount) }}</span>
+                  </div>
                 </div>
               </div>
 
@@ -175,32 +248,69 @@
               <div v-if="item.discountType" class="oi-section">
                 <div class="oi-section-title discount">{{ $t('merchant.orderDetail.sectionDiscount') }}</div>
                 <div class="oi-info-row">
-                  <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.discountType') }}</span><span class="oi-val">{{ item.discountType }}</span></div>
-                  <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.discountValue') }}</span><span class="oi-val">{{ formatNumber(item.discountValue) }}</span></div>
-                  <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.discountAmount') }}</span><span class="oi-val">-{{ formatNumber(item.discountAmountLak) }}</span></div>
+                  <div class="oi-info-item">
+                    <span class="oi-label">{{ $t('merchant.orderDetail.discountType') }}</span>
+                    <span class="oi-val">
+                      <span v-if="item.discountType === 'FIX'" class="discount-type-badge discount-fix">💵 {{ $t('merchant.orderDetail.discountFix') }}</span>
+                      <span v-else-if="item.discountType === 'PERCENT'" class="discount-type-badge discount-percent">% {{ $t('merchant.orderDetail.discountPercent') }}</span>
+                      <span v-else>{{ item.discountType }}</span>
+                    </span>
+                  </div>
+                  <div class="oi-info-item">
+                    <span class="oi-label">{{ $t('merchant.orderDetail.discountValue') }}</span>
+                    <span class="oi-val">{{ formatNumber(item.discountValue ?? '0') }} <span class="oi-currency">{{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencyDiscountValue ?? '0') }}</span>
+                  </div>
+                  <!-- <div class="oi-info-item">
+                    <span class="oi-label">{{ $t('merchant.orderDetail.discountAmount') }}</span>
+                    <span class="oi-val">-{{ formatNumber(item.discountAmount) }} <span class="oi-currency">{{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} -{{ formatNumber(item.targetCurrencyDiscountAmount) }}</span>
+                  </div> -->
                 </div>
               </div>
 
               <!-- Final Cost -->
               <div class="oi-info-row highlight-row">
-                <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.finalCostLak') }}</span><span class="oi-val highlight-val">{{ formatNumber(item.finalCostLak) }}</span></div>
-                <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.finalCostThb') }}</span><span class="oi-val highlight-val">{{ formatNumber(item.finalCostThb) }}</span></div>
+                <div class="oi-info-item">
+                  <span class="oi-label">{{ $t('merchant.orderDetail.finalCostLak') }}</span>
+                  <span class="oi-val highlight-val">{{ formatNumber(item.finalCost) }} <span class="oi-currency oi-currency-highlight">{{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
+                  <span class="oi-lak-sub highlight-lak">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencyFinalCost) }}</span>
+                </div>
               </div>
 
               <!-- Selling Section -->
               <div class="oi-section">
                 <div class="oi-section-title selling">{{ $t('merchant.orderDetail.sectionSelling') }}</div>
                 <div class="oi-info-row">
-                  <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.sellingPrice') }}</span><span class="oi-val">{{ formatNumber(item.sellingPriceForeign) }}</span></div>
-                  <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.sellingRate') }}</span><span class="oi-val">{{ formatNumber(item.sellingExchangeRate) }}</span></div>
-                  <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.sellingTotalLak') }}</span><span class="oi-val">{{ formatNumber(item.sellingTotalLak) }}</span></div>
+                  <div class="oi-info-item">
+                    <span class="oi-label">{{ $t('merchant.orderDetail.sellingPrice') }} ({{ item.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || '-' }})</span>
+                    <span class="oi-val">{{ formatNumber(item.sellingPriceForeign) }} <span class="oi-currency">{{ item.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencySellingPriceForeign) }}</span>
+                  </div>
+                  <div class="oi-info-item"> 
+                    <div class=" !text-blue-500 !ml-3"><SwapOutlined /></div>
+                    <span class="oi-label">{{ $t('merchant.orderDetail.sellingRate') }}</span>
+                    <span class="oi-val">{{ formatNumber(item.exchangeRateSellValue || order.exchangeRateSellValue || '0') }}</span>
+                  </div>
+                  <div class="oi-info-item">
+                    <span class="oi-label">{{ $t('merchant.orderDetail.sellingTotal') }}</span>
+                    <span class="oi-val">{{ formatNumber(item.sellingTotal) }} <span class="oi-currency">{{ item.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencySellingTotal) }}</span>
+                  </div>
                 </div>
               </div>
 
               <!-- Profit -->
-              <div class="oi-info-row" :class="{ 'profit-pos-row': Number(item.profitLak) >= 0, 'profit-neg-row': Number(item.profitLak) < 0 }">
-                <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.profitLak') }}</span><span class="oi-val profit-val">{{ formatNumber(item.profitLak) }}</span></div>
-                <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.profitThb') }}</span><span class="oi-val profit-val">{{ formatNumber(item.profitThb) }}</span></div>
+              <div class="oi-info-row" :class="{ 'profit-pos-row': Number(item.targetCurrencyProfit) >= 0, 'profit-neg-row': Number(item.targetCurrencyProfit) < 0 }">
+                <div class="oi-info-item">
+                  <span class="oi-label">{{ $t('merchant.orderDetail.profitLak') }}</span>
+                  <span class="oi-val profit-val">{{ formatNumber(item.targetCurrencyProfit) }} <span class="oi-currency">LAK</span></span>
+                </div>
+                <div class="oi-info-item">
+                  <span class="oi-label">{{ $t('merchant.orderDetail.profitLak') }}</span>
+                  <span class="oi-val profit-val">{{ truncNum(order.totalProfit) }}  <span class="oi-currency">{{ sellCurrency }}</span></span>
+                </div>
+                <!-- <span class="finance-value num-truncate">{{ truncNum(order.totalProfit) }} <span class="fin-currency">{{ sellCurrency }}</span></span>d -->
               </div>
             </div>
           </div>
@@ -232,15 +342,24 @@
             <div class="co-finance-row">
               <div class="co-fin-item">
                 <span class="co-fin-label">{{ $t('merchant.orderDetail.sellingAmountLak') }}</span>
-                <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(co.totalSellingAmountLak) }}</template><span class="co-fin-value num-truncate">{{ truncNum(co.totalSellingAmountLak) }}</span></a-tooltip>
+                <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(co.totalSellingAmount) }} {{ sellCurrency }}</template>
+                  <span class="co-fin-value num-truncate">{{ truncNum(co.totalSellingAmount) }} <span class="co-fin-currency">{{ sellCurrency }}</span></span>
+                </a-tooltip>
+                <span class="co-fin-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(co.targetCurrencyTotalSellingAmount) }}</span>
               </div>
               <div class="co-fin-item">
                 <span class="co-fin-label">{{ $t('merchant.orderDetail.paid') }}</span>
-                <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(co.paidAmount) }}</template><span class="co-fin-value num-truncate">{{ truncNum(co.paidAmount) }}</span></a-tooltip>
+                <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(co.paidAmount) }} {{ sellCurrency }}</template>
+                  <span class="co-fin-value num-truncate" :class="{ 'co-fin-paid': co.paymentStatus === 'PAID' }">{{ truncNum(co.paidAmount) }} <span class="co-fin-currency">{{ sellCurrency }}</span></span>
+                </a-tooltip>
+                <span class="co-fin-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(co.targetCurrencyPaidAmount) }}</span>
               </div>
               <div class="co-fin-item">
                 <span class="co-fin-label">{{ $t('merchant.orderDetail.remaining') }}</span>
-                <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(co.remainingAmount) }}</template><span class="co-fin-value remaining num-truncate">{{ truncNum(co.remainingAmount) }}</span></a-tooltip>
+                <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(co.remainingAmount) }} {{ sellCurrency }}</template>
+                  <span class="co-fin-value remaining num-truncate" :class="{ 'co-fin-unpaid': co.paymentStatus === 'UNPAID' || co.paymentStatus === 'PARTIAL' }">{{ truncNum(co.remainingAmount) }} <span class="co-fin-currency">{{ sellCurrency }}</span></span>
+                </a-tooltip>
+                <span class="co-fin-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(co.targetCurrencyRemainingAmount) }}</span>
               </div>
             </div>
 
@@ -261,29 +380,29 @@
                     {{ getCoItemProductName(coItem) }}
                   </template>
                   <template v-else-if="column.key === 'sellingPriceLak'">
-                    {{ formatNumber(coItem.sellingTotalLak) }}
+                    {{ formatNumber(coItem.sellingTotal) }} {{ order.exchangeRateSell?.baseCurrency || '' }}
                   </template>
-                  <template v-else-if="column.key === 'profitLak'">
-                    <span :class="{ 'profit-positive': Number(coItem.profitLak) >= 0, 'profit-negative': Number(coItem.profitLak) < 0 }">
-                      {{ formatNumber(coItem.profitLak) }}
+                  <!-- <template v-else-if="column.key === 'profitLak'">
+                    <span :class="{ 'profit-positive': Number(coItem.profit) >= 0, 'profit-negative': Number(coItem.profit) < 0 }">
+                      {{ formatNumber(coItem.profit) }} {{ order.exchangeRateSell?.baseCurrency || '' }}
                     </span>
-                  </template>
+                  </template> -->
                 </template>
               </a-table>
 
-              <div v-if="isMobile" class="co-items-mobile">
+              <!-- <div v-if="isMobile" class="co-items-mobile">
                 <div v-for="coItem in co.customerOrderItems" :key="coItem.id" class="co-item-card">
                   <div class="co-item-name">{{ getCoItemProductName(coItem) }}</div>
                   <div class="co-item-details">
                     <span>{{ $t('merchant.orderDetail.qty') }}: {{ coItem.quantity }}</span>
-                    <span>{{ formatNumber(coItem.sellingTotalLak) }} LAK</span>
+                    <span>{{ formatNumber(coItem.sellingTotal) }} {{ order.exchangeRateSell?.baseCurrency }}</span>
                   </div>
                   <div class="co-item-details">
                     <span>{{ $t('merchant.orderDetail.profitLak') }}</span>
-                    <span :class="{ 'profit-positive': Number(coItem.profitLak) >= 0, 'profit-negative': Number(coItem.profitLak) < 0 }">{{ formatNumber(coItem.profitLak) }} LAK</span>
+                    <span :class="{ 'profit-positive': Number(coItem.profit) >= 0, 'profit-negative': Number(coItem.profit) < 0 }">{{ formatNumber(coItem.profit) }} {{  order.exchangeRateSell?.targetCurrency || '' }}</span>
                   </div>
                 </div>
-              </div>
+              </div> -->
             </template>
           </div>
         </a-card>
@@ -302,6 +421,7 @@ import {
   DollarOutlined,
   ShoppingOutlined,
   TeamOutlined,
+  SwapOutlined,
 } from '@ant-design/icons-vue';
 import { orderRepository } from '@/infrastructure/repositories/order.repository';
 import type { Order, PaymentStatusEnum } from '@/domain/entities/user.entity';
@@ -316,11 +436,27 @@ const { isMobile } = useIsMobile();
 const loading = ref(false);
 const order = ref<Order | null>(null);
 
+const computedTotalPaid = computed(() =>
+  (order.value?.customerOrders ?? []).reduce((sum, co) => sum + Number(co.paidAmount || 0), 0).toString()
+);
+const computedTotalRemaining = computed(() =>
+  (order.value?.customerOrders ?? []).reduce((sum, co) => sum + Number(co.remainingAmount || 0), 0).toString()
+);
+const computedTotalPaidLak = computed(() =>
+  (order.value?.customerOrders ?? []).reduce((sum, co) => sum + Number(co.targetCurrencyPaidAmount || 0), 0).toString()
+);
+const computedTotalRemainingLak = computed(() =>
+  (order.value?.customerOrders ?? []).reduce((sum, co) => sum + Number(co.targetCurrencyRemainingAmount || 0), 0).toString()
+);
+
+const buyCurrency = computed(() => order.value?.exchangeRateBuy?.baseCurrency ?? '');
+const sellCurrency = computed(() => order.value?.exchangeRateSell?.baseCurrency ?? '');
+
 const coItemColumns = computed(() => [
   { title: t('merchant.orderDetail.colProduct'), key: 'orderItem' },
   { title: t('merchant.orderDetail.quantity'), key: 'quantity', dataIndex: 'quantity', width: 80, align: 'center' as const },
   { title: t('merchant.orderDetail.sellingPriceLak'), key: 'sellingPriceLak', width: 150, align: 'right' as const },
-  { title: t('merchant.orderDetail.profitLak'), key: 'profitLak', width: 150, align: 'right' as const },
+  // { title: t('merchant.orderDetail.profitLak'), key: 'profitLak', width: 150, align: 'right' as const },
 ]);
 
 const paymentColor = (status: PaymentStatusEnum) => {
@@ -340,15 +476,16 @@ const truncNum = (val: string | number, maxLen = 12) => {
   return formatted.length > maxLen ? formatted.slice(0, maxLen) + '…' : formatted;
 };
 
-const formatDate = (dateStr: string) => {
-  if (!dateStr) return '-';
-  return new Date(dateStr).toLocaleDateString();
-};
-
 const formatDateTime = (dateStr: string) => {
   if (!dateStr) return '-';
   const d = new Date(dateStr);
   return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+};
+
+const formatDateOnly = (dateStr: string | Date) => {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString();
 };
 
 const getOrderItemName = (orderItemId: number) => {
@@ -485,6 +622,52 @@ onMounted(() => {
   background: #fef2f2;
   border-color: rgba(220, 38, 38, 0.15);
 }
+
+/* Individual Finance Item Background Colors */
+.finance-item.purchase-cost {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+}
+
+.finance-item.shipping-cost {
+  background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+  border: 1px solid #ea580c;
+}
+
+.finance-item.cost-before-discount {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+}
+
+.finance-item.discount {
+  background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+  border: 1px solid #ef4444;
+}
+
+.finance-item.final-cost {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+}
+
+.finance-item.selling-amount {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 1px solid #10b981;
+}
+
+.finance-item.deposit {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 1px solid #3b82f6;
+}
+
+.finance-item.paid {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 1px solid #10b981;
+}
+
+.finance-item.remaining {
+  background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+  border: 1px solid #ef4444;
+}
 .finance-label {
   font-size: 11px;
   font-weight: 700;
@@ -600,6 +783,10 @@ onMounted(() => {
 .co-fin-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.3px; }
 .co-fin-value { font-size: 14px; font-weight: 800; color: #0f172a; margin-top: 2px; }
 .co-fin-value.remaining { color: #dc2626; }
+.co-fin-currency { font-size: 10px; font-weight: 600; color: #94a3b8; margin-left: 2px; }
+.co-fin-paid { color: #16a34a !important; }
+.co-fin-unpaid { color: #dc2626 !important; }
+.co-fin-lak-sub { font-size: 10px; color: #64748b; font-weight: 600; display: block; margin-top: 1px; }
 
 .co-items-title {
   font-size: 13px;
@@ -634,16 +821,243 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-/* Mobile overrides */
+/* Currency labels */
+.fin-currency {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+.finance-lak-sub {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  margin-top: 2px;
+  display: block;
+}
+.oi-currency {
+  font-size: 10px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-left: 2px;
+}
+.oi-currency-highlight { color: #3b82f6; }
+.oi-lak-sub {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 600;
+  margin-top: 2px;
+  display: block;
+}
+.highlight-lak { color: #1d4ed8; }
+
+/* Exchange Rate Card */
+.rate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+.rate-card {
+  border-radius: 14px;
+  padding: 16px 18px;
+  border: 1.5px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rate-buy {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+.rate-sell {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-color: rgba(34, 197, 94, 0.25);
+}
+.rate-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.rate-type-badge {
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+.rate-type-badge.buy { background: #dbeafe; color: #1d4ed8; }
+.rate-type-badge.sell { background: #dcfce7; color: #15803d; }
+.rate-pair {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+}
+.rate-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+}
+.rate-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.rate-date {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* Discount type badges */
+.discount-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.discount-fix {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+}
+.discount-percent {
+  background: #ede9fe;
+  color: #5b21b6;
+  border: 1px solid #8b5cf6;
+}
+
+/* Galaxy Tab S7 (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .panel-card :deep(.ant-card-body) { padding: 14px !important; }
+  .panel-title { font-size: 15px; }
+  
+  /* Order Info Grid */
+  .info-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .info-label { font-size: 12px; }
+  .info-value { font-size: 14px; }
+  
+  /* Financial Grid */
+  .finance-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .finance-item { padding: 12px 14px; }
+  .finance-label { font-size: 12px; }
+  .finance-value { font-size: 15px; }
+  .fin-currency { font-size: 10px; }
+  .finance-lak-sub { font-size: 10px; }
+  
+  /* Exchange Rate Card */
+  .rate-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .rate-card { padding: 14px 16px; }
+  .rate-value { font-size: 20px; }
+  .rate-pair { font-size: 12px; }
+  
+  /* Order Items */
+  .order-items { gap: 12px; }
+  .order-item { padding: 16px; }
+  .oi-section-title { font-size: 13px; }
+  .oi-label { font-size: 12px; }
+  .oi-val { font-size: 14px; }
+  .oi-currency { font-size: 9px; }
+  .oi-lak-sub { font-size: 9px; }
+  
+  /* Customer Orders */
+  .co-block { padding: 16px 14px; }
+  .co-header { margin-bottom: 12px; }
+  .co-name { font-size: 15px; }
+  .co-status { font-size: 11px; }
+  .co-finance-row { gap: 8px; }
+  .co-fin-item { flex: 1; }
+  .co-fin-label { font-size: 9px; }
+  .co-fin-value { font-size: 13px; }
+  .co-fin-currency { font-size: 9px; }
+  .co-fin-lak-sub { font-size: 9px; }
+  
+  /* Table */
+  .co-item-table :deep(.ant-table-thead > tr > th) { font-size: 12px; padding: 8px 12px; }
+  .co-item-table :deep(.ant-table-tbody > tr > td) { font-size: 12px; padding: 8px 12px; }
+  .co-items-mobile { gap: 8px; }
+  .co-item-mobile { padding: 12px; }
+}
+
+/* Mobile (< 768px) */
 @media (max-width: 767px) {
   .panel-card { border-radius: 10px; }
   .panel-card :deep(.ant-card-body) { padding: 12px !important; }
+  .panel-title { font-size: 14px; }
+  .icon-blue { font-size: 16px; }
+  
+  /* Order Info Grid */
   .info-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .info-item { padding: 8px 0; }
+  .info-label { font-size: 11px; }
+  .info-value { font-size: 13px; }
+  .order-code { font-size: 12px; }
+  
+  /* Exchange Rate Card */
+  .rate-grid { grid-template-columns: 1fr; gap: 12px; }
+  .rate-card { padding: 12px 14px; }
+  .rate-card-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .rate-value { font-size: 18px; }
+  .rate-pair { font-size: 12px; }
+  .rate-label { font-size: 10px; }
+  .rate-date { font-size: 10px; }
+  
+  /* Financial Grid */
   .finance-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
   .finance-item { padding: 10px 12px; }
+  .finance-label { font-size: 11px; }
   .finance-value { font-size: 14px; }
-  .co-block { padding: 14px 12px; border-radius: 12px; }
-  .co-finance-row { gap: 6px; }
+  .fin-currency { font-size: 9px; }
+  .finance-lak-sub { font-size: 9px; margin-top: 1px; }
+  
+  /* Order Items */
+  .order-items { gap: 10px; }
+  .order-item { padding: 12px; border-radius: 10px; }
+  .oi-section-title { font-size: 12px; margin-bottom: 8px; }
+  .oi-info-row { gap: 8px; }
+  .oi-info-item { flex: 1; min-width: 0; }
+  .oi-label { font-size: 11px; }
+  .oi-val { font-size: 13px; word-break: break-all; }
+  .oi-currency { font-size: 8px; }
+  .oi-lak-sub { font-size: 8px; margin-top: 1px; }
+  .highlight-val { font-size: 14px; }
+  .oi-currency-highlight { font-size: 9px; }
+  .highlight-lak { font-size: 9px; }
+  .profit-val { font-size: 13px; }
+  
+  /* Discount badges */
+  .discount-type-badge { font-size: 10px; padding: 1px 8px; }
+  
+  /* Customer Orders */
+  .co-block { padding: 12px 10px; border-radius: 10px; }
+  .co-header { margin-bottom: 10px; flex-direction: column; align-items: flex-start; gap: 6px; }
+  .co-name { font-size: 14px; }
+  .co-status { font-size: 10px; padding: 2px 8px; }
+  .co-finance-row { gap: 6px; flex-wrap: wrap; }
+  .co-fin-item { flex: 1; min-width: 100px; }
+  .co-fin-label { font-size: 9px; }
+  .co-fin-value { font-size: 13px; }
+  .co-fin-currency { font-size: 8px; }
+  .co-fin-lak-sub { font-size: 8px; margin-top: 1px; }
+  
+  /* Table */
+  .co-item-table { font-size: 12px; }
+  .co-item-table :deep(.ant-table-thead > tr > th) { font-size: 11px; padding: 6px 8px; }
+  .co-item-table :deep(.ant-table-tbody > tr > td) { font-size: 11px; padding: 6px 8px; }
+  .co-items-mobile { gap: 6px; }
+  .co-item-mobile { padding: 10px 8px; }
+  .co-item-name { font-size: 12px; }
+  .co-item-details { font-size: 10px; }
+  .profit-positive { font-size: 11px; }
+  .profit-negative { font-size: 11px; }
+  
+  /* Pills and tags */
+  .pill-tag { font-size: 10px; padding: 1px 6px; }
 }
 </style>
 

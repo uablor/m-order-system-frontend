@@ -3,6 +3,7 @@ import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
 import type { PermissionCreateDto, PermissionUpdateDto, PermissionListQueryDto } from '@/application/dto/permission.dto';
 import type { Permission } from '@/domain/entities/user.entity';
 import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
+import { extractSingleResult } from '@/shared/types/backend-response.types';
 
 export class PermissionRepository {
   private apiClient: ApiClient;
@@ -20,7 +21,10 @@ export class PermissionRepository {
   }
 
   async getById(id: number): Promise<Permission> {
-    return await this.apiClient.get<Permission>(API_ENDPOINTS.PERMISSIONS.GET_BY_ID(id));
+    const res = await this.apiClient.get<any>(API_ENDPOINTS.PERMISSIONS.GET_BY_ID(id));
+    const permission = extractSingleResult<Permission>(res) ?? (res as Permission);
+    if (!permission?.id) throw new Error('Permission not found in response');
+    return permission;
   }
 
   async getList(query: PermissionListQueryDto): Promise<BackendPaginatedResponse<Permission>> {

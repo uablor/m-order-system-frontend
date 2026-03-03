@@ -1,6 +1,29 @@
 <template>
   <a-layout class="app-layout">
-    <a-layout :style="{ marginRight: contentMarginRight, transition: 'margin-right 0.2s' }">
+    <!-- Desktop only (> 1024px): fixed sidebar that can expand/collapse -->
+    <SidebarLayout
+      v-if="isDesktop"
+      :collapsed="collapsed"
+      @update:collapsed="collapsed = $event"
+    />
+
+    <!-- Mobile + Tablet: drawer ที่ปิดได้เมื่อคลิก overlay หรือปุ่ม -->
+    <a-drawer
+      v-if="!isDesktop"
+      placement="left"
+      :open="!collapsed"
+      :width="280"
+      :closable="false"
+      :body-style="{ padding: '0', overflow: 'auto', height: '100vh' }"
+      :z-index="1000"
+      class="mobile-drawer"
+      @close="closeMobileDrawer"
+    >
+      <DrawerSidebar />
+    </a-drawer>
+
+    <!-- Content area: push margin on desktop when sidebar is fixed -->
+    <a-layout :style="{ marginLeft: contentMarginLeft, transition: 'margin-left 0.2s' }">
       <HeaderWithLayoutSwitcher
         :collapsed="collapsed"
         :page-title="pageTitle"
@@ -13,23 +36,6 @@
       </a-layout-content>
       <FooterLayout />
     </a-layout>
-    <SidebarLayout
-      v-if="!isMobile"
-      :collapsed="collapsed"
-      @update:collapsed="collapsed = $event"
-    />
-
-    <a-drawer
-      v-else
-      placement="right"
-      :open="!collapsed"
-      :width="260"
-      :closable="false"
-      :body-style="{ padding: '0', background: '#001529' }"
-      @close="collapsed = true"
-    >
-      <DrawerSidebar @navigate="collapsed = true" />
-    </a-drawer>
   </a-layout>
 </template>
 
@@ -43,17 +49,68 @@ import HeaderWithLayoutSwitcher from '../shared/HeaderWithLayoutSwitcher.vue';
 import FooterLayout from '../shared/FooterLayout.vue';
 import { useIsMobile } from '../../../shared/composables/useIsMobile';
 
-const collapsed = ref(false);
+const STORAGE_KEY = 'merchant-sidebar-collapsed';
+
+/** อ่านสถานะ sidebar จาก localStorage (true=collapsed, false=expanded) */
+function getStoredCollapsed(): boolean | null {
+  try {
+    const v = localStorage.getItem(STORAGE_KEY);
+    if (v === 'true') return true;
+    if (v === 'false') return false;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/** บันทึกสถานะ sidebar ลง localStorage */
+function setStoredCollapsed(value: boolean) {
+  try {
+    localStorage.setItem(STORAGE_KEY, String(value));
+  } catch {
+    /* ignore */
+  }
+}
+
 const route = useRoute();
 const { t } = useI18n();
-const { isMobile } = useIsMobile();
+const { isDesktop } = useIsMobile();
 
-watch(isMobile, (val) => {
-  if (val) collapsed.value = true; // drawer closed by default
+// Desktop: โหลดจาก localStorage | Mobile/Tablet: เสมอปิด (collapsed=true)
+const collapsed = ref(
+  isDesktop.value ? (getStoredCollapsed() ?? false) : true
+);
+
+// บันทึกลง localStorage เฉพาะเมื่อเป็น desktop (ไม่ให้ mobile overwrite ค่า desktop)
+watch(collapsed, (val) => {
+  if (isDesktop.value) setStoredCollapsed(val);
+}, { immediate: true });
+
+// เมื่อเปลี่ยนขนาดหน้าจอ
+watch(isDesktop, (val) => {
+  if (val) {
+    // เปลี่ยนเป็น desktop → โหลดค่าที่เก็บไว้
+    collapsed.value = getStoredCollapsed() ?? false;
+  } else {
+    // เปลี่ยนเป็น mobile/tablet → ปิด drawer เสมอ
+    collapsed.value = true;
+  }
 });
 
-const contentMarginRight = computed(() => {
-  if (isMobile.value) return '0px';
+/** ปิด drawer บน mobile/tablet (เมื่อคลิก overlay หรือปุ่ม) */
+const closeMobileDrawer = () => {
+  collapsed.value = true;
+};
+
+// บน mobile/tablet: ปิด drawer เมื่อเปลี่ยน route (หลังคลิกเมนู)
+watch(() => route.path, () => {
+  if (!isDesktop.value) collapsed.value = true;
+});
+
+// Desktop: margin-left follows collapsed state
+// Tablet / Mobile: 0 (drawer is overlay, doesn't push content)
+const contentMarginLeft = computed(() => {
+  if (!isDesktop.value) return '0px';
   return collapsed.value ? '80px' : '250px';
 });
 
@@ -72,7 +129,6 @@ const pathToMenuKey: Record<string, string> = {
 
 const pageTitle = computed(() => {
   const segments = route.path.split('/').filter(Boolean);
-  // For detail pages like /merchant/orders/2 → segments = ['merchant','orders','2']
   if (segments.length >= 3 && /^\d+$/.test(segments[segments.length - 1] ?? '')) {
     const parentKey = segments[segments.length - 2] ?? '';
     const menuKey = pathToMenuKey[parentKey] || parentKey;
@@ -89,8 +145,34 @@ const toggleSidebar = () => { collapsed.value = !collapsed.value; };
 </script>
 
 <style scoped>
-.app-layout { min-height: 100vh; }
-.content { margin: 5px 10px;  min-height: calc(100vh - 64px - 70px - 48px); background: #fff; border-radius: 8px; padding: 10px 15px; }
+.app-layout { 
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.mobile-drawer :deep(.ant-drawer-body) {
+  padding: 0;
+}
+
+.content {
+  margin: 5px 10px;
+  min-height: calc(100vh - 64px - 70px - 48px);
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: all 0.3s ease;
+}
+
 .content-wrapper { max-width: 1400px; margin: 0 auto; }
-@media (max-width: 768px) { .content { margin: 16px 8px; padding: 16px; } }
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .content { margin: 8px 10px; padding: 12px 14px; }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .content { margin: 8px 6px; padding: 12px; }
+}
 </style>

@@ -17,7 +17,6 @@ export function validateCreateUser(payload: UserCreateDto): ValidationError[] {
   if (!payload.email?.trim()) errors.push({ field: 'email', message: 'email is required' });
   if (!payload.password || payload.password.length < 6) errors.push({ field: 'password', message: 'password must be at least 6 characters' });
   if (!payload.fullName?.trim()) errors.push({ field: 'fullName', message: 'fullName is required' });
-  if (!payload.roleId || Number.isNaN(Number(payload.roleId))) errors.push({ field: 'roleId', message: 'roleId is required' });
   return errors;
 }
 

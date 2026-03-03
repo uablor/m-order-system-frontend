@@ -38,4 +38,6 @@ export interface CustomerListQueryDto {
   limit?: number;
   search?: string;
   merchantId?: number;
+  customerType?: 'CUSTOMER' | 'AGENT';
+  isActive?: boolean;
 }

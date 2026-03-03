@@ -78,6 +78,14 @@ export interface MerchantDetailOwner {
   lastLogin: string | null;
 }
 
+export interface MerchantFinancialByCurrency {
+  baseCurrency: string;
+  totalOrders: number;
+  totalIncomeLak: number;
+  totalExpenseLak: number;
+  totalProfitLak: number;
+}
+
 export interface MerchantDetailFinancial {
   totalOrders: number;
   ordersUnpaid: number;
@@ -91,6 +99,7 @@ export interface MerchantDetailFinancial {
   totalProfitThb: number;
   totalPaidAmount: number;
   totalRemainingAmount: number;
+  byCurrency: MerchantFinancialByCurrency[];
 }
 
 export interface MerchantDetailSummary {
@@ -140,41 +149,46 @@ export interface AuthPayload {
   exp: number;
 }
 
-export interface AdminDashboard {
-  totalMerchants: number;
-  activeMerchants: number;
-  totalUsers: number;
-  activeUsers: number;
-  totalCustomers: number;
-  activeCustomers: number;
+export interface TopMerchant {
+  id: number;
+  shopName: string;
   totalOrders: number;
-  ordersThisMonth: number;
-  ordersByPaymentStatus: {
-    UNPAID: number;
-    PARTIAL: number;
-    PAID: number;
-  };
-  ordersByArrivalStatus: {
-    NOT_ARRIVED: number;
-    ARRIVED: number;
-  };
-  totalFinalCost: number;
-  totalRevenueLAK: number;
-  totalRevenueTHB: number;
-  totalProfitLAK: number;
-  totalProfitTHB: number;
-  totalOutstandingAmount: number;
+  ownerUser?: string;
+  ownerUserEmail?: string;
+}
+
+export interface RecentUserLogin {
+  id: number;
+  fullName: string;
+  email: string;
+  lastLogin: Date;
+  merchant?: { id: number; shopName: string };
+}
+
+export interface AdminDashboardSummary {
+  totalMerchants: number;
+  totalAdminUsers: number;
+  totalMerchantUsers: number;
+  totalOrders: number;
+}
+
+export interface AdminDashboardDetails {
+  topMerchants: TopMerchant[];
+  recentUserLogins: RecentUserLogin[];
+}
+
+export interface AdminDashboard {
+  summary: AdminDashboardSummary;
+  details: AdminDashboardDetails;
 }
 
 export interface MonthlyReport {
   month: number;
   monthName: string;
   orderCount: number;
-  finalCostLak: string;
-  revenueLak: string;
-  revenueThb: string;
-  profitLak: string;
-  profitThb: string;
+  finalCost: string;
+  revenue: string;
+  profit: string;
 }
 
 export interface AnnualReport {
@@ -190,29 +204,107 @@ export interface LatestOrder {
   customerName: string | null;
 }
 
-export interface MerchantDashboard {
-  merchantId: number;
-  shopName: string;
-  totalOrders: number;
-  totalOrdersThisMonth: number;
-  ordersByPaymentStatus: {
-    UNPAID: number;
-    PARTIAL: number;
-    PAID: number;
-  };
-  ordersByArrivalStatus: {
-    NOT_ARRIVED: number;
-    ARRIVED: number;
-  };
+export interface MerchantSummary {
+  totalUsers: number;
   totalCustomers: number;
+  totalOrders: number;
+  totalPaidOrders: number;
   totalArrivals: number;
-  totalFinalCostLak: string;
-  totalRevenueLak: string;
-  totalRevenueThb: string;
-  totalProfitLak: string;
-  totalProfitThb: string;
-  totalOutstandingAmountLak: string;
-  latestOrders: LatestOrder[];
+  totalOrderItems: number;
+}
+
+export interface MerchantPriceSummary {
+  totalOrderItemsPrice: number;
+  totalOrderItemsPriceUnpaid: number;
+  totalOrderItemsPricePaid: number;
+  totalOrderItemsFinalCostPaid: number;
+  totalPaymentsPrice: number;
+  totalPaymentsPriceRejected: number;
+  totalPaymentsPricePendingVerified: number;
+  totalPaymentsPricePendingRejected: number;
+  totalFinalCost: number;
+  totalShippingPrice: number;
+  totalFinalCostPaid: number;
+  totalShippingPricePaid: number;
+}
+
+export interface MerchantPriceListEntry {
+  totalPrice: number;
+  totalPriceUnpaid: number;
+  totalPricePaid: number;
+}
+
+export interface MerchantPriceList {
+  usdt: MerchantPriceListEntry;
+  thb: MerchantPriceListEntry;
+  lak: MerchantPriceListEntry;
+}
+
+export interface MerchantDashboard {
+  summary: MerchantSummary;
+  priceCurrencySummary: MerchantPriceCurrencySummaryDto[];
+  topCustomers: TopCustomersResponseDto;
+}
+
+export interface TopCustomerDto {
+  rank: number;
+  customerId: number;
+  customerName: string;
+  customerEmail: string;
+  totalBuyAmountLak: number;
+  orderCount: number;
+  averageOrderAmountLak: number;
+}
+
+export interface TopCustomersResponseDto {
+  customers: TopCustomerDto[];
+}
+
+export interface MerchantPriceCurrencySummaryDto {
+  baseCurrency?: string;
+  targetCurrency?: string;
+  totalAll: number;
+  totalUnpaid: number;
+  totalPaid: number;
+  totalAllConverted?: number;
+  totalUnpaidConverted?: number;
+  totalPaidConverted?: number;
+}
+
+/** Response from POST /dashboard/merchant/price-currency-summary-by-date */
+export interface PriceCurrencySummaryByDateMonthDto {
+  year: number;
+  month: number;
+  currencies: Array<{
+    type: 'BUY' | 'SELL';
+    baseCurrency: string;
+    totalAll: number;
+    totalUnpaid: number;
+    totalPaid: number;
+  }>;
+  summary: {
+    targetCurrency: string;
+    totalAll: number;
+    totalUnpaid: number;
+    totalPaid: number;
+  };
+}
+
+export interface PriceCurrencySummaryByDateResponseDto {
+  startDate: string;
+  endDate: string;
+  months: PriceCurrencySummaryByDateMonthDto[];
+  totalSummary: {
+    targetCurrency: string;
+    totalAll: number;
+    totalUnpaid: number;
+    totalPaid: number;
+  };
+}
+
+export interface PriceCurrencySummaryByDateRequestDto {
+  startDate?: string;
+  endDate?: string;
 }
 
 export type RateType = 'BUY' | 'SELL';
@@ -222,32 +314,48 @@ export type ArrivalStatusEnum = 'NOT_ARRIVED' | 'ARRIVED';
 export type PaymentStatusEnum = 'UNPAID' | 'PARTIAL' | 'PAID';
 export type ArrivalItemCondition = 'OK' | 'DAMAGED' | 'LOST';
 
+export interface ExchangeRateSnapshot {
+  id: number;
+  baseCurrency: string;
+  targetCurrency: string;
+  rate: string;
+  rateType: string;
+  rateDate: Date;
+  isActive: boolean;
+}
+
 export interface OrderItem {
   id: number;
   orderId: number;
   productName: string;
   variant: string | null;
   quantity: number;
-  quantityRemaining: number;
-  purchaseCurrency: string;
+  exchangeRateBuy: ExchangeRateSnapshot | null;
+  exchangeRateSell: ExchangeRateSnapshot | null;
+  exchangeRateBuyValue: string | null;
+  exchangeRateSellValue: string | null;
   purchasePrice: string;
-  purchaseExchangeRate: string;
-  purchaseTotalLak: string;
-  shippingPrice: string;
-  shippingLak: string;
-  totalCostBeforeDiscountLak: string;
+  purchaseTotal: string;
+  shippingPrice: string | null;
+  totalCostBeforeDiscount: string;
   discountType: string | null;
-  discountValue: string;
-  discountAmountLak: string;
-  finalCostLak: string;
-  finalCostThb: string;
+  discountValue: string | null;
+  discountAmount: string;
+  finalCost: string;
   sellingPriceForeign: string;
-  sellingExchangeRate: string;
-  sellingTotalLak: string;
-  profitLak: string;
-  profitThb: string;
-  totalPriceLak: string;
-  totalPriceThb: string;
+  sellingTotal: string;
+  profit: string;
+  targetCurrencyPurchasePrice: string;
+  targetCurrencyPurchaseTotal: string;
+  targetCurrencyShippingPrice: string;
+  targetCurrencyTotalCostBeforeDiscount: string;
+  targetCurrencyDiscountType: string | null;
+  targetCurrencyDiscountValue: string | null;
+  targetCurrencyDiscountAmount: string;
+  targetCurrencyFinalCost: string;
+  targetCurrencySellingPriceForeign: string;
+  targetCurrencySellingTotal: string;
+  targetCurrencyProfit: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -256,56 +364,67 @@ export interface CustomerOrderItem {
   id: number;
   customerOrderId: number;
   orderItemId: number;
+  orderItemIndex: number | null;
+  productName: string | null;
+  variant: string | null;
   quantity: number;
-  sellingPriceForeign: string | null;
-  sellingPriceLak: string;
-  sellingPriceThb: string;
-  sellingTotalLak: string;
-  profitLak: string;
-  orderItem?: { productName: string; variant: string | null };
+  sellingTotal: string;
+  profit: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CustomerSnapshotDto {
+  id: number;
+  customerName: string;
+  customerType: string;
 }
 
 export interface CustomerOrder {
   id: number;
   orderId: number;
   customerId: number;
-  totalSellingAmountLak: string;
-  totalSellingAmountThb: string;
-  paymentStatus: PaymentStatusEnum;
+  customer: CustomerSnapshotDto | null;
+  totalSellingAmount: string;
   paidAmount: string;
   remainingAmount: string;
+  targetCurrencyTotalSellingAmount: string;
+  targetCurrencyPaidAmount: string;
+  targetCurrencyRemainingAmount: string;
+  paymentStatus: PaymentStatusEnum;
+  customerOrderItems: CustomerOrderItem[];
   createdAt: string;
   updatedAt: string;
-  customer?: Customer;
-  customerOrderItems?: CustomerOrderItem[];
 }
 
 export interface Order {
   id: number;
   merchantId: number;
-  createdBy: number | null;
+  createdByUser: User | null;
   orderCode: string;
   orderDate: string;
   arrivalStatus: ArrivalStatusEnum;
   arrivedAt: string | null;
   notifiedAt: string | null;
-  totalPurchaseCostLak: string;
-  totalShippingCostLak: string;
-  totalCostBeforeDiscountLak: string;
-  totalDiscountLak: string;
-  totalFinalCostLak: string;
-  totalFinalCostThb: string;
-  totalSellingAmountLak: string;
-  totalSellingAmountThb: string;
-  totalProfitLak: string;
-  totalProfitThb: string;
-  depositAmount: string;
-  paidAmount: string;
-  remainingAmount: string;
+  exchangeRateBuy: ExchangeRateSnapshot | null;
+  exchangeRateSell: ExchangeRateSnapshot | null;
+  exchangeRateBuyValue: string | null;
+  exchangeRateSellValue: string | null;
+  totalPurchaseCost: string;
+  totalShippingCost: string;
+  totalCostBeforeDiscount: string;
+  totalDiscount: string;
+  totalFinalCost: string;
+  totalSellingAmount: string;
+  totalProfit: string;
+  targetCurrencyTotalPurchaseCost: string;
+  targetCurrencyTotalShippingCost: string;
+  targetCurrencyTotalCostBeforeDiscount: string;
+  targetCurrencyTotalDiscount: string;
+  targetCurrencyTotalFinalCost: string;
+  targetCurrencyTotalSellingAmount: string;
+  targetCurrencyTotalProfit: string;
   paymentStatus: PaymentStatusEnum;
-  createdByUser?: User | null;
   orderItems?: OrderItem[];
   customerOrders?: CustomerOrder[];
   createdAt: string;

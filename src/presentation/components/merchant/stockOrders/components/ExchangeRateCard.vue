@@ -5,7 +5,7 @@
         <SwapOutlined class="icon-blue" />
         <span>{{ $t('merchant.orders.exchangeRate.title') }}</span>
       </div>
-      <a-button type="primary" class="add-btn" @click="$emit('edit')">
+      <a-button type="primary" class="add-btn" @click="handleEditClick">
         <template #icon><EditOutlined /></template>
         {{ $t('merchant.orders.exchangeRate.edit') }}
       </a-button>
@@ -26,8 +26,40 @@
 <script setup lang="ts">
 import { SwapOutlined, EditOutlined } from '@ant-design/icons-vue';
 
-defineProps<{ buyRateDisplay: string; sellRateDisplay: string }>();
-defineEmits<{ (e: 'edit'): void }>();
+export interface EditRateData {
+  buy: { baseCurrency: string; targetCurrency: string; rate: number | undefined };
+  sell: { baseCurrency: string; targetCurrency: string; rate: number | undefined };
+}
+
+const props = defineProps<{ 
+  buyRateDisplay: string; 
+  sellRateDisplay: string;
+  buyRate?: number;
+  sellRate?: number;
+  buyBaseCurrency?: string;
+  buyTargetCurrency?: string;
+  sellBaseCurrency?: string;
+  sellTargetCurrency?: string;
+}>();
+
+const emit = defineEmits<{ 
+  (e: 'edit', data: EditRateData): void;
+}>();
+
+const handleEditClick = () => {
+  emit('edit', {
+    buy: {
+      baseCurrency: props.buyBaseCurrency ?? '',
+      targetCurrency: props.buyTargetCurrency ?? 'LAK',
+      rate: props.buyRate,
+    },
+    sell: {
+      baseCurrency: props.sellBaseCurrency ?? '',
+      targetCurrency: props.sellTargetCurrency ?? 'LAK',
+      rate: props.sellRate,
+    },
+  });
+};
 </script>
 
 <style scoped>

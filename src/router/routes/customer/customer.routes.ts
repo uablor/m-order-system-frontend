@@ -16,3 +16,4 @@ export const CustomerRoute: RouteRecordRaw[] = [
   },
 ];
 
+// /customer/item-arrived?token=Ntb9thkFfKtMIBkM60h34VXUkI6DuFWQ

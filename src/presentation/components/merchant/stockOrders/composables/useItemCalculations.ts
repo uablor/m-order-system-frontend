@@ -1,12 +1,13 @@
 import type { ItemForm } from '../types';
+import { getItemTotalQty } from './useOrderItems';
 
 export function useItemCalculations(getBuyRate: () => number, getSellRate: () => number) {
-  const calcPurchaseTotalForeign = (item: ItemForm) => item.purchasePrice * item.quantity;
+  const calcPurchaseTotalForeign = (item: ItemForm) => item.purchasePrice * getItemTotalQty(item);
   const calcPurchaseUnitLak = (item: ItemForm) => item.purchasePrice * getBuyRate();
-  const calcPurchaseTotalLak = (item: ItemForm) => item.purchasePrice * item.quantity * getBuyRate();
+  const calcPurchaseTotalLak = (item: ItemForm) => item.purchasePrice * getItemTotalQty(item) * getBuyRate();
   const calcShippingLak = (item: ItemForm) => item.shippingPrice * getBuyRate();
-  const calcPurchaseAndShipForeign = (item: ItemForm) => (item.purchasePrice * item.quantity) + item.shippingPrice;
-  const calcPurchaseAndShipLak = (item: ItemForm) => ((item.purchasePrice * item.quantity) + item.shippingPrice) * getBuyRate();
+  const calcPurchaseAndShipForeign = (item: ItemForm) => (item.purchasePrice * getItemTotalQty(item)) + item.shippingPrice;
+  const calcPurchaseAndShipLak = (item: ItemForm) => ((item.purchasePrice * getItemTotalQty(item)) + item.shippingPrice) * getBuyRate();
   const calcSubtotalLak = (item: ItemForm) => calcPurchaseTotalLak(item) + calcShippingLak(item);
 
   const calcDiscountLak = (item: ItemForm) => {
@@ -22,13 +23,13 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
   };
 
   const calcNetCostForeign = (item: ItemForm) =>
-    item.purchasePrice * item.quantity + item.shippingPrice - calcDiscountForeign(item);
+    item.purchasePrice * getItemTotalQty(item) + item.shippingPrice - calcDiscountForeign(item);
 
   const calcNetCostLak = (item: ItemForm) => calcSubtotalLak(item) - calcDiscountLak(item);
 
   const calcSellingUnitLak = (item: ItemForm) => item.sellingPriceForeign * getSellRate();
-  const calcSellingTotalForeign = (item: ItemForm) => item.sellingPriceForeign * item.quantity;
-  const calcSellingTotalLak = (item: ItemForm) => item.sellingPriceForeign * item.quantity * getSellRate();
+  const calcSellingTotalForeign = (item: ItemForm) => item.sellingPriceForeign * getItemTotalQty(item);
+  const calcSellingTotalLak = (item: ItemForm) => item.sellingPriceForeign * getItemTotalQty(item) * getSellRate();
 
   return {
     calcPurchaseTotalForeign,

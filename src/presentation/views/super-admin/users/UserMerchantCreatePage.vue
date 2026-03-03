@@ -18,8 +18,113 @@
     <a-form ref="formRef" :model="formState" layout="vertical">
       <div class="two-panel-card">
 
-        <!-- ========== ซ้าย: ข้อมูลผู้ใช้งาน ========== -->
-        <div class="panel user-panel">
+        <!-- ========== ขวา: ข้อมูลร้านค้า ========== -->
+        <div class="panel merchant-panel">
+          <div class="panel-header">
+            <span class="panel-icon merchant-icon"><ShopOutlined /></span>
+            <div class="panel-title-group">
+              <span class="panel-title">
+                {{ $t('users.merchantInfoSection') }}
+                <span class="panel-num">({{ $t('users.sectionPart') }} 2)</span>
+              </span>
+              <span class="panel-optional-hint">{{ $t('users.merchantInfoOptional') }}</span>
+            </div>
+          </div>
+
+          <!-- ชื่อร้าน -->
+          <a-form-item
+            name="shopName"
+          >
+            <template #label>
+              <span class="field-label"><ShopOutlined class="lbl-ico" />{{ $t('users.shopName') }}</span>
+            </template>
+            <a-input
+              v-model:value="formState.shopName"
+              :placeholder="$t('users.shopNamePlaceholder')"
+              size="large"
+            />
+          </a-form-item>
+
+          <!-- เบอร์โทร + อีเมลร้าน -->
+          <a-row :gutter="12">
+            <a-col :xs="24" :sm="12">
+              <a-form-item name="contactPhone">
+                <template #label>
+                  <span class="field-label"><PhoneOutlined class="lbl-ico" />{{ $t('users.contactPhone') }}</span>
+                </template>
+                <a-input
+                  v-model:value="formState.contactPhone"
+                  :placeholder="$t('users.contactPhonePlaceholder')"
+                  size="large"
+                />
+              </a-form-item>
+            </a-col>
+            <a-col :xs="24" :sm="12">
+              <a-form-item name="contactEmail">
+                <template #label>
+                  <span class="field-label"><MailOutlined class="lbl-ico" />{{ $t('users.contactEmail') }}</span>
+                </template>
+                <a-input
+                  v-model:value="formState.contactEmail"
+                  :placeholder="$t('users.contactEmailPlaceholder')"
+                  size="large"
+                />
+              </a-form-item>
+            </a-col>
+          </a-row>
+
+          <!-- ที่อยู่ร้าน -->
+          <a-form-item name="shopAddress">
+            <template #label>
+              <span class="field-label"><HomeOutlined class="lbl-ico" />{{ $t('users.shopAddress') }}</span>
+            </template>
+            <a-textarea
+              v-model:value="formState.shopAddress"
+              :placeholder="$t('users.shopAddressPlaceholder')"
+              :rows="3"
+              style="resize: none"
+              size="large"
+            />
+          </a-form-item>
+
+          <!-- สกุลเงิน + ลิงก์โลโก้ -->
+          <!-- <a-row :gutter="12">
+            <a-col :xs="24" :sm="12">
+              <a-form-item name="defaultCurrency">
+                <template #label>
+                  <span class="field-label"><DollarOutlined class="lbl-ico" />{{ $t('users.defaultCurrency') }}</span>
+                </template>
+                <a-select
+                  v-model:value="formState.defaultCurrency"
+                  size="large"
+                  style="width: 100%"
+                >
+                  <a-select-option value="LAK">🇱🇦 LAK</a-select-option>
+                  <a-select-option value="THB">🇹🇭 THB</a-select-option>
+                  <a-select-option value="USD">🇺🇸 USD</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :xs="24" :sm="12">
+              <a-form-item name="shopLogoUrl">
+                <template #label>
+                  <span class="field-label"><PictureOutlined class="lbl-ico" />{{ $t('users.shopLogoUrl') }} (URL)</span>
+                </template>
+                <a-input
+                  v-model:value="formState.shopLogoUrl"
+                  :placeholder="$t('users.shopLogoUrlPlaceholder')"
+                  size="large"
+                />
+              </a-form-item>
+            </a-col>
+          </a-row> -->
+        </div>
+        <!-- divider แนวตั้ง (desktop only) -->
+        <div class="panel-divider" />
+
+        
+       <!-- ========== ซ้าย: ข้อมูลผู้ใช้งาน ========== -->
+       <div class="panel user-panel">
           <div class="panel-header">
             <span class="panel-icon user-icon"><UserOutlined /></span>
             <span class="panel-title">
@@ -98,111 +203,6 @@
               size="large"
             />
           </a-form-item>
-        </div>
-
-        <!-- divider แนวตั้ง (desktop only) -->
-        <div class="panel-divider" />
-
-        <!-- ========== ขวา: ข้อมูลร้านค้า ========== -->
-        <div class="panel merchant-panel">
-          <div class="panel-header">
-            <span class="panel-icon merchant-icon"><ShopOutlined /></span>
-            <div class="panel-title-group">
-              <span class="panel-title">
-                {{ $t('users.merchantInfoSection') }}
-                <span class="panel-num">({{ $t('users.sectionPart') }} 2)</span>
-              </span>
-              <span class="panel-optional-hint">{{ $t('users.merchantInfoOptional') }}</span>
-            </div>
-          </div>
-
-          <!-- ชื่อร้าน -->
-          <a-form-item
-            name="shopName"
-          >
-            <template #label>
-              <span class="field-label"><ShopOutlined class="lbl-ico" />{{ $t('users.shopName') }}</span>
-            </template>
-            <a-input
-              v-model:value="formState.shopName"
-              :placeholder="$t('users.shopNamePlaceholder')"
-              size="large"
-            />
-          </a-form-item>
-
-          <!-- เบอร์โทร + อีเมลร้าน -->
-          <a-row :gutter="12">
-            <a-col :xs="24" :sm="12">
-              <a-form-item name="contactPhone">
-                <template #label>
-                  <span class="field-label"><PhoneOutlined class="lbl-ico" />{{ $t('users.contactPhone') }}</span>
-                </template>
-                <a-input
-                  v-model:value="formState.contactPhone"
-                  :placeholder="$t('users.contactPhonePlaceholder')"
-                  size="large"
-                />
-              </a-form-item>
-            </a-col>
-            <a-col :xs="24" :sm="12">
-              <a-form-item name="contactEmail">
-                <template #label>
-                  <span class="field-label"><MailOutlined class="lbl-ico" />{{ $t('users.contactEmail') }}</span>
-                </template>
-                <a-input
-                  v-model:value="formState.contactEmail"
-                  :placeholder="$t('users.contactEmailPlaceholder')"
-                  size="large"
-                />
-              </a-form-item>
-            </a-col>
-          </a-row>
-
-          <!-- ที่อยู่ร้าน -->
-          <a-form-item name="shopAddress">
-            <template #label>
-              <span class="field-label"><HomeOutlined class="lbl-ico" />{{ $t('users.shopAddress') }}</span>
-            </template>
-            <a-textarea
-              v-model:value="formState.shopAddress"
-              :placeholder="$t('users.shopAddressPlaceholder')"
-              :rows="3"
-              style="resize: none"
-              size="large"
-            />
-          </a-form-item>
-
-          <!-- สกุลเงิน + ลิงก์โลโก้ -->
-          <a-row :gutter="12">
-            <a-col :xs="24" :sm="12">
-              <a-form-item name="defaultCurrency">
-                <template #label>
-                  <span class="field-label"><DollarOutlined class="lbl-ico" />{{ $t('users.defaultCurrency') }}</span>
-                </template>
-                <a-select
-                  v-model:value="formState.defaultCurrency"
-                  size="large"
-                  style="width: 100%"
-                >
-                  <a-select-option value="LAK">🇱🇦 LAK</a-select-option>
-                  <a-select-option value="THB">🇹🇭 THB</a-select-option>
-                  <a-select-option value="USD">🇺🇸 USD</a-select-option>
-                </a-select>
-              </a-form-item>
-            </a-col>
-            <a-col :xs="24" :sm="12">
-              <a-form-item name="shopLogoUrl">
-                <template #label>
-                  <span class="field-label"><PictureOutlined class="lbl-ico" />{{ $t('users.shopLogoUrl') }} (URL)</span>
-                </template>
-                <a-input
-                  v-model:value="formState.shopLogoUrl"
-                  :placeholder="$t('users.shopLogoUrlPlaceholder')"
-                  size="large"
-                />
-              </a-form-item>
-            </a-col>
-          </a-row>
         </div>
 
       </div>

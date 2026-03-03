@@ -1,6 +1,7 @@
 import { ApiClient } from '@/infrastructure/apis/api';
 import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
 import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
+import { extractSingleResult } from '@/shared/types/backend-response.types';
 
 export interface CustomerOrderItemDetail {
   id: number;
@@ -42,11 +43,10 @@ class CustomerOrderItemRepository {
   }
 
   async getById(id: number): Promise<CustomerOrderItemDetail> {
-    const res = await this.apiClient.get<{ results: CustomerOrderItemDetail[] }>(
-      API_ENDPOINTS.CUSTOMER_ORDER_ITEMS.GET_BY_ID(id),
-    );
-    const results = (res as any).results;
-    return Array.isArray(results) ? results[0] : results;
+    const res = await this.apiClient.get<any>(API_ENDPOINTS.CUSTOMER_ORDER_ITEMS.GET_BY_ID(id));
+    const item = extractSingleResult<CustomerOrderItemDetail>(res);
+    if (!item) throw new Error('Customer order item not found in response');
+    return item;
   }
 }
 

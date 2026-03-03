@@ -80,6 +80,12 @@ export const MerchantRoute: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/merchant/arrivals/create-multiple',
+    name: 'merchant-arrivals-create-multiple',
+    component: () => import('@/presentation/views/merchant/arrivals/CreateArrivalsPage.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/merchant/arrivals/:id',
     name: 'merchant-arrival-detail',
     component: () => import('@/presentation/views/merchant/arrivals/ArrivalDetailPage.vue'),

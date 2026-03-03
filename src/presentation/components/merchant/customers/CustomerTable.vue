@@ -10,7 +10,6 @@
         <div class="page-title">{{ $t('merchant.customers.title') }}</div>
         <div class="page-subtitle">{{ $t('merchant.customers.subtitle') }}</div>
       </div>
-
       <a-input
         v-model:value="q"
         allow-clear
@@ -21,7 +20,14 @@
       >
         <template #prefix><SearchOutlined /></template>
       </a-input>
-
+      <a-button
+        v-if="isMobile"
+        :class="['filter-toggle-btn', { 'filter-active': hasActiveFilter }]"
+        @click="showMobileFilter = !showMobileFilter"
+      >
+        <template #icon><FilterOutlined /></template>
+        <a-badge v-if="hasActiveFilter" color="#1d4ed8" dot />
+      </a-button>
       <a-button type="primary" class="add-btn" data-testid="add-customer-btn" @click="openCreatePage">
         <template #icon><UserAddOutlined /></template>
         {{ $t('merchant.customers.addButton') }}
@@ -53,44 +59,111 @@
       </div>
     </div>
 
+    <!-- Filter Bar: under summary, desktop inline / mobile via icon -->
+    <Transition name="filter-slide">
+      <div v-if="!isMobile || showMobileFilter" class="filter-section mb-4">
+        <div class="filter-bar">
+          <template v-if="!isMobile">
+            <a-select
+              v-model:value="filterType"
+              :placeholder="$t('merchant.customers.filter.allTypes')"
+              allow-clear
+              class="filter-select"
+              @change="applyFilters"
+            >
+              <a-select-option value="CUSTOMER">{{ $t('merchant.customers.form.type.customer') }}</a-select-option>
+              <a-select-option value="AGENT">{{ $t('merchant.customers.form.type.agent') }}</a-select-option>
+            </a-select>
+            <a-select
+              v-model:value="filterStatus"
+              :placeholder="$t('merchant.customers.filter.allStatus')"
+              allow-clear
+              class="filter-select"
+              @change="applyFilters"
+            >
+              <a-select-option :value="true">{{ $t('merchant.customers.status.active') }}</a-select-option>
+              <a-select-option :value="false">{{ $t('merchant.customers.status.inactive') }}</a-select-option>
+            </a-select>
+            <a-button v-if="hasActiveFilter" class="reset-btn" @click="resetFilters">
+              <template #icon><CloseCircleOutlined /></template>
+              {{ $t('merchant.customers.filter.reset') }}
+            </a-button>
+          </template>
+          <template v-else>
+            <div class="mobile-filter-panel">
+              <a-select
+                v-model:value="filterType"
+                :placeholder="$t('merchant.customers.filter.allTypes')"
+                allow-clear
+                class="w-full mb-2"
+                @change="applyFilters"
+              >
+                <a-select-option value="CUSTOMER">{{ $t('merchant.customers.form.type.customer') }}</a-select-option>
+                <a-select-option value="AGENT">{{ $t('merchant.customers.form.type.agent') }}</a-select-option>
+              </a-select>
+              <a-select
+                v-model:value="filterStatus"
+                :placeholder="$t('merchant.customers.filter.allStatus')"
+                allow-clear
+                class="w-full mb-2"
+                @change="applyFilters"
+              >
+                <a-select-option :value="true">{{ $t('merchant.customers.status.active') }}</a-select-option>
+                <a-select-option :value="false">{{ $t('merchant.customers.status.inactive') }}</a-select-option>
+              </a-select>
+              <a-button v-if="hasActiveFilter" block class="reset-btn" @click="resetFilters">
+                <template #icon><CloseCircleOutlined /></template>
+                {{ $t('merchant.customers.filter.reset') }}
+              </a-button>
+            </div>
+          </template>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Desktop: table inside card -->
     <a-card v-if="!isMobile" :bordered="false" class="panel-card">
       <a-table
-        v-if="true"
         :columns="columns"
         :data-source="filteredCustomers"
         :pagination="paginationConfig"
         row-key="id"
         size="middle"
         :loading="loading"
+        :scroll="{ x: 900 }"
         data-testid="customer-table"
         @change="handleTableChange"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'customer'">
-            <div class="flex items-center gap-3">
-              <a-avatar :size="40" :style="{ backgroundColor: record.avatarColor }">{{ record.avatarText }}</a-avatar>
-              <div>
-                <div class="font-semibold text-slate-900 leading-tight">{{ record.name }}</div>
-                <div class="text-slate-500 text-sm">{{ record.code }}</div>
+            <div class="customer-cell">
+              <a-avatar :size="36" :style="{ backgroundColor: record.avatarColor, flexShrink: 0 }">{{ record.avatarText }}</a-avatar>
+              <div class="customer-info">
+                <a-tooltip :overlay-class-name="'blue-tooltip'" placement="topLeft">
+                  <template #title>
+                    <div class="tooltip-name">{{ record.name }}</div>
+                    <div class="tooltip-token">{{ record.code }}</div>
+                  </template>
+                  <div class="customer-name">{{ record.name }}</div>
+                </a-tooltip>
+                <div class="customer-code">{{ record.code }}</div>
               </div>
             </div>
           </template>
 
           <template v-else-if="column.key === 'address'">
-            <div class="flex items-center gap-2">
-              <a-tag color="blue" class="pill-tag">{{ record.shipTag }}</a-tag>
-              <span class="text-slate-700">{{ record.address }}</span>
-            </div>
+            <a-tooltip :overlay-class-name="'blue-tooltip'" :title="record.address" placement="topLeft">
+              <span class="address-text">{{ record.address }}</span>
+            </a-tooltip>
           </template>
 
-          <template v-else-if="column.key === 'pay'">
+          <!-- <template v-else-if="column.key === 'pay'">
             <span class="text-slate-700">{{ record.paymentMethod }}</span>
-          </template>
+          </template> -->
 
           <template v-else-if="column.key === 'contact'">
             <div class="flex items-center gap-3">
-              <a-button type="text" class="icon-action" @click="() => {}"><MessageOutlined /></a-button>
+             <!-- <a-button type="text" class="icon-action" @click="() => {}"><MessageOutlined /></a-button> --->
               <a-button type="text" class="icon-action" @click="() => {}"><PhoneOutlined /></a-button>
               <span class="text-slate-700">{{ record.contactPhone }}</span>
             </div>
@@ -187,7 +260,6 @@ import { useIsMobile } from '../../../../shared/composables/useIsMobile';
 import {
   SearchOutlined,
   UserAddOutlined,
-  MessageOutlined,
   PhoneOutlined,
   EditOutlined,
   DeleteOutlined,
@@ -195,6 +267,8 @@ import {
   TeamOutlined,
   UserOutlined,
   StopOutlined,
+  FilterOutlined,
+  CloseCircleOutlined,
 } from '@ant-design/icons-vue';
 import type { TablePaginationConfig } from 'ant-design-vue';
 import type { Customer } from '@/domain/entities/user.entity';
@@ -202,6 +276,10 @@ import { useMerchantCustomers } from '@/presentation/composables/merchant/useMer
 import { useRouter } from 'vue-router';
 
 const q = ref('');
+const filterType = ref<'CUSTOMER' | 'AGENT' | undefined>(undefined);
+const filterStatus = ref<boolean | undefined>(undefined);
+const showMobileFilter = ref(false);
+
 const { t } = useI18n();
 const { isMobile } = useIsMobile();
 const router = useRouter();
@@ -213,9 +291,27 @@ const {
   summary,
   fetchCustomers,
   searchCustomers,
+  filterCustomers,
   changePage,
   deleteCustomer,
 } = useMerchantCustomers();
+
+const hasActiveFilter = computed(() => filterType.value != null || filterStatus.value != null);
+
+const applyFilters = () => {
+  filterCustomers({
+    customerType: filterType.value,
+    isActive: filterStatus.value,
+  });
+};
+
+const resetFilters = () => {
+  filterType.value = undefined;
+  filterStatus.value = undefined;
+  q.value = '';
+  showMobileFilter.value = false;
+  filterCustomers({ customerType: undefined, isActive: undefined, search: undefined });
+};
 
 const truncNum = (val: string | number, maxLen = 12) => {
   const formatted = Number(val || 0).toLocaleString();
@@ -223,12 +319,11 @@ const truncNum = (val: string | number, maxLen = 12) => {
 };
 
 const columns = computed(() => ([
-  { title: t('merchant.customers.table.customer'), key: 'customer' },
-  { title: t('merchant.customers.table.address'), key: 'address' },
-  { title: t('merchant.customers.table.pay'), key: 'pay', width: 140 },
-  { title: t('merchant.customers.table.contact'), key: 'contact', width: 220 },
+  { title: t('merchant.customers.table.customer'), key: 'customer', width: 200 },
+  { title: t('merchant.customers.table.address'), key: 'address', width: 280 },
+  { title: t('merchant.customers.table.contact'), key: 'contact', width: 200 },
   { title: t('merchant.customers.table.status'), key: 'status', width: 120, align: 'center' as const },
-  { title: t('merchant.customers.table.manage'), key: 'actions', width: 120, align: 'right' as const },
+  { title: t('merchant.customers.table.manage'), key: 'actions', width: 100, fixed: 'right' as const, align: 'right' as const },
 ]));
 
 const uiCustomers = computed(() => (customers.value || []).map((c: Customer, idx: number) => {
@@ -257,15 +352,7 @@ const uiCustomers = computed(() => (customers.value || []).map((c: Customer, idx
   };
 }));
 
-const filteredCustomers = computed(() => {
-  const needle = q.value.trim().toLowerCase();
-  if (!needle) return uiCustomers.value;
-  return uiCustomers.value.filter((c) =>
-    String(c.name).toLowerCase().includes(needle) ||
-    String(c.contactPhone).toLowerCase().includes(needle) ||
-    String(c.code).toLowerCase().includes(needle)
-  );
-});
+const filteredCustomers = computed(() => uiCustomers.value);
 
 const paginationConfig = computed<TablePaginationConfig>(() => ({
   current: pagination.value.page,
@@ -327,25 +414,138 @@ onMounted(async () => {
 .title-block { flex: 1 1 auto; min-width: 0; }
 .page-title { font-size: 22px; font-weight: 600; color: #0f172a; line-height: 1.25; }
 .page-subtitle { font-size: 13px; color: #64748b; margin-top: 2px; }
-.search-input { height: 44px; border-radius: 12px; width: min(320px, 100%); }
+.search-input { height: 44px; border-radius: 12px; width: min(200px, 100%); flex: 0 1 200px; }
 .add-btn { height: 44px; border-radius: 12px; font-weight: 700; flex-shrink: 0; }
 
-/* Mobile: title+button on row 1, search full-width on row 2 */
+/* Mobile responsive header */
 @media (max-width: 767px) {
   .page-header { flex-wrap: wrap; }
   .title-block { order: 1; flex: 1 1 auto; }
   .add-btn { order: 2; flex-shrink: 0; height: 36px; font-size: 12px; padding: 0 10px; }
-  .search-input { order: 3; flex: 1 1 100%; width: 100%; }
   .page-title { font-size: 15px; }
   .page-subtitle { display: none; }
+}
+
+/* Filter section under summary */
+.filter-section { }
+.filter-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.filter-select { height: 40px; border-radius: 10px; min-width: 140px; }
+.filter-select :deep(.ant-select-selector) { height: 40px !important; border-radius: 10px !important; align-items: center; }
+.reset-btn { height: 40px; border-radius: 10px; color: #dc2626; border-color: #fca5a5; font-weight: 600; flex-shrink: 0; }
+.reset-btn:hover { background: #fef2f2 !important; color: #dc2626 !important; border-color: #ef4444 !important; }
+.filter-toggle-btn { height: 40px; width: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; }
+.filter-toggle-btn.filter-active { border-color: #1d4ed8; color: #1d4ed8; background: #eff6ff; }
+
+.filter-slide-enter-active,
+.filter-slide-leave-active { transition: all 0.25s ease; }
+.filter-slide-enter-from,
+.filter-slide-leave-to { opacity: 0; transform: translateY(-8px); }
+
+/* Mobile filter panel */
+.mobile-filter-panel {
+  background: #f8fafc; border-radius: 12px; padding: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+.w-full { width: 100%; }
+.mb-2 { margin-bottom: 8px; }
+
+/* Slide animation */
+.filter-slide-enter-active,
+.filter-slide-leave-active {
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+.filter-slide-enter-from,
+.filter-slide-leave-to {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.filter-slide-enter-to,
+.filter-slide-leave-from {
+  opacity: 1;
+  max-height: 300px;
+}
+
+@media (max-width: 767px) {
+  .filter-search { max-width: none; flex: 1; }
 }
 
 .panel-card {
   border-radius: 14px;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 10px 25px rgba(15, 23, 42, 0.04);
 }
-.pill-tag { border-radius: 999px; padding: 2px 10px; font-weight: 800; }
-.icon-action { border-radius: 10px; }
+
+/* ===== Table cell styles ===== */
+.customer-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.customer-info {
+  min-width: 0;
+  flex: 1;
+}
+.customer-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+  cursor: default;
+}
+.customer-code {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+}
+
+.address-text {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+  color: #334155;
+  font-size: 13px;
+  cursor: default;
+}
+
+/* ===== Table header/row overrides (match other tables) ===== */
+:deep(.ant-table-thead > tr > th) {
+  background: #f8fafc !important;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  padding: 10px 12px !important;
+}
+:deep(.ant-table-tbody > tr > td) {
+  padding: 10px 12px !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6) !important;
+}
+:deep(.ant-table-tbody > tr:hover > td) {
+  background: #f8faff !important;
+}
+:deep(.ant-table-tbody > tr:last-child > td) {
+  border-bottom: none !important;
+}
+
+.pill-tag { border-radius: 999px; padding: 2px 10px; font-weight: 700; }
+.icon-action { border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; }
 .icon-action:hover { background: rgba(29, 78, 216, 0.08) !important; color: #1d4ed8; }
 
 /* Mobile card list */
@@ -455,5 +655,18 @@ onMounted(async () => {
 }
 .blue-tooltip .ant-tooltip-arrow::before {
   background: #1d4ed8 !important;
+}
+.blue-tooltip .tooltip-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.blue-tooltip .tooltip-token {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  font-family: monospace;
+  word-break: break-all;
 }
 </style>

@@ -47,12 +47,14 @@
             name="baseCurrency"
             :rules="[{ required: true, message: $t('merchant.exchangeRates.bulkModal.baseCurrencyRequired') }]"
           >
-            <a-input
+            <a-select
               v-model:value="buyForm.baseCurrency"
+              :options="CURRENCY_OPTIONS.map(c => ({ value: c, label: c }))"
               :placeholder="$t('merchant.exchangeRates.bulkModal.baseCurrencyPlaceholder')"
               size="large"
-              style="text-transform:uppercase"
-              @input="buyForm.baseCurrency = buyForm.baseCurrency.toUpperCase()"
+              class="currency-select"
+              show-search
+              :filter-option="(input: string, option: any) => option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0"
             />
           </a-form-item>
           <a-form-item
@@ -64,7 +66,8 @@
               v-model:value="buyForm.targetCurrency"
               :placeholder="$t('merchant.exchangeRates.bulkModal.targetCurrencyPlaceholder')"
               size="large"
-              @input="buyForm.targetCurrency = buyForm.targetCurrency.toUpperCase()"
+              class="currency-input"
+              readonly
             />
           </a-form-item>
           <a-form-item
@@ -77,6 +80,8 @@
               :placeholder="$t('merchant.exchangeRates.bulkModal.ratePlaceholder')"
               :min="0"
               :precision="4"
+              :formatter="numFormatter"
+              :parser="numParser"
               size="large"
               style="width:100%"
             />
@@ -103,12 +108,14 @@
             name="baseCurrency"
             :rules="[{ required: true, message: $t('merchant.exchangeRates.bulkModal.baseCurrencyRequired') }]"
           >
-            <a-input
+            <a-select
               v-model:value="sellForm.baseCurrency"
+              :options="CURRENCY_OPTIONS.map(c => ({ value: c, label: c }))"
               :placeholder="$t('merchant.exchangeRates.bulkModal.baseCurrencyPlaceholder')"
               size="large"
-              style="text-transform:uppercase"
-              @input="sellForm.baseCurrency = sellForm.baseCurrency.toUpperCase()"
+              class="currency-select"
+              show-search
+              :filter-option="(input: string, option: any) => option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0"
             />
           </a-form-item>
           <a-form-item
@@ -120,7 +127,8 @@
               v-model:value="sellForm.targetCurrency"
               :placeholder="$t('merchant.exchangeRates.bulkModal.targetCurrencyPlaceholder')"
               size="large"
-              @input="sellForm.targetCurrency = sellForm.targetCurrency.toUpperCase()"
+              class="currency-input"
+              readonly
             />
           </a-form-item>
           <a-form-item
@@ -133,6 +141,8 @@
               :placeholder="$t('merchant.exchangeRates.bulkModal.ratePlaceholder')"
               :min="0"
               :precision="4"
+              :formatter="numFormatter"
+              :parser="numParser"
               size="large"
               style="width:100%"
             />
@@ -162,6 +172,9 @@ import type { FormInstance } from 'ant-design-vue';
 import { SwapOutlined, CheckOutlined } from '@ant-design/icons-vue';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import { useMerchantExchangeRates } from '@/presentation/composables/merchant/useMerchantExchangeRates';
+import { numFormatter, numParser } from '@/shared/utils/format';
+
+const CURRENCY_OPTIONS = ['CNY', 'USDT', 'LAK', 'THB', 'JPY', 'KRW'];
 
 /** mode กำหนดว่าจะแสดงฟอร์มไหน */
 type ModalMode = 'both' | 'buy-only' | 'sell-only';
@@ -177,8 +190,8 @@ const mode = ref<ModalMode>('both');
 const buyFormRef = ref<FormInstance>();
 const sellFormRef = ref<FormInstance>();
 
-const buyForm = reactive({ baseCurrency: '', targetCurrency: 'LAK', rate: null as number | null });
-const sellForm = reactive({ baseCurrency: '', targetCurrency: 'LAK', rate: null as number | null });
+const buyForm = reactive({ baseCurrency: 'LAK', targetCurrency: 'LAK', rate: null as number | null });
+const sellForm = reactive({ baseCurrency: 'LAK', targetCurrency: 'LAK', rate: null as number | null });
 
 /* ฟอร์มไหนถูกแสดง */
 const showBuy = computed(() => mode.value === 'both' || mode.value === 'buy-only');
@@ -191,23 +204,41 @@ const modalWidth = computed(() => {
 });
 
 const resetForms = () => {
-  buyForm.baseCurrency = '';
+  buyForm.baseCurrency = 'LAK';
   buyForm.targetCurrency = 'LAK';
   buyForm.rate = null;
-  sellForm.baseCurrency = '';
+  sellForm.baseCurrency = 'LAK';
   sellForm.targetCurrency = 'LAK';
   sellForm.rate = null;
   buyFormRef.value?.clearValidate();
   sellFormRef.value?.clearValidate();
 };
 
+export interface EditRateInitialData {
+  buy: { baseCurrency: string; targetCurrency: string; rate: number | undefined };
+  sell: { baseCurrency: string; targetCurrency: string; rate: number | undefined };
+}
+
 /**
  * เปิด modal และกำหนด mode ว่าจะแสดงฟอร์มไหน
  * @param openMode - 'both' | 'buy-only' | 'sell-only'
+ * @param initialData - ค่าเริ่มต้นสำหรับ Base Currency, Target Currency, Rate (BUY/SELL)
  */
-const open = (openMode: ModalMode = 'both') => {
+const open = (openMode: ModalMode = 'both', initialData?: EditRateInitialData) => {
   mode.value = openMode;
   resetForms();
+  if (initialData) {
+    if (initialData.buy && (openMode === 'both' || openMode === 'buy-only')) {
+      buyForm.baseCurrency = initialData.buy.baseCurrency || 'LAK';
+      buyForm.targetCurrency = initialData.buy.targetCurrency || 'LAK';
+      buyForm.rate = initialData.buy.rate ?? null;
+    }
+    if (initialData.sell && (openMode === 'both' || openMode === 'sell-only')) {
+      sellForm.baseCurrency = initialData.sell.baseCurrency || 'LAK';
+      sellForm.targetCurrency = initialData.sell.targetCurrency || 'LAK';
+      sellForm.rate = initialData.sell.rate ?? null;
+    }
+  }
   isOpen.value = true;
 };
 
@@ -323,6 +354,17 @@ defineExpose({ open, close });
 
 .rate-form :deep(.ant-form-item) { margin-bottom: 12px; }
 .rate-form :deep(.ant-form-item-label > label) { font-size: 12px; font-weight: 600; color: #374151; }
+
+.currency-autocomplete { width: 100%; }
+.currency-autocomplete :deep(.ant-select-selector) { text-transform: uppercase; font-weight: 600; }
+.currency-autocomplete :deep(input) { text-transform: uppercase; font-weight: 600; }
+
+.currency-select { width: 100%; }
+.currency-select :deep(.ant-select-selector) { text-transform: uppercase; font-weight: 600; }
+.currency-select :deep(.ant-select-selection-item) { text-transform: uppercase; font-weight: 600; }
+
+.currency-input { width: 100%; }
+.currency-input :deep(.ant-input) { text-transform: uppercase; font-weight: 600; background-color: #f5f5f5; color: #666; cursor: not-allowed; }
 
 /* Footer */
 .modal-footer {

@@ -4,6 +4,8 @@ export interface OrderListQueryDto {
   page?: number;
   limit?: number;
   search?: string;
+  searchField?: string;
+  sort?: 'ASC' | 'DESC';
   merchantId?: number;
   customerId?: number;
   customerName?: string;

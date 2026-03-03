@@ -42,14 +42,15 @@ export function useMerchantCustomers() {
     const query: CustomerListQueryDto = {
       page: store.query.page,
       limit: store.query.limit,
-      merchantId,
       search: store.query.search,
+      customerType: store.query.customerType,
+      isActive: store.query.isActive,
       ...overrideQuery,
     };
 
     store.setLoading(true);
     try {
-      const response: BackendPaginatedResponse<Customer> = await customerRepository.getList(query);
+      const response: BackendPaginatedResponse<Customer> = await customerRepository.getByMerchant(query);
       store.setCustomers(response.results);
       store.setPagination(response.pagination);
       if ((response as any).summary) {
@@ -70,6 +71,15 @@ export function useMerchantCustomers() {
 
   const searchCustomers = async (searchText: string) => {
     store.setQuery({ page: 1, search: searchText || undefined });
+    await fetchCustomers();
+  };
+
+  const filterCustomers = async (filters: {
+    customerType?: 'CUSTOMER' | 'AGENT' | undefined;
+    isActive?: boolean | undefined;
+    search?: string | undefined;
+  }) => {
+    store.setQuery({ page: 1, ...filters });
     await fetchCustomers();
   };
 
@@ -140,6 +150,7 @@ export function useMerchantCustomers() {
     summary: computed(() => store.summary),
     fetchCustomers,
     searchCustomers,
+    filterCustomers,
     changePage,
     createCustomer,
     updateCustomer,

@@ -24,6 +24,8 @@ export interface ExchangeRateListQueryDto {
   page?: number;
   limit?: number;
   search?: string;
+  searchField?: string;
+  sort?: 'ASC' | 'DESC';
   merchantId?: number;
   rateType?: RateType;
   baseCurrency?: CurrencyCode;

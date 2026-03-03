@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Orders Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Customer Orders API Test</h1>
+    
+    <div>
+        <label for="token">Customer Token:</label>
+        <input type="text" id="token" value="WHcNqAx_EPwkamRlY74rrARtFrg_VJOU" style="width: 300px;">
+    </div>
+    
+    <div>
+        <button onclick="testOriginalEndpoint()">Test Original Endpoint</button>
+        <button onclick="testFallbackEndpoint()">Test Fallback Endpoint</button>
+        <button onclick="testWithRetry()">Test With Auto-Retry</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:4000';
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+            console.log(message);
+        }
+        
+        async function testOriginalEndpoint() {
+            const token = document.getElementById('token').value;
+            log('Testing original endpoint...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/customer-orders/by-token/${token}?page=1&limit=50`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ Success! Found ${data.results?.length || 0} orders`, 'success');
+                    log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+                } else {
+                    log(`❌ Error ${response.status}: ${data.message}`, 'error');
+                    log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFallbackEndpoint() {
+            const token = document.getElementById('token').value;
+            log('Testing fallback endpoint...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/customer-orders/by-token/${token}?page=1&limit=50&fallback=true`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ Fallback Success! Found ${data.results?.length || 0} orders`, 'success');
+                    log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+                } else {
+                    log(`❌ Fallback Error ${response.status}: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testWithRetry() {
+            const token = document.getElementById('token').value;
+            log('Testing with auto-retry mechanism...', 'info');
+            
+            let attempts = 0;
+            const maxAttempts = 3;
+            
+            async function tryRequest(useFallback = false) {
+                attempts++;
+                const endpoint = useFallback ? `${API_BASE}/customer-orders/by-token/${token}?page=1&limit=50&fallback=true` 
+                                           : `${API_BASE}/customer-orders/by-token/${token}?page=1&limit=50`;
+                
+                try {
+                    const response = await fetch(endpoint);
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        log(`✅ Success on attempt ${attempts}! Found ${data.results?.length || 0} orders`, 'success');
+                        return true;
+                    } else {
+                        if (data.message?.includes('Unknown column') && !useFallback && attempts < maxAttempts) {
+                            log(`⚠️ Database error detected, retrying with fallback...`, 'info');
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            return tryRequest(true);
+                        } else {
+                            log(`❌ Failed after ${attempts} attempts: ${data.message}`, 'error');
+                            return false;
+                        }
+                    }
+                } catch (error) {
+                    log(`❌ Network Error on attempt ${attempts}: ${error.message}`, 'error');
+                    return false;
+                }
+            }
+            
+            await tryRequest();
+        }
+        
+        // Auto-test on page load
+        window.onload = () => {
+            log('Customer Orders API Test Tool Loaded', 'info');
+            log('Click the buttons above to test different scenarios', 'info');
+        };
+    </script>
+</body>
+</html>

@@ -1,14 +1,14 @@
 {
   "dashboard": "แดชบอร์ด",
   "users": "จัดการผู้ใช้",
-  "merchantManagement": "จัดการผู้ค้าส่ง",
-  "merchantList": "รายการผู้ค้าส่ง",
-  "merchantDetails": "รายละเอียดผู้ค้าส่ง",
-  "addMerchant": "เพิ่มผู้ค้าส่ง",
+  "merchantManagement": "จัดการร้านค้า",
+  "merchantList": "รายการร้านค้า",
+  "merchantDetails": "รายละเอียดร้านค้า",
+  "addMerchant": "เพิ่มร้านค้า",
   "customers": "จัดการลูกค้า",
   "exchangeRates": "อัตราแลกเปลี่ยน",
   "reports": "รายงาน",
-  "merchantReports": "รายงานผู้ค้าส่ง",
+  "merchantReports": "รายงานร้านค้า",
   "notifications": "การแจ้งเตือน",
   "settings": "ตั้งค่า"
 }

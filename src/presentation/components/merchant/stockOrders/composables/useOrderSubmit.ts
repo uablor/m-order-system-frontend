@@ -5,12 +5,11 @@ import { useI18n } from 'vue-i18n';
 import { orderRepository } from '@/infrastructure/repositories/order.repository';
 import type { CreateFullOrderDto } from '@/infrastructure/repositories/order.repository';
 import { handleApiError } from '@/shared/utils/error';
-import type { ItemForm, CustomerOrderForm } from '../types';
+import type { ItemForm } from '../types';
 
 export function useOrderSubmit(
   orderCode: Ref<string>,
   items: Ref<ItemForm[]>,
-  customerOrders: Ref<CustomerOrderForm[]>,
   clearDraft: () => void,
 ) {
   const { t } = useI18n();
@@ -65,13 +64,10 @@ export function useOrderSubmit(
 
     for (let i = 0; i < items.value.length; i++) {
       const item = items.value[i]!;
+
       if (!item.productName.trim()) {
         errors[`items.${i}.productName`] = t('merchant.orders.validation.inline.productName');
         if (!firstToastMsg) firstToastMsg = t('merchant.orders.validation.productNameRequired', { index: i + 1 });
-      }
-      if (item.quantity < 1) {
-        errors[`items.${i}.quantity`] = t('merchant.orders.validation.inline.quantity');
-        if (!firstToastMsg) firstToastMsg = t('merchant.orders.validation.quantityRequired', { index: i + 1 });
       }
       if (!item.purchasePrice || item.purchasePrice <= 0) {
         errors[`items.${i}.purchasePrice`] = t('merchant.orders.validation.inline.purchasePrice');
@@ -81,21 +77,22 @@ export function useOrderSubmit(
         errors[`items.${i}.sellingPriceForeign`] = t('merchant.orders.validation.inline.sellingPrice');
         if (!firstToastMsg) firstToastMsg = t('merchant.orders.validation.sellingPriceRequired', { index: i + 1 });
       }
-    }
 
-    const validCo = customerOrders.value.filter(co => co.customerId != null);
-    if (validCo.length === 0) {
-      errors['customerOrders'] = t('merchant.orders.validation.inline.atLeastOneCustomer');
-      if (!firstToastMsg) firstToastMsg = t('merchant.orders.validation.atLeastOneCustomer');
-    } else {
-      for (let i = 0; i < customerOrders.value.length; i++) {
-        const co = customerOrders.value[i]!;
-        if (co.customerId == null) {
-          errors[`customerOrders.${i}.customerId`] = t('merchant.orders.validation.inline.customerRequired');
-          if (!firstToastMsg) firstToastMsg = t('merchant.orders.validation.customerRequired', { index: i + 1 });
-        } else if (co.items.length === 0) {
-          errors[`customerOrders.${i}.items`] = t('merchant.orders.validation.inline.coItemsRequired');
-          if (!firstToastMsg) firstToastMsg = t('merchant.orders.validation.coItemsRequired', { index: i + 1 });
+      // Each item must have at least 1 customer assigned
+      if (item.customers.length === 0) {
+        errors[`items.${i}.customers`] = t('merchant.orders.validation.inline.customersRequired');
+        if (!firstToastMsg) firstToastMsg = t('merchant.orders.validation.customersRequired', { index: i + 1 });
+      } else {
+        for (let j = 0; j < item.customers.length; j++) {
+          const cust = item.customers[j]!;
+          if (!cust.customerId) {
+            errors[`items.${i}.customers.${j}.customerId`] = t('merchant.orders.validation.inline.customerRequired');
+            if (!firstToastMsg) firstToastMsg = t('merchant.orders.validation.customerRequired', { index: i + 1 });
+          }
+          if (!cust.qty || cust.qty < 1) {
+            errors[`items.${i}.customers.${j}.qty`] = t('merchant.orders.validation.inline.quantity');
+            if (!firstToastMsg) firstToastMsg = t('merchant.orders.validation.quantityRequired', { index: i + 1 });
+          }
         }
       }
     }
@@ -114,36 +111,44 @@ export function useOrderSubmit(
     if (!validate()) return;
     submitting.value = true;
     try {
+      // Transform nested structure → backend format
+      const customerMap = new Map<number, { orderItemIndex: number; quantity: number; sellingPriceForeign: number }[]>();
+      items.value.forEach((item, idx) => {
+        item.customers.forEach(c => {
+          if (!c.customerId) return;
+          if (!customerMap.has(c.customerId)) customerMap.set(c.customerId, []);
+          customerMap.get(c.customerId)!.push({
+            orderItemIndex: idx,
+            quantity: c.qty,
+            sellingPriceForeign: item.sellingPriceForeign,
+          });
+        });
+      });
+
       const payload: CreateFullOrderDto = {
         orderCode: orderCode.value.trim(),
         items: items.value.map((item, idx) => ({
           Index: idx,
           productName: item.productName.trim(),
           variant: item.variant.trim() || undefined,
-          quantity: item.quantity,
+          quantity: item.customers.reduce((sum, c) => sum + (c.qty || 0), 0),
           purchasePrice: item.purchasePrice,
           shippingPrice: item.shippingPrice || undefined,
           discountType: item.discountType || undefined,
           discountValue: item.discountType ? item.discountValue : undefined,
           sellingPriceForeign: item.sellingPriceForeign,
         })),
-        customerOrders: customerOrders.value
-          .filter(co => co.customerId != null && co.items.length > 0)
-          .map(co => ({
-            customerId: co.customerId!,
-            items: co.items.map(ci => ({
-              orderItemIndex: ci.orderItemIndex,
-              quantity: ci.quantity,
-              sellingPriceForeign: ci.sellingPriceForeign || undefined,
-            })),
-          })),
+        customerOrders: Array.from(customerMap.entries()).map(([customerId, custItems]) => ({
+          customerId,
+          items: custItems,
+        })),
       };
+
       await orderRepository.createFull(payload);
       message.success(t('merchant.orders.toast.createSuccess'));
       clearAllErrors();
       orderCode.value = '';
       items.value = [];
-      customerOrders.value = [];
       clearDraft();
     } catch (err: unknown) {
       const axiosErr = err as {

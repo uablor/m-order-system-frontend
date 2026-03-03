@@ -1,7 +1,6 @@
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { merchantService } from '@/infrastructure/services/merchant.service';
-import { firstResult } from '@/shared/types/backend-response.types';
 import { handleApiError } from '@/shared/utils/error';
 import type { MerchantDetail } from '@/domain/entities/user.entity';
 
@@ -16,7 +15,7 @@ export function useMerchantDetail() {
     error.value = false;
     try {
       const res = await merchantService.getDetail(id);
-      merchant.value = firstResult(res) ?? null;
+      merchant.value = res ?? null;
     } catch (err) {
       error.value = true;
       handleApiError(err, t);

@@ -16,20 +16,27 @@
   "paymentStatus": {
     "UNPAID": "Unpaid",
     "PARTIAL": "Partially Paid",
-    "PAID": "Paid"
+    "PAID": "Paid",
+    "PENDING_VERIFICATION": "Awaiting Payment Verification"
   },
   "detail": {
     "title": "Order Details",
     "arrived": "Arrived",
     "totalDue": "Amount Due",
     "paymentStatus": "Payment Status",
+    "paymentPending": "Pending verification. Please wait for the store to confirm your payment.",
+    "paymentComplete": "Payment complete. Thank you!",
     "itemsTitle": "Order Items",
+    "product": "Product",
+    "variant": "Variant",
+    "qty": "Qty",
+    "price": "Price",
     "messageTitle": "Message to Store",
     "messagePlaceholder": "Type an additional message to the store...",
     "uploadTitle": "Upload Payment Slip",
     "uploadText": "Click here to upload slip",
     "uploadHint": "JPG, PNG files only",
-    "uploadNote": "Image preview only — payment record will be created with demo reference",
+    "uploadNote": "Upload your payment slip image. It will be sent to the store for verification.",
     "submitBtn": "Submit Payment",
     "removeSlip": "Remove"
   },

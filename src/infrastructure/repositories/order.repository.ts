@@ -2,7 +2,8 @@ import { ApiClient } from '@/infrastructure/apis/api';
 import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
 import type { OrderListQueryDto, OrderUpdateDto } from '@/application/dto/order.dto';
 import type { Order } from '@/domain/entities/user.entity';
-import type { BackendPaginatedResponse, BackendResponse } from '@/shared/types/backend-response.types';
+import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
+import { extractSingleResult } from '@/shared/types/backend-response.types';
 
 export interface CreateFullOrderItemDto {
   Index: number;
@@ -63,9 +64,32 @@ export class OrderRepository {
     );
   }
 
+  async getListByMerchant(query: OrderListQueryDto): Promise<BackendPaginatedResponse<Order>> {
+    return await this.apiClient.getPaginated<BackendPaginatedResponse<Order>>(
+      API_ENDPOINTS.ORDERS.BY_MERCHANT,
+      query,
+    );
+  }
+
+  async getSummaryByMerchant(query: Omit<OrderListQueryDto, 'page' | 'limit'>): Promise<{
+    totalOrders: number;
+    totalFinalCostLak: string;
+    totalSellingAmountLak: string;
+    totalProfitLak: string;
+  }> {
+    const res = await this.apiClient.getParams<any>(API_ENDPOINTS.ORDERS.BY_MERCHANT_SUMMARY, query);
+    const data = extractSingleResult(res) ?? res;
+    return {
+      totalOrders: data?.totalOrders ?? 0,
+      totalFinalCostLak: data?.totalFinalCostLak ?? '0',
+      totalSellingAmountLak: data?.totalSellingAmountLak ?? '0',
+      totalProfitLak: data?.totalProfitLak ?? '0',
+    };
+  }
+
   async getById(id: number): Promise<Order> {
-    const res = await this.apiClient.get<BackendResponse<Order>>(API_ENDPOINTS.ORDERS.GET_BY_ID(id));
-    const order = res.results?.[0];
+    const res = await this.apiClient.get<any>(API_ENDPOINTS.ORDERS.GET_BY_ID(id));
+    const order = extractSingleResult<Order>(res);
     if (!order) throw new Error('Order not found in response');
     return order;
   }

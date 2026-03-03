@@ -5,7 +5,6 @@ export interface UserCreateDto {
   email: string;
   password: string;
   fullName: string;
-  roleId: number;
   isActive?: boolean;
 }
 
@@ -27,7 +26,11 @@ export interface UserListQueryDto {
   page?: number;
   limit?: number;
   search?: string;
+  searchField?: string;
+  sort?: 'ASC' | 'DESC';
   isActive?: boolean;
+  startDate?: string;
+  endDate?: string;
 }
 
 /**

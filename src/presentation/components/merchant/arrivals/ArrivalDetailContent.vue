@@ -27,12 +27,7 @@
           </div>
 
           <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">ID</span>
-              <span class="info-value arrival-id">#{{ arrival.id }}</span>
-            </div>
-
-            <div class="info-item">
+            <div class="info-item info-item--order">
               <span class="info-label">{{ $t('merchant.arrivalDetail.linkedOrder') }}</span>
               <router-link
                 v-if="arrival.order"
@@ -44,57 +39,22 @@
               <span v-else class="info-value">#{{ arrival.orderId }}</span>
             </div>
 
-            <div class="info-item">
+            <div class="info-item info-item--date">
               <span class="info-label">{{ $t('merchant.arrivalDetail.arrivedDate') }}</span>
-              <span v-if="!editingDate" class="info-value editable" @click="editingDate = true">
-                {{ formatDate(arrival.arrivedDate) }}
-                <EditOutlined class="edit-icon" />
-              </span>
-              <div v-else class="inline-edit">
-                <a-date-picker
-                  v-model:value="editDate"
-                  size="small"
-                  class="inline-input"
-                  @pressEnter="saveDate"
-                />
-                <a-button type="primary" size="small" class="save-btn" @click="saveDate">
-                  <CheckOutlined />
-                </a-button>
-                <a-button size="small" @click="editingDate = false">
-                  <CloseOutlined />
-                </a-button>
-              </div>
+              <span class="info-value">{{ formatDate(arrival.arrivedDate) }}</span>
             </div>
 
-            <div class="info-item">
+            <div class="info-item info-item--time">
               <span class="info-label">{{ $t('merchant.arrivalDetail.arrivedTime') }}</span>
-              <span v-if="!editingTime" class="info-value editable" @click="startEditTime">
-                {{ arrival.arrivedTime || '-' }}
-                <EditOutlined class="edit-icon" />
-              </span>
-              <div v-else class="inline-edit">
-                <a-input
-                  v-model:value="editTime"
-                  size="small"
-                  class="inline-input"
-                  placeholder="HH:mm"
-                  @pressEnter="saveTime"
-                />
-                <a-button type="primary" size="small" class="save-btn" @click="saveTime">
-                  <CheckOutlined />
-                </a-button>
-                <a-button size="small" @click="editingTime = false">
-                  <CloseOutlined />
-                </a-button>
-              </div>
+              <span class="info-value">{{ arrival.arrivedTime || '-' }}</span>
             </div>
 
-            <div class="info-item">
+            <div class="info-item info-item--recorded">
               <span class="info-label">{{ $t('merchant.arrivalDetail.recordedBy') }}</span>
               <span class="info-value">{{ arrival.recordedByUser?.fullName || '-' }}</span>
             </div>
 
-            <div class="info-item">
+            <div class="info-item info-item--notes full-width">
               <span class="info-label">{{ $t('merchant.arrivalDetail.notes') }}</span>
               <span v-if="!editingNotes" class="info-value editable notes-value" @click="startEditNotes">
                 {{ arrival.notes || '-' }}
@@ -117,16 +77,6 @@
                   </a-button>
                 </div>
               </div>
-            </div>
-
-            <div class="info-item">
-              <span class="info-label">{{ $t('merchant.arrivalDetail.createdAt') }}</span>
-              <span class="info-value">{{ formatDateTime(arrival.createdAt) }}</span>
-            </div>
-
-            <div class="info-item">
-              <span class="info-label">{{ $t('merchant.arrivalDetail.updatedAt') }}</span>
-              <span class="info-value">{{ formatDateTime(arrival.updatedAt) }}</span>
             </div>
           </div>
         </a-card>
@@ -214,8 +164,6 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { message } from 'ant-design-vue';
-import dayjs from 'dayjs';
-import type { Dayjs } from 'dayjs';
 import {
   ArrowLeftOutlined,
   FileTextOutlined,
@@ -237,11 +185,7 @@ const { isMobile } = useIsMobile();
 const loading = ref(false);
 const arrival = ref<Arrival | null>(null);
 
-// Inline editing state
-const editingDate = ref(false);
-const editDate = ref<Dayjs | null>(null);
-const editingTime = ref(false);
-const editTime = ref('');
+// Inline editing state (เฉพาะ Notes)
 const editingNotes = ref(false);
 const editNotes = ref('');
 
@@ -263,12 +207,6 @@ const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString();
 };
 
-const formatDateTime = (dateStr: string) => {
-  if (!dateStr) return '-';
-  const d = new Date(dateStr);
-  return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
-};
-
 const goBack = () => {
   router.push('/merchant/arrivals');
 };
@@ -286,42 +224,9 @@ const fetchArrival = async () => {
   }
 };
 
-const startEditTime = () => {
-  editTime.value = arrival.value?.arrivedTime || '';
-  editingTime.value = true;
-};
-
 const startEditNotes = () => {
   editNotes.value = arrival.value?.notes || '';
   editingNotes.value = true;
-};
-
-const saveDate = async () => {
-  if (!arrival.value || !editDate.value) return;
-  try {
-    await arrivalRepository.update(arrival.value.id, {
-      arrivedDate: editDate.value.format('YYYY-MM-DD'),
-    });
-    message.success(t('merchant.arrivalDetail.updateSuccess'));
-    editingDate.value = false;
-    await fetchArrival();
-  } catch (err) {
-    handleApiError(err, t);
-  }
-};
-
-const saveTime = async () => {
-  if (!arrival.value) return;
-  try {
-    await arrivalRepository.update(arrival.value.id, {
-      arrivedTime: editTime.value || undefined,
-    });
-    message.success(t('merchant.arrivalDetail.updateSuccess'));
-    editingTime.value = false;
-    await fetchArrival();
-  } catch (err) {
-    handleApiError(err, t);
-  }
 };
 
 const saveNotes = async () => {
@@ -340,9 +245,6 @@ const saveNotes = async () => {
 
 onMounted(() => {
   fetchArrival();
-  if (arrival.value?.arrivedDate) {
-    editDate.value = dayjs(arrival.value.arrivedDate);
-  }
 });
 </script>
 
@@ -402,23 +304,43 @@ onMounted(() => {
   display: inline-block;
 }
 
-/* Info Grid */
+/* Info Grid — 4 คอลัมน์ แถวแรก พื้นหลังสีต่างกัน */
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px 24px;
 }
 .info-item {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  background: #f8fafc;
   border-radius: 12px;
   padding: 14px 16px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+.info-item--order {
+  background: #dbeafe;
+  border-color: rgba(59, 130, 246, 0.25);
+}
+.info-item--date {
+  background: #dcfce7;
+  border-color: rgba(34, 197, 94, 0.25);
+}
+.info-item--time {
+  background: #fef9c3;
+  border-color: rgba(234, 179, 8, 0.25);
+}
+.info-item--recorded {
+  background: #e9d5ff;
+  border-color: rgba(168, 85, 247, 0.25);
 }
 .info-item.full-width {
   grid-column: 1 / -1;
+}
+.info-item--notes {
+  background: #fce7f3;
+  border-color: rgba(236, 72, 153, 0.2);
 }
 .info-label {
   font-size: 12px;
@@ -517,4 +439,5 @@ onMounted(() => {
   .inline-edit { flex-direction: column; align-items: stretch; }
   .inline-input { min-width: unset; }
 }
+
 </style>

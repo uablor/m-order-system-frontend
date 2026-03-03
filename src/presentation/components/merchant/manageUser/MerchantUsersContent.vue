@@ -395,20 +395,29 @@ const buildQuery = (): Record<string, any> => {
   return query;
 };
 
+const buildSummaryQuery = (): Record<string, any> => {
+  const query: Record<string, any> = {};
+  if (filters.search?.trim()) query.search = filters.search.trim();
+  if (filters.isActive !== undefined && filters.isActive !== null) query.isActive = filters.isActive;
+  if (startDate.value) query.startDate = startDate.value.format('YYYY-MM-DD');
+  if (endDate.value) query.endDate = endDate.value.format('YYYY-MM-DD');
+  return query;
+};
+
 const fetchUsers = async () => {
   loading.value = true;
   try {
-    const query = buildQuery();
-    const res = await userRepository.getByMerchant(query);
-    users.value = res.results ?? [];
-    total.value = res.pagination?.total ?? 0;
-    if ((res as any).summary) {
-      summary.value = {
-        totalUsers: (res as any).summary.totalUsers ?? 0,
-        totalActive: (res as any).summary.totalActive ?? 0,
-        totalInactive: (res as any).summary.totalInactive ?? 0,
-      };
-    }
+    const [listRes, summaryRes] = await Promise.all([
+      userRepository.getByMerchant(buildQuery()),
+      userRepository.getSummaryByMerchant(buildSummaryQuery()),
+    ]);
+    users.value = listRes.results ?? [];
+    total.value = listRes.pagination?.total ?? 0;
+    summary.value = {
+      totalUsers: summaryRes.totalUsers ?? 0,
+      totalActive: summaryRes.totalActive ?? 0,
+      totalInactive: summaryRes.totalInactive ?? 0,
+    };
   } catch (err) {
     handleApiError(err, t);
   } finally {

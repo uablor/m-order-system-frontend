@@ -1,6 +1,6 @@
 {
   "title": "Exchange Rates",
-  "subtitle": "Manage exchange rates across all merchants.",
+  "subtitle": "Manage exchange rates across all stores.",
   "createRate": "Add Rate",
   "editRate": "Edit Rate",
   "baseCurrency": "Base Currency",
@@ -11,7 +11,7 @@
   "rate": "Rate",
   "ratePlaceholder": "Enter rate value",
   "rateDate": "Rate Date",
-  "merchantId": "Merchant",
+  "merchantId": "Store",
   "createdBy": "Created By",
   "isActive": "Active",
   "active": "Active",

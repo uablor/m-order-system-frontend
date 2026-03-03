@@ -33,6 +33,7 @@
         <CustomerOrderDetail
           v-if="!isMobile"
           :order="selectedOrder"
+          :customer-token="customerToken"
           :is-mobile="false"
           @submitted="onSubmitted"
         />
@@ -44,6 +45,7 @@
     <CustomerOrderDetail
       v-if="isMobile"
       :order="selectedOrder"
+      :customer-token="customerToken"
       :is-mobile="true"
       @close="selectedOrder = null"
       @submitted="onSubmitted"
@@ -106,8 +108,25 @@ const fetchOrders = async () => {
     if (!isMobile.value && orders.value.length > 0 && !selectedOrder.value) {
       selectedOrder.value = orders.value[0] ?? null;
     }
-  } catch {
-    errorMsg.value = 'Failed to load orders. Please try again.';
+  } catch (error: any) {
+    console.error('Failed to fetch customer orders:', error);
+    
+    // Check for specific database errors
+    if (error?.message?.includes('Unknown column') || error?.message?.includes('image_id')) {
+      errorMsg.value = 'Database is being updated. Please try again in a few minutes.';
+      // Auto-retry after 3 seconds
+      setTimeout(() => {
+        if (errorMsg.value.includes('Database is being updated')) {
+          fetchOrders(); // Retry automatically
+        }
+      }, 3000);
+    } else if (error?.response?.status === 500) {
+      errorMsg.value = 'Server is temporarily unavailable. Please try again later.';
+    } else if (error?.response?.status === 404) {
+      errorMsg.value = 'Orders not found. Please check your token.';
+    } else {
+      errorMsg.value = 'Failed to load orders. Please try again.';
+    }
   } finally {
     loading.value = false;
   }
@@ -137,7 +156,7 @@ onMounted(fetchOrders);
 .customer-root {
   min-height: 100vh;
   background: #f0f4f8;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Noto Sans Lao', 'Noto Sans', 'Noto Sans Thai', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* ===== DESKTOP TWO-COLUMN LAYOUT ===== */

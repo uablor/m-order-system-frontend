@@ -13,7 +13,7 @@
               <a-input :value="fmtNum(purchaseTotalForeign)" disabled class="w-full" />
             </a-form-item>
           </a-col>
-          <a-col :md="6">
+          <a-col v-if="!isBuySameCurrency" :md="6">
             <a-form-item :label="`${$t('merchant.orders.summary.purchaseTotalLak')} (${buyTargetCcy})`">
               <a-input :value="fmtNum(purchaseTotalLak)" disabled class="w-full" />
             </a-form-item>
@@ -25,7 +25,7 @@
               <a-input :value="fmtNum(sellingTotalForeign)" disabled class="w-full" />
             </a-form-item>
           </a-col>
-          <a-col :md="6">
+          <a-col v-if="!isSellSameCurrency" :md="6">
             <a-form-item :label="`${$t('merchant.orders.summary.sellingTotalLak')} (${sellTargetCcy})`">
               <a-input :value="fmtNum(sellingTotalLak)" disabled class="w-full" />
             </a-form-item>
@@ -35,7 +35,7 @@
               <a-input :value="fmtNum(profitForeign)" disabled class="w-full summary-profit" />
             </a-form-item>
           </a-col>
-          <a-col :md="6">
+          <a-col v-if="!isSellSameCurrency" :md="6">
             <a-form-item :label="`${$t('merchant.orders.summary.profitLak')} (${sellTargetCcy})`">
               <a-input :value="fmtNum(profitLak)" disabled class="w-full summary-profit" />
             </a-form-item>
@@ -50,7 +50,7 @@
               <a-input :value="fmtNum(purchaseTotalForeign)" disabled class="w-full" />
             </a-form-item>
           </a-col>
-          <a-col :span="12">
+          <a-col v-if="!isBuySameCurrency" :span="12">
             <a-form-item :label="`${$t('merchant.orders.summary.purchaseTotalLak')} (${buyTargetCcy})`">
               <a-input :value="fmtNum(purchaseTotalLak)" disabled class="w-full" />
             </a-form-item>
@@ -62,7 +62,7 @@
               <a-input :value="fmtNum(sellingTotalForeign)" disabled class="w-full" />
             </a-form-item>
           </a-col>
-          <a-col :span="12">
+          <a-col v-if="!isSellSameCurrency" :span="12">
             <a-form-item :label="`${$t('merchant.orders.summary.sellingTotalLak')} (${sellTargetCcy})`">
               <a-input :value="fmtNum(sellingTotalLak)" disabled class="w-full" />
             </a-form-item>
@@ -70,13 +70,13 @@
         </a-row>
         <a-row :gutter="[12, 0]">
           <a-col :span="12">
-            <a-form-item :label="`${$t('merchant.orders.summary.profitLak')} (${sellTargetCcy})`">
-              <a-input :value="fmtNum(profitLak)" disabled class="w-full summary-profit" />
-            </a-form-item>
-          </a-col>
-          <a-col :span="12">
             <a-form-item :label="`${$t('merchant.orders.summary.profitForeign')} (${sellBaseCcy})`">
               <a-input :value="fmtNum(profitForeign)" disabled class="w-full summary-profit" />
+            </a-form-item>
+          </a-col>
+          <a-col v-if="!isSellSameCurrency" :span="12">
+            <a-form-item :label="`${$t('merchant.orders.summary.profitLak')} (${sellTargetCcy})`">
+              <a-input :value="fmtNum(profitLak)" disabled class="w-full summary-profit" />
             </a-form-item>
           </a-col>
         </a-row>
@@ -86,10 +86,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { CalculatorOutlined } from '@ant-design/icons-vue';
 import { fmtNumber } from '@/shared/utils/format';
 
-defineProps<{
+const props = defineProps<{
   visible: boolean;
   isMobile: boolean;
   buyBaseCcy: string;
@@ -105,6 +106,10 @@ defineProps<{
 }>();
 
 const fmtNum = fmtNumber;
+
+// Computed properties for same-currency detection
+const isBuySameCurrency = computed(() => props.buyBaseCcy === props.buyTargetCcy);
+const isSellSameCurrency = computed(() => props.sellBaseCcy === props.sellTargetCcy);
 </script>
 
 <style scoped>

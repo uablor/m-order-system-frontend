@@ -3,6 +3,7 @@ import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
 import type { RoleCreateDto, RoleUpdateDto, RoleListQueryDto } from '@/application/dto/role.dto';
 import type { Role } from '@/domain/entities/user.entity';
 import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
+import { extractSingleResult } from '@/shared/types/backend-response.types';
 
 export class RoleRepository {
   private apiClient: ApiClient;
@@ -16,7 +17,10 @@ export class RoleRepository {
   }
 
   async getById(id: number): Promise<Role> {
-    return await this.apiClient.get<Role>(API_ENDPOINTS.ROLES.GET_BY_ID(id));
+    const res = await this.apiClient.get<any>(API_ENDPOINTS.ROLES.GET_BY_ID(id));
+    const role = extractSingleResult<Role>(res) ?? (res as Role);
+    if (!role?.id) throw new Error('Role not found in response');
+    return role;
   }
 
   async getList(query: RoleListQueryDto): Promise<BackendPaginatedResponse<Role>> {

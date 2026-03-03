@@ -17,7 +17,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import HeaderWithLayoutSwitcher from '../shared/HeaderWithLayoutSwitcher.vue';
@@ -30,8 +31,7 @@ const { t } = useI18n();
 const { isMobile } = useIsMobile();
 
 watch(isMobile, (val) => {
-  // superadmin: ใช้ collapsed เป็นสถานะเปิด/ปิด "เมนูใน header (mobile drawer)"
-  if (val) collapsed.value = true; // drawer closed by default
+  if (val) collapsed.value = true;
 });
 
 const pathToMenuKey: Record<string, string> = {
@@ -40,6 +40,7 @@ const pathToMenuKey: Record<string, string> = {
   users: 'users',
   settings: 'settings',
 };
+
 const pageTitle = computed(() => {
   const parts = route.path.split('/');
   const pathKey = parts[2] || 'dashboard';
@@ -51,9 +52,7 @@ const toggleSidebar = () => { collapsed.value = !collapsed.value; };
 </script>
 
 <style scoped>
-.app-layout {
-  min-height: 100vh;
-}
+.app-layout { min-height: 100vh; }
 
 .content {
   margin: 5px 10px;
@@ -69,11 +68,13 @@ const toggleSidebar = () => { collapsed.value = !collapsed.value; };
   margin: 0;
 }
 
-@media (max-width: 768px) {
-  .content {
-    margin: 0;
-    padding: 12px;
-    border-radius: 0;
-  }
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .content { margin: 8px 10px; padding: 16px; }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .content { margin: 0; padding: 12px; border-radius: 0; }
 }
 </style>

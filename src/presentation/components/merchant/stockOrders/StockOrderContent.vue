@@ -21,20 +21,22 @@
     <ExchangeRateCard
       :buy-rate-display="buyRateDisplay"
       :sell-rate-display="sellRateDisplay"
+      :buy-rate="getBuyRate()"
+      :sell-rate="getSellRate()"
+      :buy-base-currency="buyBaseCcy"
+      :buy-target-currency="buyTargetCcy"
+      :sell-base-currency="sellBaseCcy"
+      :sell-target-currency="sellTargetCcy"
       @edit="openRateModal"
     />
 
-    <!-- Items Section -->
+    <!-- Items Section (each item includes its own customer list) -->
     <a-card :bordered="false" class="panel-card mb-4" data-testid="items-section">
       <div class="panel-header-row">
         <div class="panel-title" style="margin-bottom:0">
           <ShoppingOutlined class="icon-blue" />
           <span>{{ $t('merchant.orders.items.title') }}</span>
         </div>
-        <a-button type="primary" class="add-btn" data-testid="add-item-btn" @click="addItem">
-          <template #icon><PlusOutlined /></template>
-          {{ $t('merchant.orders.items.addItem') }}
-        </a-button>
       </div>
       <a-empty v-if="items.length === 0" :description="$t('merchant.orders.items.noItems')" />
       <template v-if="!isMobile">
@@ -45,8 +47,13 @@
           :sell-base-ccy="sellBaseCcy" :sell-target-ccy="sellTargetCcy"
           :get-buy-rate="getBuyRate" :get-sell-rate="getSellRate"
           :errors="getItemErrors(idx)"
+          :customer-options="customerOptions"
+          :customer-searching="customerSearching"
           @remove="removeItem"
           @clear-error="(field: string) => clearFieldError(`items.${idx}.${field}`)"
+          @customer-search="onCustomerSearch"
+          @customer-focus="onCustomerFocus"
+          @create-customer="goCreateCustomer"
         />
       </template>
       <template v-else-if="items.length > 0">
@@ -58,8 +65,13 @@
               :sell-base-ccy="sellBaseCcy" :sell-target-ccy="sellTargetCcy"
               :get-buy-rate="getBuyRate" :get-sell-rate="getSellRate"
               :errors="getItemErrors(idx)"
+              :customer-options="customerOptions"
+              :customer-searching="customerSearching"
               @remove="removeItem"
               @clear-error="(field: string) => clearFieldError(`items.${idx}.${field}`)"
+              @customer-search="onCustomerSearch"
+              @customer-focus="onCustomerFocus"
+              @create-customer="goCreateCustomer"
             />
           </div>
         </div>
@@ -69,71 +81,11 @@
           <button class="swipe-nav-btn" :disabled="activeItemIdx >= items.length - 1" @click="scrollToItem(activeItemIdx + 1)"><RightOutlined /></button>
         </div>
       </template>
-    </a-card>
-
-    <!-- Customer Orders Section -->
-    <a-card :bordered="false" class="panel-card mb-4" data-testid="customers-section">
-      <div class="panel-header-row">
-        <div class="panel-title" style="margin-bottom:0">
-          <TeamOutlined class="icon-blue" />
-          <span>{{ $t('merchant.orders.customerOrders.title') }}</span>
-        </div>
-        <a-button type="primary" class="add-btn" data-testid="add-customer-btn" @click="addCustomerOrder">
-          <template #icon><PlusOutlined /></template>
-          {{ $t('merchant.orders.customerOrders.addCustomer') }}
-        </a-button>
-      </div>
-      <a-empty v-if="customerOrders.length === 0" :description="$t('merchant.orders.customerOrders.noCustomers')" />
-      <template v-if="!isMobile">
-        <CustomerOrderBlock
-          v-for="(co, coIdx) in customerOrders" :key="co.uid"
-          :co="co" :index="coIdx" :items="items" :is-mobile="false"
-          :sell-base-ccy="sellBaseCcy" :customer-options="customerOptions"
-          :customer-searching="customerSearching"
-          :get-max-qty="getMaxQtyForCoItem" :get-co-item-total="coItemTotal"
-          :error="getCustomerError(coIdx)"
-          :items-error="fieldErrors[`customerOrders.${coIdx}.items`]"
-          @remove="removeCustomerOrder"
-          @add-item="addCoItem"
-          @remove-item="removeCoItem"
-          @select-change="onCoItemSelectChange"
-          @qty-change="onCoItemQtyChange"
-          @customer-search="onCustomerSearch"
-          @customer-focus="onCustomerFocus"
-          @create-customer="goCreateCustomer"
-          @clear-error="clearCustomerError(coIdx)"
-          @clear-items-error="clearFieldError(`customerOrders.${coIdx}.items`)"
-        />
-      </template>
-      <template v-else-if="customerOrders.length > 0">
-        <div ref="coScrollRef" class="swipe-container" @scroll="onCoScroll">
-          <div v-for="(co, coIdx) in customerOrders" :key="co.uid" class="swipe-slide">
-            <CustomerOrderBlock
-              :co="co" :index="coIdx" :items="items" :is-mobile="true"
-              :sell-base-ccy="sellBaseCcy" :customer-options="customerOptions"
-              :customer-searching="customerSearching"
-              :get-max-qty="getMaxQtyForCoItem" :get-co-item-total="coItemTotal"
-              :error="getCustomerError(coIdx)"
-              :items-error="fieldErrors[`customerOrders.${coIdx}.items`]"
-              @remove="removeCustomerOrder"
-              @add-item="addCoItem"
-              @remove-item="removeCoItem"
-              @select-change="onCoItemSelectChange"
-              @qty-change="onCoItemQtyChange"
-              @customer-search="onCustomerSearch"
-              @customer-focus="onCustomerFocus"
-              @create-customer="goCreateCustomer"
-              @clear-error="clearCustomerError(coIdx)"
-              @clear-items-error="clearFieldError(`customerOrders.${coIdx}.items`)"
-            />
-          </div>
-        </div>
-        <div class="swipe-nav">
-          <button class="swipe-nav-btn" :disabled="activeCoIdx === 0" @click="scrollToCo(activeCoIdx - 1)"><LeftOutlined /></button>
-          <span class="swipe-nav-label">{{ $t('merchant.orders.customerOrders.indicator', { current: activeCoIdx + 1, total: customerOrders.length }) }}</span>
-          <button class="swipe-nav-btn" :disabled="activeCoIdx >= customerOrders.length - 1" @click="scrollToCo(activeCoIdx + 1)"><RightOutlined /></button>
-        </div>
-      </template>
+      <!-- ปุ่ม Add Item อยู่ใต้รายการ -->
+      <a-button type="dashed" block class="add-item-btn" data-testid="add-item-btn" @click="addItem">
+        <template #icon><PlusOutlined /></template>
+        {{ $t('merchant.orders.items.addItem') }}
+      </a-button>
     </a-card>
 
     <OrderSummaryCard
@@ -160,9 +112,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import {
-  ShoppingOutlined, TeamOutlined, PlusOutlined, SaveOutlined,
+  ShoppingOutlined, PlusOutlined, SaveOutlined,
   LeftOutlined, RightOutlined,
 } from '@ant-design/icons-vue';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
@@ -170,21 +122,28 @@ import { useIsMobile } from '@/shared/composables/useIsMobile';
 import OrderCodeCard from './components/OrderCodeCard.vue';
 import ExchangeRateCard from './components/ExchangeRateCard.vue';
 import OrderItemForm from './components/OrderItemForm.vue';
-import CustomerOrderBlock from './components/CustomerOrderBlock.vue';
 import OrderSummaryCard from './components/OrderSummaryCard.vue';
 
 import { useExchangeRates } from './composables/useExchangeRates';
 import { useItemCalculations } from './composables/useItemCalculations';
 import { useOrderItems } from './composables/useOrderItems';
-import { useCustomerOrders } from './composables/useCustomerOrders';
+import { useItemCustomers } from './composables/useItemCustomers';
 import { useDraftStorage } from './composables/useDraftStorage';
 import { useOrderSubmit } from './composables/useOrderSubmit';
-import type { CustomerOrderForm } from './types';
 
-import { ref } from 'vue';
+const emit = defineEmits<{ 
+  (e: 'openRateModal', data: {
+    buy: { baseCurrency: string; targetCurrency: string; rate: number | undefined };
+    sell: { baseCurrency: string; targetCurrency: string; rate: number | undefined };
+  }): void 
+}>();
 
-const emit = defineEmits<{ (e: 'openRateModal'): void }>();
-const openRateModal = () => emit('openRateModal');
+const openRateModal = (data: {
+  buy: { baseCurrency: string; targetCurrency: string; rate: number | undefined };
+  sell: { baseCurrency: string; targetCurrency: string; rate: number | undefined };
+}) => {
+  emit('openRateModal', data);
+};
 
 const { isMobile } = useIsMobile();
 const orderCode = ref('');
@@ -202,25 +161,18 @@ const {
   onItemScroll, scrollToItem, addItem, removeItem,
 } = useOrderItems(isMobile);
 
-const customerOrders = ref<CustomerOrderForm[]>([]);
+// Silence unused template refs
+void itemScrollRef;
 
-const { saveDraft, restoreDraft, clearDraft } = useDraftStorage(orderCode, items, customerOrders);
+const { saveDraft, restoreDraft, clearDraft } = useDraftStorage(orderCode, items);
 
 const {
   customerOptions, customerSearching,
-  activeCoIdx, coScrollRef, onCoScroll, scrollToCo,
-  addCustomerOrder, removeCustomerOrder,
-  addCoItem, removeCoItem, onCoItemSelectChange, coItemTotal,
-  getMaxQtyForCoItem, onCoItemQtyChange,
   onCustomerSearch, onCustomerFocus, fetchCustomers,
   goCreateCustomer, handleNewCustomerReturn,
-} = useCustomerOrders(items, customerOrders, isMobile, saveDraft);
+} = useItemCustomers(items, saveDraft);
 
-// Silence unused template refs
-void itemScrollRef;
-void coScrollRef;
-
-const { submitting, fieldErrors, clearFieldError, handleSubmit } = useOrderSubmit(orderCode, items, customerOrders, clearDraft);
+const { submitting, fieldErrors, clearFieldError, handleSubmit } = useOrderSubmit(orderCode, items, clearDraft);
 
 const getItemErrors = (idx: number): Record<string, string> => {
   const prefix = `items.${idx}.`;
@@ -233,16 +185,6 @@ const getItemErrors = (idx: number): Record<string, string> => {
   return result;
 };
 
-const getCustomerError = (coIdx: number): string | undefined => {
-  return fieldErrors.value[`customerOrders.${coIdx}.customerId`]
-    || (coIdx === 0 ? fieldErrors.value['customerOrders'] : undefined);
-};
-
-const clearCustomerError = (coIdx: number) => {
-  clearFieldError(`customerOrders.${coIdx}.customerId`);
-  clearFieldError('customerOrders');
-};
-
 const summaryPurchaseTotalForeign = computed(() =>
   items.value.reduce((sum, item) => sum + calc.calcNetCostForeign(item), 0));
 const summaryPurchaseTotalLak = computed(() =>
@@ -251,7 +193,7 @@ const summarySellingTotalForeign = computed(() =>
   items.value.reduce((sum, item) => sum + calc.calcSellingTotalForeign(item), 0));
 const summarySellingTotalLak = computed(() =>
   items.value.reduce((sum, item) => sum + calc.calcSellingTotalLak(item), 0));
-const summaryNetCostLak = summaryPurchaseTotalLak; // Alias for clarity
+const summaryNetCostLak = summaryPurchaseTotalLak;
 const summaryProfitLak = computed(() => summarySellingTotalLak.value - summaryNetCostLak.value);
 const summaryProfitForeign = computed(() => {
   const rate = getSellRate();
@@ -264,7 +206,6 @@ defineExpose({ refreshRates });
 onMounted(async () => {
   restoreDraft();
   if (items.value.length === 0) addItem();
-  if (customerOrders.value.length === 0) addCustomerOrder();
   fetchTodayRates();
   await fetchCustomers('');
   handleNewCustomerReturn();
@@ -286,6 +227,11 @@ onMounted(async () => {
 .panel-title { font-size: 16px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
 .icon-blue { color: #1d4ed8; font-size: 18px; }
 .add-btn { border-radius: 12px; font-weight: 700; }
+.add-item-btn {
+  margin-top: 12px; border-radius: 12px; font-weight: 700;
+  border-color: #1d4ed8; color: #1d4ed8; height: 42px;
+}
+.add-item-btn:hover { background: #eff6ff !important; border-color: #1d4ed8 !important; color: #1d4ed8 !important; }
 .submit-area { display: flex; justify-content: flex-end; margin-top: 8px; margin-bottom: 20px; }
 .submit-btn { height: 48px; border-radius: 14px; font-weight: 900; min-width: 200px; }
 
@@ -296,8 +242,7 @@ onMounted(async () => {
 }
 .swipe-container::-webkit-scrollbar { display: none; }
 .swipe-slide { flex: 0 0 100%; scroll-snap-align: start; min-width: 0; }
-.swipe-slide :deep(.item-block),
-.swipe-slide :deep(.co-block) { margin-bottom: 0; }
+.swipe-slide :deep(.item-block) { margin-bottom: 0; }
 .swipe-nav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 12px; padding: 0 4px; }
 .swipe-nav-btn {
   width: 36px; height: 36px; border-radius: 50%;
@@ -310,6 +255,12 @@ onMounted(async () => {
 .swipe-nav-btn:disabled { opacity: 0.3; cursor: default; color: #94a3b8; border-color: #e2e8f0; }
 .swipe-nav-label { font-size: 13px; font-weight: 800; color: #1d4ed8; letter-spacing: 0.3px; white-space: nowrap; }
 
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .panel-card :deep(.ant-card-body) { padding: 14px !important; }
+}
+
+/* Mobile */
 @media (max-width: 767px) {
   .page-title { font-size: 16px; }
   .page-subtitle { font-size: 12px; }

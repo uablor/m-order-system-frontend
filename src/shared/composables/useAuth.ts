@@ -8,6 +8,7 @@ import { authRepository } from '@/infrastructure/repositories/auth.repository';
 import type { LoginDto } from '@/application/dto/auth.dto';
 import { handleApiError } from '@/shared/utils/error';
 import { storeToRefs } from 'pinia';
+import { extractSingleResult } from '@/shared/types/backend-response.types';
 
 export function useAuth() {
   const authStore = useAuthStore();
@@ -114,7 +115,7 @@ export function useAuth() {
     loading.value = true;
     try {
       const response = await authRepository.me();
-      const profile = response?.results?.[0];
+      const profile = extractSingleResult(response);
       if (profile) {
         authStore.setUser({
           id: profile.userId,

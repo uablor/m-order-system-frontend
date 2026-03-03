@@ -9,21 +9,53 @@ import { handleApiError } from '@/shared/utils/error';
 import { useSuperAdminMerchantStore } from '@/presentation/stores/super-admin/superAdminMerchant.store';
 
 /**
- * Business logic สำหรับ Super Admin: Merchant Management
- * - list / pagination / CRUD
+ * Business logic สำหรับ Super Admin: Store Management
+ * - Filter state แยกจาก pagination ใน store เพื่อให้ sort/search คงอยู่ตอน paginate
  */
 export function useSuperAdminMerchants() {
   const { t } = useI18n();
   const store = useSuperAdminMerchantStore();
   const selectedMerchant = ref<Merchant | null>(null);
 
-  const fetchMerchants = async (overrideQuery: Partial<MerchantListQueryDto> = {}) => {
-    const query: MerchantListQueryDto = {
-      page: store.query.page,
-      limit: store.query.limit,
-      search: store.query.search,
-      ...overrideQuery,
-    };
+  /* เก็บ filter ปัจจุบันไว้ใน composable scope เพื่อให้ pagination ใช้ซ้ำได้ */
+  const activeFilters = ref<{
+    search?: string;
+    searchField?: string;
+    sort?: 'ASC' | 'DESC';
+  }>({});
+
+  /**
+   * สร้าง query object ที่ clean — ลบ key ที่เป็น undefined/null/''/NaN ออก
+   * เพื่อให้ Axios ไม่ส่ง query string ที่ไม่ต้องการ
+   */
+  const buildCleanQuery = (raw: Record<string, any>): Record<string, any> => {
+    const clean: Record<string, any> = {};
+    for (const [k, v] of Object.entries(raw)) {
+      if (v !== undefined && v !== null && v !== '' && !Number.isNaN(v)) {
+        clean[k] = v;
+      }
+    }
+    return clean;
+  };
+
+  const fetchMerchants = async (params: Partial<MerchantListQueryDto> = {}) => {
+    /* อัพเดท filter state ถ้า params ส่ง filter fields มา */
+    if ('search' in params) activeFilters.value.search = params.search;
+    if ('searchField' in params) activeFilters.value.searchField = params.searchField;
+    if ('sort' in params) activeFilters.value.sort = params.sort;
+
+    /* อัพเดท pagination ใน store ถ้ามีการระบุมา */
+    if (params.page != null) store.setQuery({ page: params.page });
+    if (params.limit != null) store.setQuery({ limit: params.limit });
+
+    /* สร้าง query สะอาด — เฉพาะค่าที่ defined */
+    const query = buildCleanQuery({
+      page: store.query.page ?? 1,
+      limit: store.query.limit ?? 10,
+      search: activeFilters.value.search,
+      searchField: activeFilters.value.searchField,
+      sort: activeFilters.value.sort,
+    }) as MerchantListQueryDto;
 
     store.setLoading(true);
     try {
@@ -88,14 +120,8 @@ export function useSuperAdminMerchants() {
     }
   };
 
-  const searchMerchants = async (searchText: string) => {
-    store.setQuery({ page: 1, search: searchText || undefined });
-    await fetchMerchants();
-  };
-
   const changePage = async (page: number, limit: number) => {
-    store.setQuery({ page, limit });
-    await fetchMerchants();
+    await fetchMerchants({ page, limit });
   };
 
   const setSelectedMerchant = (merchant: Merchant | null) => {
@@ -111,7 +137,6 @@ export function useSuperAdminMerchants() {
     createMerchant,
     updateMerchant,
     deleteMerchant,
-    searchMerchants,
     changePage,
     setSelectedMerchant,
   };

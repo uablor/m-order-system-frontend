@@ -16,7 +16,7 @@
         <template #prefix><SearchOutlined /></template>
       </a-input>
       <a-button
-        v-if="isMobile"
+        v-if="showFilterToggle"
         type="default"
         class="filter-toggle-btn"
         :class="{ active: showFilters }"
@@ -27,7 +27,7 @@
     </div>
 
     <!-- Filter Panel -->
-    <a-card v-if="!isMobile || showFilters" :bordered="false" class="filter-card mb-4">
+    <a-card v-if="!showFilterToggle || showFilters" :bordered="false" class="filter-card mb-4">
       <div class="filter-bar">
         <a-date-picker
           v-model:value="filters.startDate"
@@ -66,11 +66,10 @@
         </div>
       </div>
       <div class="summary-card">
-        <div class="summary-icon amount-icon"><DollarOutlined /></div>
+        <div class="summary-icon amount-icon"><WalletOutlined /></div>
         <div class="summary-body">
           <div class="summary-label">{{ $t('merchant.payment.summaryTotalAmount') }}</div>
-          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(summary.totalAmount) }} LAK</template><div class="summary-value num-truncate">{{ truncNum(summary.totalAmount) }}</div></a-tooltip>
-          <div class="summary-sub">LAK</div>
+          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(summary.totalAmount) }}</template><div class="summary-value num-truncate">{{ truncNum(summary.totalAmount) }}</div></a-tooltip>
         </div>
       </div>
       <div class="summary-card">
@@ -111,7 +110,7 @@
     </div>
 
     <!-- Desktop Table -->
-    <a-card v-if="!isMobile" :bordered="false" class="panel-card">
+    <a-card v-if="!useMobileLayout" :bordered="false" class="panel-card">
       <a-table
         :columns="columns"
         :data-source="payments"
@@ -290,7 +289,7 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   LinkOutlined,
-  DollarOutlined,
+  WalletOutlined,
   OrderedListOutlined,
   ClockCircleOutlined,
 } from '@ant-design/icons-vue';
@@ -300,7 +299,11 @@ import { useIsMobile } from '@/shared/composables/useIsMobile';
 import { handleApiError } from '@/shared/utils/error';
 
 const { t } = useI18n();
-const { isMobile } = useIsMobile();
+const { isMobile, windowWidth } = useIsMobile();
+
+/* แสดงปุ่ม filter และ mobile layout เมื่อ width < 1024 (Galaxy Tab S7) */
+const showFilterToggle = computed(() => (windowWidth?.value ?? 1280) < 1024);
+const useMobileLayout = computed(() => (windowWidth?.value ?? 1280) < 1024);
 
 const loading = ref(false);
 const actionLoading = ref(false);
@@ -395,21 +398,29 @@ const buildQuery = () => ({
   ...(filters.endDate ? { paymentDateTo: filters.endDate } : {}),
 });
 
+const buildSummaryQuery = () => ({
+  ...(filters.search?.trim() ? { search: filters.search.trim() } : {}),
+  ...(filters.status ? { status: filters.status } : {}),
+  ...(filters.startDate ? { paymentDateFrom: filters.startDate } : {}),
+  ...(filters.endDate ? { paymentDateTo: filters.endDate } : {}),
+});
+
 const fetchPayments = async () => {
   loading.value = true;
   try {
-    const res = await paymentRepository.getByMerchant(buildQuery());
-    payments.value = res.results ?? [];
-    total.value = res.pagination?.total ?? 0;
-    if ((res as any).summary) {
-      summary.value = {
-        totalPayments: (res as any).summary.totalPayments ?? 0,
-        totalAmount: (res as any).summary.totalAmount ?? '0',
-        totalPending: (res as any).summary.totalPending ?? 0,
-        totalVerified: (res as any).summary.totalVerified ?? 0,
-        totalRejected: (res as any).summary.totalRejected ?? 0,
-      };
-    }
+    const [listRes, summaryRes] = await Promise.all([
+      paymentRepository.getByMerchant(buildQuery()),
+      paymentRepository.getSummaryByMerchant(buildSummaryQuery()),
+    ]);
+    payments.value = listRes.results ?? [];
+    total.value = listRes.pagination?.total ?? 0;
+    summary.value = {
+      totalPayments: summaryRes.totalPayments ?? 0,
+      totalAmount: summaryRes.totalAmount ?? '0',
+      totalPending: summaryRes.totalPending ?? 0,
+      totalVerified: summaryRes.totalVerified ?? 0,
+      totalRejected: summaryRes.totalRejected ?? 0,
+    };
   } catch (err) {
     handleApiError(err, t);
   } finally {
@@ -450,8 +461,11 @@ const handleVerify = async (id: number) => {
     await paymentRepository.verify(id);
     message.success(t('merchant.payment.verifySuccess'));
     await fetchPayments();
-  } catch (err) { handleApiError(err, t); }
-  finally { actionLoading.value = false; }
+  } catch (err) {
+    handleApiError(err, t);
+  } finally {
+    actionLoading.value = false;
+  }
 };
 
 const openRejectModal = (id: number) => {
@@ -472,8 +486,12 @@ const submitReject = async () => {
     message.success(t('merchant.payment.rejectSuccess'));
     rejectModalVisible.value = false;
     await fetchPayments();
-  } catch (err) { handleApiError(err, t); }
-  finally { actionLoading.value = false; }
+  } catch (err) {
+    handleApiError(err, t);
+    throw err; // re-throw เพื่อให้ modal ไม่ปิดเมื่อเกิด error
+  } finally {
+    actionLoading.value = false;
+  }
 };
 
 const handleBulkVerify = async () => {
@@ -509,8 +527,12 @@ const submitBulkReject = async () => {
     bulkRejectModalVisible.value = false;
     selectedIds.value = [];
     await fetchPayments();
-  } catch (err) { handleApiError(err, t); }
-  finally { bulkLoading.value = false; }
+  } catch (err) {
+    handleApiError(err, t);
+    throw err; // re-throw เพื่อให้ modal ไม่ปิดเมื่อเกิด error
+  } finally {
+    bulkLoading.value = false;
+  }
 };
 
 onMounted(() => { fetchPayments(); });
@@ -533,11 +555,14 @@ onMounted(() => { fetchPayments(); });
 }
 .filter-toggle-btn.active { background: #1677ff; color: #fff; border-color: #1677ff; }
 
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   .page-header { flex-wrap: wrap; }
+  .search-input { min-width: 180px; flex: 1 1 auto; }
+}
+@media (max-width: 767px) {
   .title-block { order: 1; flex: 1 1 auto; }
   .filter-toggle-btn { order: 2; }
-  .search-input { order: 3; flex: 1 1 100%; width: 100%; }
+  .search-input { order: 3; flex: 1 1 100%; width: 100%; min-width: 100%; }
   .page-title { font-size: 15px; }
   .page-subtitle { display: none; }
 }

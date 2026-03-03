@@ -23,10 +23,13 @@
     </div>
     <div class="items-list">
       <div v-for="item in order.customerOrderItems" :key="item.id" class="item-row">
-        <div class="item-name">{{ item.productName }}</div>
+        <div class="item-info">
+          <span class="item-name">{{ $t('customer.detail.product') }}: {{ item.productName }}</span>
+          <span v-if="item.variant" class="item-variant">{{ $t('customer.detail.variant') }}: {{ item.variant }}</span>
+          <span class="item-qty">{{ $t('customer.detail.qty') }}: {{ item.quantity }}</span>
+        </div>
         <div class="item-right">
-          <span class="item-qty">x{{ item.quantity }}</span>
-          <span class="item-price">{{ formatAmount(parseFloat(item.sellingTotalLak)) }} ₭</span>
+          <span class="item-price">{{ $t('customer.detail.price') }}: {{ formatItemPrice(item) }}</span>
         </div>
       </div>
     </div>
@@ -35,14 +38,14 @@
   <!-- Total due -->
   <div class="detail-total-row">
     <span class="detail-total-label">{{ $t('customer.detail.totalDue') }}</span>
-    <span class="detail-total-amount">{{ formatAmount(parseFloat(order.remainingAmount)) }} ₭</span>
+    <span class="detail-total-amount">{{ formatTotalDue(order) }}</span>
   </div>
 
   <!-- Payment status -->
   <div class="detail-status-row">
     <span class="detail-status-label">{{ $t('customer.detail.paymentStatus') }}</span>
-    <span class="detail-status-badge" :class="statusClass(order.paymentStatus)">
-      {{ $t(`customer.paymentStatus.${order.paymentStatus}`) }}
+    <span class="detail-status-badge" :class="statusClass(displayPaymentStatus)">
+      {{ $t(`customer.paymentStatus.${displayPaymentStatus}`) }}
     </span>
   </div>
 
@@ -61,8 +64,8 @@
     />
   </div>
 
-  <!-- Upload slip -->
-  <div class="detail-section">
+  <!-- Upload slip (only when can submit) -->
+  <div v-if="canSubmit" class="detail-section">
     <div class="detail-section-header">
       <CreditCardOutlined class="section-icon-sm" />
       <span>{{ $t('customer.detail.uploadTitle') }}</span>
@@ -70,16 +73,17 @@
     <div
       class="upload-zone"
       :class="{ 'upload-zone--active': isDragging, 'upload-zone--has-file': slipFile }"
-      @click="$emit('triggerFile', fileInputRef)"
       @dragover.prevent="$emit('dragOver')"
       @dragleave.prevent="$emit('dragLeave')"
       @drop.prevent="$emit('drop', $event)"
     >
+      <!-- Input overlay: คลิกตรงไหนก็เปิด file picker ได้ (แก้ปัญหา mobile ที่ display:none ไม่ทำงาน) -->
       <input
         ref="fileInputRef"
         type="file"
         accept="image/jpeg,image/png"
-        class="hidden-input"
+        class="file-input-overlay"
+        :class="{ 'file-input-overlay--disabled': !!slipFile }"
         @change="$emit('fileChange', $event)"
       />
       <template v-if="!slipFile">
@@ -93,7 +97,7 @@
           <img :src="slipPreview" alt="slip" class="slip-preview-img" />
           <div class="slip-filename">{{ slipFile.name }}</div>
           <div class="upload-note-file">{{ $t('customer.detail.uploadNote') }}</div>
-          <a-button size="small" danger @click.stop="$emit('removeSlip')">
+          <a-button size="small" danger @click.stop="handleRemoveSlip">
             {{ $t('customer.detail.removeSlip') }}
           </a-button>
         </div>
@@ -101,20 +105,27 @@
     </div>
   </div>
 
-  <a-button
-    type="primary"
-    class="submit-btn-inline"
-    :loading="submitting"
-    @click="$emit('submit')"
-  >
-    {{ $t('customer.detail.submitBtn') }}
-    <ArrowRightOutlined />
-  </a-button>
+  <template v-if="canSubmit">
+    <a-button
+      type="primary"
+      class="submit-btn-inline"
+      :loading="submitting"
+      @click="$emit('submit')"
+    >
+      {{ $t('customer.detail.submitBtn') }}
+      <ArrowRightOutlined />
+    </a-button>
+  </template>
+  <template v-else>
+    <div class="payment-status-message">
+      {{ paymentStatusMessage }}
+    </div>
+  </template>
   <div style="height: 24px" />
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   ShoppingOutlined,
@@ -135,12 +146,54 @@ const props = defineProps<{
   slipPreview: string;
   isDragging: boolean;
   submitting: boolean;
+  canSubmit: boolean;
   isMobile: boolean;
 }>();
 
-defineEmits<{
+const currencySymbol = (code: string | null) => {
+  if (!code) return '₭';
+  const map: Record<string, string> = { LAK: '₭', THB: '฿', USD: '$', USDT: 'USDT' };
+  return map[code] ?? code;
+};
+
+const formatItemPrice = (item: { sellingTotal: string; targetCurrencySellingTotal: string | null }) => {
+  const amount = item.targetCurrencySellingTotal != null
+    ? parseFloat(item.targetCurrencySellingTotal)
+    : parseFloat(item.sellingTotal);
+  const sym = currencySymbol(props.order.targetCurrency);
+  return `${formatAmount(amount)} ${sym}`;
+};
+
+const formatTotalDue = (o: CustomerOrder) => {
+  const amount = o.targetCurrencyRemainingAmount != null
+    ? parseFloat(o.targetCurrencyRemainingAmount)
+    : parseFloat(o.remainingAmount);
+  const sym = currencySymbol(o.targetCurrency);
+  return `${formatAmount(amount)} ${sym}`;
+};
+
+/** สถานะที่แสดง: ถ้ามี payment รอตรวจสอบ ให้แสดง PENDING_VERIFICATION แทน UNPAID/PARTIAL */
+const displayPaymentStatus = computed(() => {
+  const o = props.order;
+  if (o.hasPendingPayment) return 'PENDING_VERIFICATION';
+  return o.paymentStatus;
+});
+
+const paymentStatusMessage = computed(() => {
+  const o = props.order;
+  if (o.paymentStatus === 'PAID' || parseFloat(o.remainingAmount) <= 0) {
+    return t('customer.detail.paymentComplete');
+  }
+  if (o.hasPendingPayment) {
+    return t('customer.detail.paymentPending');
+  }
+  return '';
+});
+
+const { t } = useI18n();
+const fileInputRef = ref<HTMLInputElement | null>(null);
+const emit = defineEmits<{
   (e: 'update:message', val: string): void;
-  (e: 'triggerFile', el: HTMLInputElement | null): void;
   (e: 'fileChange', ev: Event): void;
   (e: 'drop', ev: DragEvent): void;
   (e: 'dragOver'): void;
@@ -149,8 +202,10 @@ defineEmits<{
   (e: 'submit'): void;
 }>();
 
-const { t } = useI18n();
-const fileInputRef = ref<HTMLInputElement | null>(null);
+const handleRemoveSlip = () => {
+  if (fileInputRef.value) fileInputRef.value.value = '';
+  emit('removeSlip');
+};
 
 const formatAmount = (val: number) =>
   val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -171,6 +226,7 @@ const getOrderTitle = (order: CustomerOrder): string => {
 const statusClass = (status: string) => {
   if (status === 'PAID') return 'badge-paid';
   if (status === 'PARTIAL') return 'badge-partial';
+  if (status === 'PENDING_VERIFICATION') return 'badge-pending';
   return 'badge-unpaid';
 };
 </script>
@@ -218,10 +274,23 @@ const statusClass = (status: string) => {
 .section-icon-sm { font-size: 15px; color: #475569; }
 .items-list { display: flex; flex-direction: column; gap: 8px; }
 .item-row { display: flex; justify-content: space-between; align-items: center; }
-.item-name { font-size: 13px; color: #334155; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item-info { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.item-name { font-size: 13px; color: #334155; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item-variant { font-size: 11px; color: #94a3b8; }
 .item-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .item-qty { font-size: 12px; color: #94a3b8; }
 .item-price { font-size: 13px; font-weight: 700; color: #1d4ed8; }
+
+.payment-status-message {
+  margin-top: 12px;
+  padding: 14px 18px;
+  background: #f0fdf4;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #15803d;
+  text-align: center;
+}
 
 /* Total row */
 .detail-total-row {
@@ -244,6 +313,7 @@ const statusClass = (status: string) => {
 .detail-status-badge { font-size: 12px; font-weight: 700; border-radius: 999px; padding: 3px 12px; }
 .badge-paid { background: #dcfce7; color: #15803d; }
 .badge-partial { background: #e0e7ff; color: #3730a3; }
+.badge-pending { background: #e0e7ff; color: #4338ca; }
 .badge-unpaid { background: #fef3c7; color: #b45309; }
 
 /* Sections */
@@ -261,6 +331,7 @@ const statusClass = (status: string) => {
 
 /* Upload zone */
 .upload-zone {
+  position: relative;
   border: 2px dashed #cbd5e1; border-radius: 14px; padding: 28px 16px;
   text-align: center; cursor: pointer;
   transition: border-color 0.18s, background 0.18s;
@@ -280,7 +351,20 @@ const statusClass = (status: string) => {
 .upload-hint { font-size: 12px; color: #94a3b8; }
 .upload-note { font-size: 11px; color: #94a3b8; margin-top: 6px; font-style: italic; }
 .upload-note-file { font-size: 11px; color: #94a3b8; font-style: italic; margin-bottom: 6px; }
-.hidden-input { display: none; }
+/* Overlay แทน display:none เพื่อให้ file picker ทำงานบน mobile (iOS Safari ฯลฯ) */
+.file-input-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+.file-input-overlay--disabled {
+  pointer-events: none;
+  cursor: default;
+}
 .upload-preview { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .slip-preview-img { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; border: 2px solid #bbf7d0; }
 .slip-filename { font-size: 12px; color: #475569; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

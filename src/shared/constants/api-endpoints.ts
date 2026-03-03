@@ -13,10 +13,12 @@ const DASHBOARD_BASE = 'dashboard' as const;
 
 const DASHBOARD_ENDPOINTS = {
   BASE: DASHBOARD_BASE,
-  ADMIN: `${DASHBOARD_BASE}/admin`,
-  ADMIN_ANNUAL_REPORT: `${DASHBOARD_BASE}/admin/annual-report`,
-  MERCHANT: `${DASHBOARD_BASE}/merchant`,
-  MERCHANT_ANNUAL_REPORT: `${DASHBOARD_BASE}/merchant/annual-report`,
+  ADMIN_SUMMARY: `${DASHBOARD_BASE}/admin/summary`,
+  ADMIN_DETAILS: `${DASHBOARD_BASE}/admin/details`,
+  MERCHANT_SUMMARY: `${DASHBOARD_BASE}/merchant/summary`,
+  MERCHANT_PRICE_CURRENCY_SUMMARY: `${DASHBOARD_BASE}/merchant/price-currency-summary`,
+  MERCHANT_PRICE_CURRENCY_SUMMARY_BY_DATE: `${DASHBOARD_BASE}/merchant/price-currency-summary-by-date`,
+  MERCHANT_TOP_CUSTOMERS: `${DASHBOARD_BASE}/merchant/top-customers`,
 } as const;
 
 // Users Endpoints
@@ -29,6 +31,7 @@ const USERS_ENDPOINTS = {
   MERCHANT_CREATE: `${USERS_BASE}/merchant`,
   GET_BY_ID: (id: number) => `${USERS_BASE}/${id}`,
   LIST: USERS_BASE,
+  SUMMARY: `${USERS_BASE}/summary`,
   UPDATE: (id: number) => `${USERS_BASE}/${id}`,
   SET_ACTIVE: (id: number) => `${USERS_BASE}/${id}/active`,
   CHANGE_PASSWORD: (id: number) => `${USERS_BASE}/${id}/change-password-by-id`,
@@ -36,6 +39,7 @@ const USERS_ENDPOINTS = {
   UPDATE_PROFILE: `${USERS_BASE}/profile`,
   DELETE: (id: number) => `${USERS_BASE}/${id}`,
   BY_MERCHANT: `${USERS_BASE}/by-merchant`,
+  BY_MERCHANT_SUMMARY: `${USERS_BASE}/by-merchant/summary`,
 } as const;
 
 // Roles Endpoints
@@ -122,10 +126,22 @@ const ORDERS_ENDPOINTS = {
   CREATE: ORDERS_BASE,
   CREATE_FULL: `${ORDERS_BASE}/create-full`,
   BY_MERCHANT: `${ORDERS_BASE}/by-merchant`,
+  BY_MERCHANT_SUMMARY: `${ORDERS_BASE}/by-merchant/summary`,
   LIST: ORDERS_BASE,
+  SUMMARY: `${ORDERS_BASE}/summary`,
   GET_BY_ID: (id: number) => `${ORDERS_BASE}/${id}`,
   UPDATE: (id: number) => `${ORDERS_BASE}/${id}`,
   DELETE: (id: number) => `${ORDERS_BASE}/${id}`,
+} as const;
+
+// Order Items Endpoints
+const ORDER_ITEMS_BASE = 'order-items' as const;
+
+const ORDER_ITEMS_ENDPOINTS = {
+  BASE: ORDER_ITEMS_BASE,
+  LIST: ORDER_ITEMS_BASE,
+  BY_MERCHANT: `${ORDER_ITEMS_BASE}/by-merchant`,
+  GET_BY_ID: (id: number) => `${ORDER_ITEMS_BASE}/${id}`,
 } as const;
 
 // Arrivals Endpoints
@@ -134,7 +150,11 @@ const ARRIVALS_BASE = 'arrivals' as const;
 const ARRIVALS_ENDPOINTS = {
   BASE: ARRIVALS_BASE,
   CREATE: `${ARRIVALS_BASE}/create`,
+  CREATE_MULTIPLE: `${ARRIVALS_BASE}/create-multiple`,
   LIST: ARRIVALS_BASE,
+  BY_MERCHANT: `${ARRIVALS_BASE}/by-merchant`,
+  BY_MERCHANT_SUMMARY: `${ARRIVALS_BASE}/by-merchant/summary`,
+  SUMMARY: `${ARRIVALS_BASE}/summary`,
   GET_BY_ID: (id: number) => `${ARRIVALS_BASE}/${id}`,
   UPDATE: (id: number) => `${ARRIVALS_BASE}/${id}`,
   DELETE: (id: number) => `${ARRIVALS_BASE}/${id}`,
@@ -178,12 +198,24 @@ const PAYMENTS_ENDPOINTS = {
   CREATE: PAYMENTS_BASE,
   MY_PAYMENTS: `${PAYMENTS_BASE}/my-payments`,
   BY_MERCHANT: `${PAYMENTS_BASE}/merchant`,
+  BY_MERCHANT_SUMMARY: `${PAYMENTS_BASE}/merchant/summary`,
   GET_BY_ID: (id: number) => `${PAYMENTS_BASE}/${id}`,
   VERIFY: (id: number) => `${PAYMENTS_BASE}/${id}/verify`,
   REJECT: (id: number) => `${PAYMENTS_BASE}/${id}/reject`,
   BULK_VERIFY: `${PAYMENTS_BASE}/bulk-verify`,
   BULK_REJECT: `${PAYMENTS_BASE}/bulk-reject`,
   DELETE: (id: number) => `${PAYMENTS_BASE}/${id}`,
+} as const;
+
+// Upload Endpoints
+const UPLOAD_BASE = 'upload' as const;
+
+const UPLOAD_ENDPOINTS = {
+  BASE: UPLOAD_BASE,
+  FILES_V2: `${UPLOAD_BASE}/files-v2`,
+  FILES_V2_PUBLIC: `${UPLOAD_BASE}/files-v2-public`,
+  DELETE_FILE: `${UPLOAD_BASE}/file`,
+  DELETE_FILE_V2: `${UPLOAD_BASE}/file-v2`,
 } as const;
 
 // Notifications Endpoints
@@ -208,8 +240,10 @@ export const API_ENDPOINTS = {
   CUSTOMERS: CUSTOMERS_ENDPOINTS,
   EXCHANGE_RATES: EXCHANGE_RATES_ENDPOINTS,
   ORDERS: ORDERS_ENDPOINTS,
+  ORDER_ITEMS: ORDER_ITEMS_ENDPOINTS,
   ARRIVALS: ARRIVALS_ENDPOINTS,
   ARRIVAL_ITEMS: ARRIVAL_ITEMS_ENDPOINTS,
+  UPLOAD: UPLOAD_ENDPOINTS,
   NOTIFICATIONS: NOTIFICATIONS_ENDPOINTS,
   PAYMENTS: PAYMENTS_ENDPOINTS,
   CUSTOMER_ORDERS: CUSTOMER_ORDERS_ENDPOINTS,

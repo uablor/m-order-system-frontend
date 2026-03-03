@@ -1,6 +1,7 @@
 import { ApiClient } from '@/infrastructure/apis/api';
 import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
 import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
+import { extractSingleResult } from '@/shared/types/backend-response.types';
 
 export interface PaymentQueryDto {
   page?: number;
@@ -76,6 +77,24 @@ export class PaymentRepository {
       API_ENDPOINTS.PAYMENTS.BY_MERCHANT,
       query,
     );
+  }
+
+  async getSummaryByMerchant(query: Omit<PaymentQueryDto, 'page' | 'limit'>): Promise<{
+    totalPayments: number;
+    totalAmount: string;
+    totalPending: number;
+    totalVerified: number;
+    totalRejected: number;
+  }> {
+    const res = await this.apiClient.getParams<any>(API_ENDPOINTS.PAYMENTS.BY_MERCHANT_SUMMARY, query);
+    const data = extractSingleResult(res) ?? res;
+    return {
+      totalPayments: data?.totalPayments ?? 0,
+      totalAmount: data?.totalAmount ?? '0',
+      totalPending: data?.totalPending ?? 0,
+      totalVerified: data?.totalVerified ?? 0,
+      totalRejected: data?.totalRejected ?? 0,
+    };
   }
 
   async verify(id: number): Promise<void> {

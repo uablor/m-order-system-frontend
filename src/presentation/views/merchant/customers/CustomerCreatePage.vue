@@ -81,7 +81,13 @@
                 <template #label>
                   <span class="label-ico"><PhoneOutlined />{{ $t('merchant.customers.form.contactPhone') }}</span>
                 </template>
-                <a-input v-model:value="formState.contactPhone" />
+                <a-input
+                  v-model:value="formState.contactPhone"
+                  :maxlength="50"
+                  placeholder="0123456789"
+                  inputmode="numeric"
+                  @input="(e: Event) => { formState.contactPhone = onlyNumbers((e.target as HTMLInputElement).value); }"
+                />
               </a-form-item>
             </a-col>
             <!-- <a-col :xs="24" :md="12">
@@ -131,7 +137,13 @@
                 <template #label>
                   <span class="label-ico"><LinkOutlined />{{ $t('merchant.customers.form.contactWhatsapp') }}</span>
                 </template>
-                <a-input v-model:value="formState.contactWhatsapp" />
+                <a-input
+                  v-model:value="formState.contactWhatsapp"
+                  :maxlength="50"
+                  placeholder="0123456789"
+                  inputmode="numeric"
+                  @input="(e: Event) => { formState.contactWhatsapp = onlyNumbers((e.target as HTMLInputElement).value); }"
+                />
               </a-form-item>
             </a-col>
           </a-row>
@@ -213,7 +225,8 @@ const { isMobile } = useIsMobile();
 const { loading, createCustomer } = useMerchantCustomers();
 
 const fromStockOrder = computed(() => route.query.from === 'stock-order');
-const coUid = computed(() => (route.query.coUid as string) || '');
+const itemUid = computed(() => (route.query.itemUid as string) || '');
+const customerUid = computed(() => (route.query.customerUid as string) || '');
 
 const formRef = ref<FormInstance>();
 
@@ -234,6 +247,9 @@ const formState = reactive({
 });
 
 const opt = (v: string) => (v.trim() ? v.trim() : undefined);
+
+/** กรองให้เหลือเฉพาะตัวเลข (สำหรับเบอร์โทร/WhatsApp) */
+const onlyNumbers = (val: string) => (val ?? '').replace(/\D/g, '');
 
 const submit = async () => {
   await formRef.value?.validate();
@@ -261,7 +277,8 @@ const submit = async () => {
         customerId: result.id,
         customerName: formState.customerName.trim(),
         customerType: formState.customerType,
-        coUid: coUid.value,
+        itemUid: itemUid.value,
+        customerUid: customerUid.value,
       }));
     } catch { /* ignore */ }
     router.push('/merchant/stock-order');

@@ -1,15 +1,18 @@
 import { ApiClient } from '@/infrastructure/apis/api';
 import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
-import type { BackendPaginatedResponse, BackendResponse } from '@/shared/types/backend-response.types';
+import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
+import { extractSingleResult } from '@/shared/types/backend-response.types';
 
 export interface CustomerOrderItem {
   id: number;
   orderId: number;
   productName: string;
+  variant: string | null;
   quantity: number;
   sellingPriceForeign: string;
-  sellingTotalLak: string;
-  profitLak: string;
+  sellingTotal: string;
+  targetCurrencySellingTotal: string | null;
+  profit: string;
 }
 
 export interface CustomerOrder {
@@ -18,10 +21,15 @@ export interface CustomerOrder {
   customerId: number;
   customerName: string;
   customerToken: string;
-  totalSellingAmountLak: string;
+  totalSellingAmount: string;
   totalPaid: string;
   remainingAmount: string;
   paymentStatus: 'UNPAID' | 'PARTIAL' | 'PAID';
+  targetCurrency: string | null;
+  targetCurrencyTotalSellingAmount: string | null;
+  targetCurrencyTotalPaid: string | null;
+  targetCurrencyRemainingAmount: string | null;
+  hasPendingPayment: boolean;
   customerOrderItems: CustomerOrderItem[];
   createdAt: string;
   updatedAt: string;
@@ -47,18 +55,31 @@ class CustomerOrderRepository {
       page: query?.page ?? 1,
       limit: query?.limit ?? 50,
     };
-    return this.apiClient.getParams<BackendPaginatedResponse<CustomerOrder>>(
-      API_ENDPOINTS.CUSTOMER_ORDERS.BY_TOKEN(token),
-      params,
-    );
+    
+    try {
+      return this.apiClient.getParams<BackendPaginatedResponse<CustomerOrder>>(
+        API_ENDPOINTS.CUSTOMER_ORDERS.BY_TOKEN(token),
+        params,
+      );
+    } catch (error: any) {
+      // If it's a database column error, try with a fallback endpoint
+      if (error?.message?.includes('Unknown column') || error?.message?.includes('image_id')) {
+        console.warn('Database schema issue detected, trying fallback endpoint');
+        // Try a simpler endpoint that doesn't include image_id
+        return this.apiClient.getParams<BackendPaginatedResponse<CustomerOrder>>(
+          `${API_ENDPOINTS.CUSTOMER_ORDERS.BY_TOKEN(token)}?fallback=true`,
+          params,
+        );
+      }
+      throw error;
+    }
   }
 
   async getById(id: number): Promise<CustomerOrder> {
-    const res = await this.apiClient.get<BackendResponse<CustomerOrder>>(
-      API_ENDPOINTS.CUSTOMER_ORDERS.GET_BY_ID(id),
-    );
-    const results = (res as any).results;
-    return Array.isArray(results) ? results[0] : results;
+    const res = await this.apiClient.get<any>(API_ENDPOINTS.CUSTOMER_ORDERS.GET_BY_ID(id));
+    const order = extractSingleResult<CustomerOrder>(res);
+    if (!order) throw new Error('Customer order not found in response');
+    return order;
   }
 
   async getList(query?: CustomerOrderListQuery): Promise<BackendPaginatedResponse<CustomerOrder>> {

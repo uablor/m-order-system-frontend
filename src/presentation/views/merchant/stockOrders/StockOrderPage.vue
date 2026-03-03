@@ -12,6 +12,8 @@ import MerchantLayout from '../../../../components/layouts/merchant-layouts/AppL
 import StockOrderContent from '../../../components/merchant/stockOrders/StockOrderContent.vue';
 import ExchangeRateBulkModal from '../../../components/merchant/exchangerate/ExchangeRateBulkModal.vue';
 import { exchangeRateRepository } from '@/infrastructure/repositories/exchange-rate.repository';
+import { extractArrayResult } from '@/shared/types/backend-response.types';
+import type { ExchangeRate } from '@/domain/entities/user.entity';
 
 const bulkModalRef = ref<InstanceType<typeof ExchangeRateBulkModal>>();
 const contentRef = ref<InstanceType<typeof StockOrderContent>>();
@@ -19,9 +21,9 @@ const contentRef = ref<InstanceType<typeof StockOrderContent>>();
 onMounted(async () => {
   try {
     const res = await exchangeRateRepository.getToday();
-    const results = res.results ?? [];
-    const hasBuy  = results.some((r) => r.rateType === 'BUY');
-    const hasSell = results.some((r) => r.rateType === 'SELL');
+    const results = extractArrayResult<ExchangeRate>(res);
+    const hasBuy  = results.some((r: ExchangeRate) => r.rateType === 'BUY');
+    const hasSell = results.some((r: ExchangeRate) => r.rateType === 'SELL');
     if (hasBuy && hasSell) return;
     if (hasBuy && !hasSell) bulkModalRef.value?.open('sell-only');
     else if (!hasBuy && hasSell) bulkModalRef.value?.open('buy-only');
@@ -32,8 +34,11 @@ onMounted(async () => {
   }
 });
 
-const openModal = () => {
-  bulkModalRef.value?.open('both');
+const openModal = (data?: {
+  buy: { baseCurrency: string; targetCurrency: string; rate: number | undefined };
+  sell: { baseCurrency: string; targetCurrency: string; rate: number | undefined };
+}) => {
+  bulkModalRef.value?.open('both', data);
 };
 
 const onRatesSubmitted = () => {

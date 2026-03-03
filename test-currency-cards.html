@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Cards Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .api-response {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .expected-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .currency-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .currency-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .currency-badge {
+            background: #1890ff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .currency-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+        }
+        .c-label { color: #666; font-size: 14px; }
+        .c-val { font-weight: bold; }
+        .text-green { color: #52c41a; }
+        .success { color: #52c41a; font-weight: bold; }
+        .error { color: #ff4d4f; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Currency Cards Dashboard Test</h1>
+
+    <div class="test-section">
+        <h2>API Response Structure</h2>
+        <div class="api-response">{
+    "success": true,
+    "Code": 200,
+    "message": "Success",
+    "results": [
+        [
+            {
+                "baseCurrency": "CNY",
+                "totalAll": 274.24,
+                "totalUnpaid": 274.24,
+                "totalPaid": 0
+            },
+            {
+                "baseCurrency": "USDT",
+                "totalAll": 1804,
+                "totalUnpaid": 1804,
+                "totalPaid": 0
+            },
+            {
+                "targetCurrency": "LAK",
+                "totalAll": 39776031.04,
+                "totalUnpaid": 39776031.04,
+                "totalPaid": 0
+            }
+        ]
+    ]
+}</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Expected Result: 3 Currency Cards</h2>
+        <div class="expected-cards">
+            <div class="currency-card">
+                <div class="currency-header">
+                    <span class="currency-badge">CNY</span>
+                    <span>Price in CNY</span>
+                </div>
+                <div class="currency-row">
+                    <span class="c-label">Total Price</span>
+                    <span class="c-val">274.24</span>
+                </div>
+                <div class="currency-row">
+                    <span class="c-label">Price Paid</span>
+                    <span class="c-val text-green">0</span>
+                </div>
+                <div class="currency-row">
+                    <span class="c-label">Price Unpaid</span>
+                    <span class="c-val">274.24</span>
+                </div>
+            </div>
+
+            <div class="currency-card">
+                <div class="currency-header">
+                    <span class="currency-badge">USDT</span>
+                    <span>Price in USDT</span>
+                </div>
+                <div class="currency-row">
+                    <span class="c-label">Total Price</span>
+                    <span class="c-val">1,804</span>
+                </div>
+                <div class="currency-row">
+                    <span class="c-label">Price Paid</span>
+                    <span class="c-val text-green">0</span>
+                </div>
+                <div class="currency-row">
+                    <span class="c-label">Price Unpaid</span>
+                    <span class="c-val">1,804</span>
+                </div>
+            </div>
+
+            <div class="currency-card">
+                <div class="currency-header">
+                    <span class="currency-badge">LAK</span>
+                    <span>Price in LAK</span>
+                </div>
+                <div class="currency-row">
+                    <span class="c-label">Total Price</span>
+                    <span class="c-val">39,776,031.04</span>
+                </div>
+                <div class="currency-row">
+                    <span class="c-label">Price Paid</span>
+                    <span class="c-val text-green">0</span>
+                </div>
+                <div class="currency-row">
+                    <span class="c-label">Price Unpaid</span>
+                    <span class="c-val">39,776,031.04</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Fixes Applied</h2>
+        <ul>
+            <li><strong class="success">✓ Fixed API Data Extraction</strong> - Now properly extracts results[0] array</li>
+            <li><strong class="success">✓ Updated Template</strong> - Handles both baseCurrency and targetCurrency</li>
+            <li><strong class="success">✓ Updated TypeScript Interface</strong> - Supports optional baseCurrency/targetCurrency</li>
+            <li><strong class="success">✓ Updated Default Data</strong> - Mixed currency types in defaults</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Instructions</h2>
+        <ol>
+            <li>Open your merchant dashboard</li>
+            <li>Check the currency cards section</li>
+            <li>You should see 3 cards: CNY, USDT, and LAK</li>
+            <li>Each card should show the correct totals from the API</li>
+            <li>Cards should be responsive and properly styled</li>
+        </ol>
+    </div>
+
+    <script>
+        console.log('Currency Cards Test - Expected: 3 cards (CNY, USDT, LAK)');
+        console.log('API Response Structure: results[0] = array of currency objects');
+        console.log('Fix: Extract results[0] instead of using firstResult()');
+    </script>
+</body>
+</html>
