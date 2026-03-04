@@ -5,7 +5,7 @@ export const CustomerRoute: RouteRecordRaw[] = [
     path: '/customer/item-arrived',
     name: 'customer-item-arrived',
     component: () => import('@/presentation/views/customer/ItemArrivedPage.vue'),
-    // หน้านี้เปิดสาธารณะ — ใช้ token จาก URL query (?token=xxx) แทน JWT
+    // หน้านี้เปิดสาธารณะ — ใช้ customerToken + notificationToken จาก URL query แทน JWT
     meta: { requiresAuth: false },
   },
   {
@@ -16,4 +16,4 @@ export const CustomerRoute: RouteRecordRaw[] = [
   },
 ];
 
-// /customer/item-arrived?token=Ntb9thkFfKtMIBkM60h34VXUkI6DuFWQ
+// /customer/item-arrived?customerToken=xxx&notificationToken=xxx

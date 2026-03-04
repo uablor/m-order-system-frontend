@@ -81,13 +81,7 @@
                 <template #label>
                   <span class="label-ico"><PhoneOutlined />{{ $t('merchant.customers.form.contactPhone') }}</span>
                 </template>
-                <a-input
-                  v-model:value="formState.contactPhone"
-                  :maxlength="50"
-                  placeholder="0123456789"
-                  inputmode="numeric"
-                  @input="(e: Event) => { formState.contactPhone = onlyNumbers((e.target as HTMLInputElement).value); }"
-                />
+                <PhoneInputWithCountry v-model="formState.contactPhone" :placeholder="$t('merchant.customers.form.phonePlaceholder')" />
               </a-form-item>
             </a-col>
             <!-- <a-col :xs="24" :md="12">
@@ -137,13 +131,7 @@
                 <template #label>
                   <span class="label-ico"><LinkOutlined />{{ $t('merchant.customers.form.contactWhatsapp') }}</span>
                 </template>
-                <a-input
-                  v-model:value="formState.contactWhatsapp"
-                  :maxlength="50"
-                  placeholder="0123456789"
-                  inputmode="numeric"
-                  @input="(e: Event) => { formState.contactWhatsapp = onlyNumbers((e.target as HTMLInputElement).value); }"
-                />
+                <PhoneInputWithCountry v-model="formState.contactWhatsapp" :placeholder="$t('merchant.customers.form.phonePlaceholder')" />
               </a-form-item>
             </a-col>
           </a-row>
@@ -205,6 +193,7 @@ import type { FormInstance } from 'ant-design-vue';
 import MerchantLayout from '@/components/layouts/merchant-layouts/AppLayout.vue';
 import type { CustomerType, PreferredContactMethod } from '@/domain/entities/user.entity';
 import { useMerchantCustomers } from '@/presentation/composables/merchant/useMerchantCustomers';
+import PhoneInputWithCountry from '@/shared/components/PhoneInputWithCountry.vue';
 import {
   UserOutlined,
   IdcardOutlined,
@@ -247,9 +236,6 @@ const formState = reactive({
 });
 
 const opt = (v: string) => (v.trim() ? v.trim() : undefined);
-
-/** กรองให้เหลือเฉพาะตัวเลข (สำหรับเบอร์โทร/WhatsApp) */
-const onlyNumbers = (val: string) => (val ?? '').replace(/\D/g, '');
 
 const submit = async () => {
   await formRef.value?.validate();

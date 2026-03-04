@@ -89,7 +89,7 @@
                 <template #label>
                   <span class="label-ico"><PhoneOutlined />{{ $t('merchant.customers.form.contactPhone') }}</span>
                 </template>
-                <a-input v-model:value="formState.contactPhone" />
+                <PhoneInputWithCountry v-model="formState.contactPhone" :placeholder="$t('merchant.customers.form.phonePlaceholder')" />
               </a-form-item>
             </a-col>
           </a-row>
@@ -195,6 +195,7 @@ import type { CustomerType, PreferredContactMethod } from '@/domain/entities/use
 import type { CustomerUpdateDto } from '@/application/dto/customer.dto';
 import { customerRepository } from '@/infrastructure/repositories/customer.repository';
 import { useMerchantCustomers } from '@/presentation/composables/merchant/useMerchantCustomers';
+import PhoneInputWithCountry from '@/shared/components/PhoneInputWithCountry.vue';
 import {
   UserOutlined,
   IdcardOutlined,

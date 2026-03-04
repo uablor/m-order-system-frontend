@@ -52,10 +52,9 @@
                 <template #label>
                   <span class="field-label"><PhoneOutlined class="lbl-ico" />{{ $t('users.contactPhone') }}</span>
                 </template>
-                <a-input
-                  v-model:value="formState.contactPhone"
-                  :placeholder="$t('users.contactPhonePlaceholder')"
-                  size="large"
+                <PhoneInputWithCountry
+                  v-model="formState.contactPhone"
+                  placeholder="20 89 48 48 48"
                 />
               </a-form-item>
             </a-col>
@@ -224,6 +223,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import type { FormInstance } from 'ant-design-vue';
+import PhoneInputWithCountry from '@/shared/components/PhoneInputWithCountry.vue';
 import {
   UserOutlined,
   MailOutlined,

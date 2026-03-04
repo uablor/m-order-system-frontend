@@ -16,8 +16,15 @@ export interface NotificationQueryDto {
 
 export interface NotificationItem {
   id: number;
-  merchantId: number;
-  customerId: number;
+  merchantId?: number;
+  customerId?: number;
+  customer?: {
+    customerName?: string | null;
+    contactPhone?: string | null;
+    contactWhatsapp?: string | null;
+    contactLine?: string | null;
+    contactFacebook?: string | null;
+  };
   notificationType: string;
   channel: string;
   recipientContact: string;
@@ -37,6 +44,12 @@ export interface NotificationUpdateDto {
   status?: string;
 }
 
+export interface CreateNotificationDto {
+  customerId: number;
+  customerOrderIds: number[];
+  message?: string;
+}
+
 export class NotificationRepository {
   private apiClient: ApiClient;
 
@@ -49,6 +62,10 @@ export class NotificationRepository {
       API_ENDPOINTS.NOTIFICATIONS.LIST,
       query,
     );
+  }
+
+  async create(data: CreateNotificationDto): Promise<unknown> {
+    return await this.apiClient.post<unknown>(API_ENDPOINTS.NOTIFICATIONS.CREATE, data);
   }
 
   async update(id: number, data: NotificationUpdateDto): Promise<void> {

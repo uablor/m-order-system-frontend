@@ -41,6 +41,7 @@ export interface CustomerOrderListQuery {
   orderId?: number;
   customerId?: number;
   customerToken?: string;
+  notificationToken?: string;
 }
 
 class CustomerOrderRepository {
@@ -50,29 +51,25 @@ class CustomerOrderRepository {
     this.apiClient = new ApiClient();
   }
 
-  async getByToken(token: string, query?: CustomerOrderListQuery): Promise<BackendPaginatedResponse<CustomerOrder>> {
-    const params: Record<string, string | number> = {
+  /**
+   * ดึงรายการ order ตาม customerToken และ notificationToken (จาก notification link)
+   * API: GET /customer-orders/by-token?customerToken=xxx&notificationToken=xxx&page=1&limit=50
+   */
+  async getByToken(
+    params: { customerToken: string; notificationToken?: string },
+    query?: CustomerOrderListQuery,
+  ): Promise<BackendPaginatedResponse<CustomerOrder>> {
+    const requestParams: Record<string, string | number> = {
       page: query?.page ?? 1,
       limit: query?.limit ?? 50,
+      customerToken: params.customerToken,
     };
-    
-    try {
-      return this.apiClient.getParams<BackendPaginatedResponse<CustomerOrder>>(
-        API_ENDPOINTS.CUSTOMER_ORDERS.BY_TOKEN(token),
-        params,
-      );
-    } catch (error: any) {
-      // If it's a database column error, try with a fallback endpoint
-      if (error?.message?.includes('Unknown column') || error?.message?.includes('image_id')) {
-        console.warn('Database schema issue detected, trying fallback endpoint');
-        // Try a simpler endpoint that doesn't include image_id
-        return this.apiClient.getParams<BackendPaginatedResponse<CustomerOrder>>(
-          `${API_ENDPOINTS.CUSTOMER_ORDERS.BY_TOKEN(token)}?fallback=true`,
-          params,
-        );
-      }
-      throw error;
-    }
+    if (params.notificationToken) requestParams.notificationToken = params.notificationToken;
+
+    return this.apiClient.getParams<BackendPaginatedResponse<CustomerOrder>>(
+      API_ENDPOINTS.CUSTOMER_ORDERS.BY_TOKEN,
+      requestParams,
+    );
   }
 
   async getById(id: number): Promise<CustomerOrder> {

@@ -90,20 +90,26 @@ const selectedOrder = ref<CustomerOrder | null>(null);
 const loading = ref(false);
 const errorMsg = ref('');
 
-/* --- Read token from URL query param: /customer/item-arrived?token=xxx --- */
-const customerToken = computed(() => (route.query.token as string) || '');
+/* --- อ่าน token จาก URL: ?customerToken=xxx&notificationToken=xxx (จาก notification link) --- */
+const customerToken = computed(
+  () => (route.query.customerToken as string) || (route.query.token as string) || ''
+);
+const notificationToken = computed(() => (route.query.notificationToken as string) || '');
 
-/* --- Fetch orders by token --- */
+/* --- Fetch orders by customerToken + notificationToken --- */
 const fetchOrders = async () => {
-  const token = customerToken.value;
-  if (!token) {
+  const ct = customerToken.value;
+  if (!ct) {
     errorMsg.value = 'No customer token provided in URL.';
     return;
   }
   loading.value = true;
   errorMsg.value = '';
   try {
-    const res = await customerOrderRepository.getByToken(token, { limit: 50 });
+    const res = await customerOrderRepository.getByToken(
+      { customerToken: ct, notificationToken: notificationToken.value || undefined },
+      { limit: 50 },
+    );
     orders.value = res.results ?? [];
     if (!isMobile.value && orders.value.length > 0 && !selectedOrder.value) {
       selectedOrder.value = orders.value[0] ?? null;

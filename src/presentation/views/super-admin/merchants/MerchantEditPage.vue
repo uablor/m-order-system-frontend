@@ -61,7 +61,7 @@
               <template #label>
                 <span class="label-ico"><PhoneOutlined />{{ $t('merchants.contactPhone') }}</span>
               </template>
-              <a-input v-model:value="formState.contactPhone" />
+              <PhoneInputWithCountry v-model="formState.contactPhone" placeholder="20 89 48 48 48" />
             </a-form-item>
           </a-col>
           <a-col :xs="24" :md="12">
@@ -96,7 +96,7 @@
               <template #label>
                 <span class="label-ico"><WhatsAppOutlined />{{ $t('merchants.contactWhatsapp') }}</span>
               </template>
-              <a-input v-model:value="formState.contactWhatsapp" />
+              <PhoneInputWithCountry v-model="formState.contactWhatsapp" placeholder="20 89 48 48 48" />
             </a-form-item>
           </a-col>
         </a-row>
@@ -124,6 +124,7 @@ import { onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import type { FormInstance } from 'ant-design-vue';
+import PhoneInputWithCountry from '@/shared/components/PhoneInputWithCountry.vue';
 import {
   ShopOutlined,
   DollarOutlined,

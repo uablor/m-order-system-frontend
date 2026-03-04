@@ -77,7 +77,7 @@
             :label="$t('merchant.customers.form.contactPhone')"
             :rules="[{ max: 50, message: $t('merchant.customers.form.max50') }]"
           >
-            <a-input v-model:value="formState.contactPhone" />
+            <PhoneInputWithCountry v-model="formState.contactPhone" :placeholder="$t('merchant.customers.form.phonePlaceholder')" />
           </a-form-item>
         </a-col>
         <a-col :xs="24" :md="12">
@@ -94,7 +94,7 @@
             :label="$t('merchant.customers.form.contactWhatsapp')"
             :rules="[{ max: 50, message: $t('merchant.customers.form.max50') }]"
           >
-            <a-input v-model:value="formState.contactWhatsapp" />
+            <PhoneInputWithCountry v-model="formState.contactWhatsapp" :placeholder="$t('merchant.customers.form.phonePlaceholder')" />
           </a-form-item>
         </a-col>
         <a-col :xs="24" :md="12">
@@ -129,6 +129,7 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue';
 import type { FormInstance } from 'ant-design-vue';
+import PhoneInputWithCountry from '@/shared/components/PhoneInputWithCountry.vue';
 import type { Customer, CustomerType, PreferredContactMethod } from '@/domain/entities/user.entity';
 import type { CustomerCreateDto, CustomerUpdateDto } from '@/application/dto/customer.dto';
 

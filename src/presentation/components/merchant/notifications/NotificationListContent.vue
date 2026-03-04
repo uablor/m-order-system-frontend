@@ -6,15 +6,21 @@
         <div class="page-title">{{ $t('merchant.notifications.title') }}</div>
         <div class="page-subtitle">{{ $t('merchant.notifications.subtitle') }}</div>
       </div>
-      <a-button
-        v-if="showFilterToggle"
-        type="default"
-        class="filter-toggle-btn"
-        :class="{ active: showFilters }"
-        @click="showFilters = !showFilters"
-      >
-        <FilterOutlined />
-      </a-button>
+      <div class="header-actions">
+        <a-button type="primary" @click="openCreateModal">
+          <template #icon><PlusOutlined /></template>
+          {{ $t('merchant.notifications.create') }}
+        </a-button>
+        <a-button
+          v-if="showFilterToggle"
+          type="default"
+          class="filter-toggle-btn"
+          :class="{ active: showFilters }"
+          @click="showFilters = !showFilters"
+        >
+          <FilterOutlined />
+        </a-button>
+      </div>
     </div>
 
     <!-- Filter Panel: Search + filters (filter ทำงานอัตโนมัติเมื่อเลือกค่า) -->
@@ -92,7 +98,7 @@
         row-key="id"
         size="middle"
         :loading="loading"
-        :scroll="{ x: 1300 }"
+        :scroll="{ x: 1700 }"
         @change="handleTableChange"
       >
         <template #bodyCell="{ column, record }">
@@ -106,6 +112,34 @@
           </template>
           <template v-else-if="column.key === 'channel'">
             <a-tag color="blue" class="pill-tag">{{ record.channel }}</a-tag>
+          </template>
+          <template v-else-if="column.key === 'recipientContact'">
+            <a
+              v-if="canOpenFacebook(record)"
+              href="javascript:void(0)"
+              class="facebook-link"
+              @click.prevent="handleFacebookClick(record)"
+            >
+              {{ record.customer?.contactFacebook || record.recipientContact || '—' }}
+            </a>
+            <span v-else>{{ record.recipientContact || '—' }}</span>
+          </template>
+          <template v-else-if="column.key === 'contactPhone'">
+            {{ record.customer?.contactPhone || '—' }}
+          </template>
+          <template v-else-if="column.key === 'contactWhatsapp'">
+            <a
+              v-if="canOpenWhatsApp(record.customer?.contactWhatsapp ?? record.recipientContact)"
+              href="javascript:void(0)"
+              class="whatsapp-link"
+              @click.prevent="handleWhatsAppClick(record)"
+            >
+              {{ record.customer?.contactWhatsapp || record.recipientContact || '—' }}
+            </a>
+            <span v-else>{{ record.customer?.contactWhatsapp || record.recipientContact || '—' }}</span>
+          </template>
+          <template v-else-if="column.key === 'contactLine'">
+            {{ record.customer?.contactLine || '—' }}
           </template>
           <template v-else-if="column.key === 'status'">
             <a-tag :color="statusColor(record.status)" class="pill-tag">
@@ -156,7 +190,15 @@
                   </a-avatar>
                 </div>
                 <div class="notif-info">
-                  <div class="notif-name">{{ notif.recipientContact }}</div>
+                  <a
+                    v-if="canOpenFacebook(notif)"
+                    href="javascript:void(0)"
+                    class="notif-name facebook-link"
+                    @click.prevent="handleFacebookClick(notif)"
+                  >
+                    {{ notif.customer?.contactFacebook || notif.recipientContact }}
+                  </a>
+                  <div v-else class="notif-name">{{ notif.recipientContact }}</div>
                   <div class="notif-date">{{ notif.sentAt ? formatDateTime(notif.sentAt) : '—' }}</div>
                 </div>
                 <div class="status-side">
@@ -177,6 +219,55 @@
               <div class="detail-row">
                 <span class="detail-label">{{ $t('merchant.notifications.colChannel') }}</span>
                 <a-tag color="blue" class="pill-tag">{{ notif.channel }}</a-tag>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">{{ $t('merchant.notifications.colRecipient') }}</span>
+                <a
+                  v-if="canOpenFacebook(notif)"
+                  href="javascript:void(0)"
+                  class="detail-val link-val facebook-link"
+                  @click.prevent="handleFacebookClick(notif)"
+                >
+                  {{ notif.customer?.contactFacebook || notif.recipientContact || '—' }}
+                </a>
+                <span v-else class="detail-val">{{ notif.recipientContact || '—' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">{{ $t('merchant.notifications.colContactPhone') }}</span>
+                <span class="detail-val">{{ notif.customer?.contactPhone || '—' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">{{ $t('merchant.notifications.colContactWhatsapp') }}</span>
+                <a
+                  v-if="canOpenWhatsApp(notif.customer?.contactWhatsapp ?? notif.recipientContact)"
+                  href="javascript:void(0)"
+                  class="detail-val link-val whatsapp-link"
+                  @click.prevent="handleWhatsAppClick(notif)"
+                >
+                  {{ notif.customer?.contactWhatsapp || notif.recipientContact || '—' }}
+                </a>
+                <span v-else class="detail-val">{{ notif.customer?.contactWhatsapp || notif.recipientContact || '—' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">{{ $t('merchant.notifications.colContactLine') }}</span>
+                <span class="detail-val">{{ notif.customer?.contactLine || '—' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">{{ $t('merchant.notifications.colMessage') }}</span>
+                <span class="detail-val msg-val">{{ notif.messageContent || '—' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">{{ $t('merchant.notifications.colLink') }}</span>
+                <a v-if="notif.notificationLink" :href="notif.notificationLink" target="_blank" class="detail-val link-val">{{ notif.notificationLink }}</a>
+                <span v-else class="detail-val">—</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">{{ $t('merchant.notifications.colRetry') }}</span>
+                <span class="detail-val">{{ notif.retryCount ?? '—' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">{{ $t('merchant.notifications.colSentAt') }}</span>
+                <span class="detail-val">{{ notif.sentAt ? formatDateTime(notif.sentAt) : '—' }}</span>
               </div>
               <div class="detail-row border-none pt-2">
                 <a-popconfirm :title="$t('merchant.notifications.confirmDelete')" @confirm="handleDelete(notif.id)">
@@ -200,193 +291,154 @@
         </div>
       </a-spin>
     </div>
+
+    <!-- Create Notification Modal -->
+    <a-modal
+      v-model:open="createModalVisible"
+      :title="$t('merchant.notifications.createTitle')"
+      :width="480"
+      :mask-closable="false"
+      @cancel="closeCreateModal"
+    >
+      <a-form layout="vertical" class="create-form">
+        <a-form-item :label="$t('merchant.notifications.createCustomer')" required>
+          <a-select
+            v-model:value="createForm.customerId"
+            show-search
+            option-filter-prop="label"
+            :placeholder="$t('merchant.notifications.selectCustomer')"
+            :loading="loadingCustomers"
+            allow-clear
+            class="full-width"
+          >
+            <a-select-option
+              v-for="c in customers"
+              :key="c.id"
+              :value="c.id"
+              :label="c.customerName"
+            >
+              {{ c.customerName }} {{ c.contactPhone ? `(${c.contactPhone})` : '' }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item :label="$t('merchant.notifications.createOrders')" required>
+          <div v-if="!createForm.customerId" class="create-orders-placeholder">
+            {{ $t('merchant.notifications.selectCustomerFirst') }}
+          </div>
+          <div v-else-if="loadingCustomerOrders" class="create-orders-loading">
+            <a-spin size="small" /> {{ $t('common.loading') }}
+          </div>
+          <div v-else-if="customerOrders.length === 0" class="create-orders-empty">
+            {{ $t('merchant.notifications.noOrdersForCustomer') }}
+          </div>
+          <div v-else class="create-orders-summary">
+            <div class="create-orders-label">{{ $t('merchant.notifications.createOrdersDropdownLabel') }}</div>
+            <div class="create-orders-list">
+              <template v-for="(co, idx) in customerOrders" :key="co.id">
+                {{ getCustomerOrderLabel(co) }}<template v-if="idx < customerOrders.length - 1">, </template>
+              </template>
+            </div>
+            <div class="create-orders-hint">{{ $t('merchant.notifications.allOrdersIncluded') }}</div>
+          </div>
+        </a-form-item>
+        <a-form-item :label="$t('merchant.notifications.createMessage')">
+          <a-textarea
+            v-model:value="createForm.message"
+            :placeholder="$t('merchant.notifications.messagePlaceholder')"
+            :rows="3"
+            class="full-width"
+          />
+        </a-form-item>
+      </a-form>
+      <template #footer>
+        <a-button @click="closeCreateModal">{{ $t('common.cancel') }}</a-button>
+        <a-button type="primary" :loading="createSubmitting" :disabled="!canSubmitCreate" @click="handleCreateSubmit">
+          {{ $t('merchant.notifications.create') }}
+        </a-button>
+      </template>
+    </a-modal>
+
+    <!-- WhatsApp Language Selection Modal -->
+    <a-modal
+      v-model:open="whatsappLangModalVisible"
+      :title="$t('merchant.notifications.whatsappLangModalTitle')"
+      :footer="null"
+      @cancel="closeWhatsAppLangModal"
+    >
+      <div class="whatsapp-lang-modal">
+        <p class="whatsapp-lang-hint">{{ $t('merchant.notifications.whatsappLangModalHint') }}</p>
+        <div class="whatsapp-lang-buttons">
+          <a-button type="primary" size="large" class="lang-btn" @click="sendWhatsAppWithLang('en')">
+            {{ $t('merchant.notifications.whatsappLangEn') }}
+          </a-button>
+          <a-button type="primary" size="large" class="lang-btn" @click="sendWhatsAppWithLang('th')">
+            {{ $t('merchant.notifications.whatsappLangTh') }}
+          </a-button>
+          <a-button type="primary" size="large" class="lang-btn" @click="sendWhatsAppWithLang('la')">
+            {{ $t('merchant.notifications.whatsappLangLa') }}
+          </a-button>
+        </div>
+      </div>
+    </a-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { message } from 'ant-design-vue';
-import type { TablePaginationConfig } from 'ant-design-vue';
-import type { TableColumnsType } from 'ant-design-vue';
-import type { Dayjs } from 'dayjs';
 import {
   SearchOutlined,
   FilterOutlined,
   DownOutlined,
   DeleteOutlined,
   BellOutlined,
+  PlusOutlined,
 } from '@ant-design/icons-vue';
-import dayjs from 'dayjs';
-import { notificationRepository, type NotificationItem } from '@/infrastructure/repositories/notification.repository';
-import { useAuthStore } from '@/store/auth.store';
-import { storeToRefs } from 'pinia';
-import { useIsMobile } from '@/shared/composables/useIsMobile';
-import { handleApiError } from '@/shared/utils/error';
+import { useNotificationList } from './useNotificationList';
 
-const { t } = useI18n();
-const { isMobile, windowWidth } = useIsMobile();
-const authStore = useAuthStore();
-const { authPayload } = storeToRefs(authStore);
-
-/* แสดงปุ่ม filter และ mobile layout เมื่อ width < 1024 (Galaxy Tab S7) */
-const showFilterToggle = computed(() => (windowWidth?.value ?? 1280) < 1024);
-const useMobileLayout = computed(() => (windowWidth?.value ?? 1280) < 1024);
-
-const loading = ref(false);
-const notifications = ref<NotificationItem[]>([]);
-const total = ref(0);
-const currentPage = ref(1);
-const pageSize = ref(10);
-const showFilters = ref(false);
-
-const startDate = ref<Dayjs | null>(null);
-const endDate = ref<Dayjs | null>(null);
-
-const filters = reactive<{
-  search: string;
-  notificationType: string | undefined;
-  status: string | undefined;
-}>({
-  search: '',
-  notificationType: undefined,
-  status: undefined,
-});
-
-const columns = computed<TableColumnsType>(() => [
-  { title: t('merchant.notifications.colId'), key: 'index', width: 55 },
-  { title: t('merchant.notifications.colType'), key: 'notificationType', dataIndex: 'notificationType', width: 120, align: 'center' as const },
-  { title: t('merchant.notifications.colChannel'), key: 'channel', dataIndex: 'channel', width: 100, align: 'center' as const },
-  { title: t('merchant.notifications.colRecipient'), key: 'recipientContact', dataIndex: 'recipientContact', width: 170 },
-  { title: t('merchant.notifications.colMessage'), key: 'messageContent', dataIndex: 'messageContent', width: 250 },
-  { title: t('merchant.notifications.colLink'), key: 'notificationLink', dataIndex: 'notificationLink', width: 180 },
-  { title: t('merchant.notifications.colRetry'), key: 'retryCount', dataIndex: 'retryCount', width: 80, align: 'center' as const },
-  { title: t('merchant.notifications.colStatus'), key: 'status', dataIndex: 'status', width: 100, align: 'center' as const },
-  { title: t('merchant.notifications.colSentAt'), key: 'sentAt', dataIndex: 'sentAt', width: 150 },
-  { title: t('merchant.notifications.colActions'), key: 'actions', fixed: 'right' as const, width: 80, align: 'right' as const },
-]);
-
-const paginationConfig = computed((): TablePaginationConfig => ({
-  current: currentPage.value,
-  pageSize: pageSize.value,
-  total: total.value,
-  showSizeChanger: true,
-  pageSizeOptions: ['10', '20', '50'],
-  showTotal: (tot: number) => `Total ${tot}`,
-}));
-
-const typeColor = (type: string): string => {
-  const map: Record<string, string> = {
-    ARRIVAL: 'cyan',
-    PAYMENT: 'green',
-    REMINDER: 'orange',
-  };
-  return map[type] ?? 'default';
-};
-
-const typeLabel = (type: string): string => {
-  const map: Record<string, string> = {
-    ARRIVAL: t('merchant.notifications.typeArrival'),
-    PAYMENT: t('merchant.notifications.typePayment'),
-    REMINDER: t('merchant.notifications.typeReminder'),
-  };
-  return map[type] ?? type;
-};
-
-const statusColor = (status: string): string => {
-  return status === 'SENT' ? 'success' : 'error';
-};
-
-const statusLabel = (status: string): string => {
-  return status === 'SENT'
-    ? t('merchant.notifications.statusSent')
-    : t('merchant.notifications.statusFailed');
-};
-
-const formatDateTime = (dt: string | null): string => {
-  if (!dt) return '—';
-  return dayjs(dt).format('DD/MM/YYYY HH:mm');
-};
-
-const buildQuery = () => {
-  const q: Record<string, unknown> = {
-    page: currentPage.value,
-    limit: pageSize.value,
-    merchantId: authPayload.value?.merchantId,
-  };
-  if (filters.search?.trim()) q.search = filters.search.trim();
-  if (filters.notificationType) q.notificationType = filters.notificationType;
-  if (filters.status) q.status = filters.status;
-  if (startDate.value) q.startDate = startDate.value.format('YYYY-MM-DD');
-  if (endDate.value) q.endDate = endDate.value.format('YYYY-MM-DD');
-  return q as Parameters<typeof notificationRepository.getList>[0];
-};
-
-const fetchNotifications = async () => {
-  loading.value = true;
-  try {
-    const res = await notificationRepository.getList(buildQuery());
-    notifications.value = res.results ?? [];
-    total.value = res.pagination?.total ?? 0;
-  } catch (err) {
-    handleApiError(err, t);
-  } finally {
-    loading.value = false;
-  }
-};
-
-const applyFilters = () => {
-  currentPage.value = 1;
-  fetchNotifications();
-};
-
-const onFilterChange = () => {
-  currentPage.value = 1;
-  fetchNotifications();
-};
-
-let searchTimer: ReturnType<typeof setTimeout> | undefined;
-const onSearchChange = () => {
-  clearTimeout(searchTimer);
-  if (!filters.search) { applyFilters(); return; }
-  searchTimer = setTimeout(() => applyFilters(), 450);
-};
-
-const resetFilters = () => {
-  filters.search = '';
-  filters.notificationType = undefined;
-  filters.status = undefined;
-  startDate.value = null;
-  endDate.value = null;
-  currentPage.value = 1;
-  fetchNotifications();
-};
-
-const onPageChange = (page: number, size: number) => {
-  currentPage.value = page;
-  pageSize.value = size;
-  fetchNotifications();
-};
-
-const handleTableChange = (pagination: TablePaginationConfig) => {
-  currentPage.value = pagination.current ?? 1;
-  pageSize.value = pagination.pageSize ?? 10;
-  fetchNotifications();
-};
-
-const handleDelete = async (id: number) => {
-  try {
-    await notificationRepository.delete(id);
-    message.success(t('merchant.notifications.deleteSuccess'));
-    await fetchNotifications();
-  } catch (err) {
-    handleApiError(err, t);
-  }
-};
-
-onMounted(() => {
-  fetchNotifications();
-});
+const {
+  loading,
+  notifications,
+  total,
+  currentPage,
+  pageSize,
+  showFilters,
+  startDate,
+  endDate,
+  filters,
+  showFilterToggle,
+  useMobileLayout,
+  columns,
+  paginationConfig,
+  typeColor,
+  typeLabel,
+  statusColor,
+  statusLabel,
+  formatDateTime,
+  handleWhatsAppClick,
+  canOpenWhatsApp,
+  whatsappLangModalVisible,
+  closeWhatsAppLangModal,
+  sendWhatsAppWithLang,
+  handleFacebookClick,
+  canOpenFacebook,
+  onFilterChange,
+  onSearchChange,
+  resetFilters,
+  onPageChange,
+  handleTableChange,
+  handleDelete,
+  createModalVisible,
+  createForm,
+  createSubmitting,
+  customers,
+  customerOrders,
+  loadingCustomers,
+  loadingCustomerOrders,
+  openCreateModal,
+  closeCreateModal,
+  canSubmitCreate,
+  handleCreateSubmit,
+  getCustomerOrderLabel,
+} = useNotificationList();
 </script>
 
 <style scoped>
@@ -400,6 +452,13 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 .title-block { flex: 1 1 auto; min-width: 0; }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.create-form .full-width { width: 100%; }
 .page-title { font-size: 22px; font-weight: 600; color: #0f172a; line-height: 1.25; }
 .page-subtitle { font-size: 13px; color: #64748b; margin-top: 2px; }
 .filter-toggle-btn {
@@ -412,10 +471,12 @@ onMounted(() => {
 }
 @media (max-width: 1023px) {
   .page-header { flex-wrap: wrap; }
+  .header-actions { order: 3; width: 100%; justify-content: flex-start; }
 }
 @media (max-width: 767px) {
   .title-block { order: 1; flex: 1 1 auto; }
-  .filter-toggle-btn { order: 2; }
+  .header-actions { order: 2; width: auto; }
+  .filter-toggle-btn { order: 3; }
   .page-title { font-size: 15px; }
   .page-subtitle { display: none; }
 }
@@ -551,8 +612,10 @@ onMounted(() => {
   padding: 8px 0; border-bottom: 1px solid rgba(148, 163, 184, 0.2); gap: 8px;
 }
 .detail-row.border-none { border-bottom: none; justify-content: flex-end; }
-.detail-label { font-size: 12px; font-weight: 600; color: #94a3b8; }
-.detail-val { font-size: 13px; font-weight: 600; color: #1e293b; text-align: right; }
+.detail-label { font-size: 12px; font-weight: 600; color: #94a3b8; flex-shrink: 0; }
+.detail-val { font-size: 13px; font-weight: 600; color: #1e293b; text-align: right; word-break: break-word; max-width: 60%; }
+.detail-val.msg-val { white-space: pre-wrap; word-break: break-word; }
+.detail-val.link-val { color: #1d4ed8; font-size: 12px; }
 .delete-btn { border-radius: 8px; font-size: 13px; }
 .pagination-row { display: flex; justify-content: center; margin-top: 16px; padding-top: 12px; }
 .msg-truncate {
@@ -565,6 +628,89 @@ onMounted(() => {
   display: inline-block; max-width: 160px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   vertical-align: middle;
+}
+.whatsapp-link {
+  color: #25d366;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.whatsapp-link:hover {
+  color: #128c7e;
+  text-decoration: underline;
+}
+.facebook-link {
+  color: #0866ff;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.facebook-link:hover {
+  color: #1877f2;
+  text-decoration: underline;
+}
+.whatsapp-lang-modal {
+  padding: 8px 0;
+}
+.whatsapp-lang-hint {
+  margin-bottom: 20px;
+  color: #64748b;
+}
+.whatsapp-lang-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.whatsapp-lang-buttons .lang-btn {
+  width: 100%;
+}
+</style>
+
+<style>
+.create-orders-empty {
+  padding: 12px;
+  color: #8c8c8c;
+  font-size: 13px;
+  background: #fff7e6;
+  border: 1px solid #ffd591;
+  border-radius: 6px;
+}
+.create-orders-placeholder {
+  padding: 12px;
+  color: #8c8c8c;
+  font-size: 13px;
+  background: #fafafa;
+  border-radius: 6px;
+}
+.create-orders-loading {
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.create-orders-summary {
+  padding: 12px;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 6px;
+}
+.create-orders-summary .create-orders-label {
+  font-weight: 600;
+  font-size: 13px;
+  color: #262626;
+  margin-bottom: 8px;
+}
+.create-orders-summary .create-orders-list {
+  font-size: 13px;
+  color: #595959;
+  margin-bottom: 6px;
+  max-height: 80px;
+  overflow-y: auto;
+}
+.create-orders-summary .create-orders-hint {
+  font-size: 12px;
+  color: #52c41a;
 }
 </style>
 

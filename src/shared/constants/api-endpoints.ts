@@ -178,7 +178,8 @@ const CUSTOMER_ORDERS_ENDPOINTS = {
   BASE: CUSTOMER_ORDERS_BASE,
   LIST: CUSTOMER_ORDERS_BASE,
   GET_BY_ID: (id: number) => `${CUSTOMER_ORDERS_BASE}/${id}`,
-  BY_TOKEN: (token: string) => `${CUSTOMER_ORDERS_BASE}/by-token/${token}`,
+  /** GET by-token ใช้ query params: customerToken, notificationToken */
+  BY_TOKEN: `${CUSTOMER_ORDERS_BASE}/by-token`,
 } as const;
 
 // Customer Order Items Endpoints
@@ -224,6 +225,7 @@ const NOTIFICATIONS_BASE = 'notifications' as const;
 const NOTIFICATIONS_ENDPOINTS = {
   BASE: NOTIFICATIONS_BASE,
   LIST: NOTIFICATIONS_BASE,
+  CREATE: `${NOTIFICATIONS_BASE}/create`,
   GET_BY_ID: (id: number) => `${NOTIFICATIONS_BASE}/${id}`,
   UPDATE: (id: number) => `${NOTIFICATIONS_BASE}/${id}`,
   DELETE: (id: number) => `${NOTIFICATIONS_BASE}/${id}`,
