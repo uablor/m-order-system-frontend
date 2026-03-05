@@ -194,7 +194,7 @@
                 <span class="fin-pill-label">{{ $t('merchants.detail.ordersPaid') }}</span>
               </div>
             </div>
-            <div v-if="financial" style="margin-top: 16px;">
+            <!-- <div v-if="financial" style="margin-top: 16px;">
               <div class="fin-bottom-row">
                 <div class="fin-bottom-item success">
                   <span class="fin-bottom-label">{{ $t('merchants.detail.totalPaidAmount') }}</span>
@@ -205,13 +205,13 @@
                   <span class="fin-bottom-num">{{ fmtMoney(financial.totalRemainingAmount) }}</span>
                 </div>
               </div>
-            </div>
+            </div> -->
           </a-card>
         </a-col>
       </a-row>
 
       <!-- Row 3: Financial by currency -->
-      <a-row v-if="financial && financial.byCurrency && financial.byCurrency.length > 0" :gutter="[16, 16]" class="section-row" style="margin-top: 0;">
+      <a-row v-if="baseCurrencySummary && baseCurrencySummary.length > 0" :gutter="[16, 16]" class="section-row" style="margin-top: 0;">
         <a-col :xs="24" class="define-top-margin">
           <a-card :bordered="false" class="info-card">
             <template #title>
@@ -223,26 +223,29 @@
             <div class="currency-cards-wrap">
               <!-- one card per baseCurrency -->
               <div
-                v-for="item in financial.byCurrency"
+                v-for="item in baseCurrencySummary"
                 :key="item.baseCurrency"
                 class="currency-card"
               >
                 <div class="currency-card-header">
-                  <span class="currency-badge">{{ item.baseCurrency }}</span>
-                  <span class="currency-orders">{{ item.totalOrders }} {{ $t('merchants.detail.orders') }}</span>
+                  <div>
+                   <span class="currency-label">ສະກຸນເງີນ</span> 
+                    <span class="currency-badge">{{ item.baseCurrency }}</span>
+                  </div>
+                  <!-- <span class="currency-orders">{{ Math.round(item.totalAll) }} {{ $t('merchants.detail.orders') }}</span> -->
                 </div>
                 <div class="currency-fin-row income-row">
                   <span class="currency-fin-label">{{ $t('merchants.detail.totalIncome') }}</span>
-                  <span class="currency-fin-val income-val">{{ fmtMoney(item.totalIncomeLak) }}</span>
+                  <span class="currency-fin-val income-val">{{ fmtMoney(item.totalPaid) }}</span>
                 </div>
                 <div class="currency-fin-row expense-row">
                   <span class="currency-fin-label">{{ $t('merchants.detail.totalExpense') }}</span>
-                  <span class="currency-fin-val expense-val">{{ fmtMoney(item.totalExpenseLak) }}</span>
+                  <span class="currency-fin-val expense-val">{{ fmtMoney(item.totalUnpaid) }}</span>
                 </div>
                 <div class="currency-fin-divider" />
                 <div class="currency-fin-row profit-row">
                   <span class="currency-fin-label profit-label">{{ $t('merchants.detail.totalProfit') }}</span>
-                  <span class="currency-fin-val profit-val">{{ fmtMoney(item.totalProfitLak) }}</span>
+                  <span class="currency-fin-val profit-val">{{ fmtMoney(item.totalAll) }}</span>
                 </div>
               </div>
             </div>
@@ -251,7 +254,7 @@
       </a-row>
 
       <!-- Row 4: LAK overall financial summary -->
-      <a-row :gutter="[16, 16]" class="section-row" style="margin-top: 0;">
+      <a-row v-if="targetCurrencyLak" :gutter="[16, 16]" class="section-row" style="margin-top: 0;">
         <a-col :xs="24" class="define-top-margin">
           <a-card :bordered="false" class="info-card finance-card">
             <template #title>
@@ -261,19 +264,19 @@
                 <a-tag color="blue" style="margin-left: 8px; font-weight: 700;">LAK</a-tag>
               </div>
             </template>
-            <div v-if="financial" class="fin-content">
+            <div v-if="targetCurrencyLak" class="fin-content">
               <div class="fin-table fin-table-3col">
                 <div class="fin-row income">
                   <span class="fin-cell label">{{ $t('merchants.detail.totalIncome') }}</span>
-                  <span class="fin-cell num">{{ fmtMoney(financial.totalIncomeLak) }}</span>
+                  <span class="fin-cell num">{{ fmtMoney(targetCurrencyLak.totalPaid) }}</span>
                 </div>
                 <div class="fin-row expense">
                   <span class="fin-cell label">{{ $t('merchants.detail.totalExpense') }}</span>
-                  <span class="fin-cell num">{{ fmtMoney(financial.totalExpenseLak) }}</span>
+                  <span class="fin-cell num">{{ fmtMoney(targetCurrencyLak.totalUnpaid) }}</span>
                 </div>
                 <div class="fin-row profit">
                   <span class="fin-cell label">{{ $t('merchants.detail.totalProfit') }}</span>
-                  <span class="fin-cell num bold">{{ fmtMoney(financial.totalProfitLak) }}</span>
+                  <span class="fin-cell num bold">{{ fmtMoney(targetCurrencyLak.totalAll) }}</span>
                 </div>
               </div>
             </div>
@@ -310,10 +313,19 @@ const {
   summary,
   financial,
   owner,
+  priceCurrencySummary,
   fetchDetail,
 } = useMerchantDetail();
 
 const merchantId = computed(() => Number(route.params.id));
+
+const baseCurrencySummary = computed(() => {
+  return priceCurrencySummary.value.filter(item => item.baseCurrency);
+});
+
+const targetCurrencyLak = computed(() => {
+  return priceCurrencySummary.value.find(item => item.targetCurrency === 'LAK');
+});
 
 const ownerInitials = computed(() => {
   if (!owner.value?.fullName) return '?';

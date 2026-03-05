@@ -537,7 +537,7 @@ onMounted(async () => {
   padding: 10px 12px !important;
   border-bottom: 1px solid rgba(226, 232, 240, 0.6) !important;
 }
-:deep(.ant-table-tbody > tr:hover > td) {
+:deep(.ant-table-tbody > tr:hover > td:not(.ant-table-cell-fix-right)) {
   background: #f8faff !important;
 }
 :deep(.ant-table-tbody > tr:last-child > td) {

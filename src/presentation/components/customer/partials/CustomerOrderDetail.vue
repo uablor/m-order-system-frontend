@@ -47,7 +47,6 @@
           :can-submit="canSubmit"
           :is-mobile="false"
           @update:message="message = $event"
-          @trigger-file="triggerFile"
           @file-change="handleFileChange"
           @drop="handleDrop"
           @drag-over="isDragging = true"

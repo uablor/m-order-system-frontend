@@ -5,7 +5,7 @@
       <div class="detail-img-placeholder"><ShoppingOutlined /></div>
     </div>
     <div class="detail-product-info">
-      <div class="detail-sku">{{ $t('customer.orderLabel') }} #{{ order.id }}</div>
+      <div class="detail-sku">{{ $t('customer.orderLabel') }} #{{ order.orderCode || order.id }}</div>
       <div class="detail-name">{{ getOrderTitle(order) }}</div>
       <div class="detail-arrived-badge">
         <CheckCircleFilled class="arrived-icon" />
@@ -15,21 +15,25 @@
     </div>
   </div>
 
-  <!-- Items breakdown -->
+  <!-- Items breakdown: table layout with column headers -->
   <div v-if="order.customerOrderItems?.length" class="items-section">
     <div class="items-header">
       <ShoppingCartOutlined class="section-icon-sm" />
       <span>{{ $t('customer.detail.itemsTitle') }}</span>
     </div>
-    <div class="items-list">
-      <div v-for="item in order.customerOrderItems" :key="item.id" class="item-row">
-        <div class="item-info">
-          <span class="item-name">{{ $t('customer.detail.product') }}: {{ item.productName }}</span>
-          <span v-if="item.variant" class="item-variant">{{ $t('customer.detail.variant') }}: {{ item.variant }}</span>
-          <span class="item-qty">{{ $t('customer.detail.qty') }}: {{ item.quantity }}</span>
-        </div>
-        <div class="item-right">
-          <span class="item-price">{{ $t('customer.detail.price') }}: {{ formatItemPrice(item) }}</span>
+    <div class="items-table-wrap">
+      <div class="items-table-header">
+        <div class="col-product">{{ $t('customer.detail.colProductName') }}</div>
+        <div class="col-variant">{{ $t('customer.detail.colVariant') }}</div>
+        <div class="col-qty">{{ $t('customer.detail.colQuantity') }}</div>
+        <div class="col-price">{{ $t('customer.detail.colTotalPrice') }}</div>
+      </div>
+      <div class="items-table-body">
+        <div v-for="item in order.customerOrderItems" :key="item.id" class="items-table-row">
+          <div class="col-product" :data-label="$t('customer.detail.colProductName')">{{ item.productName }}</div>
+          <div class="col-variant" :data-label="$t('customer.detail.colVariant')">{{ item.variant || '—' }}</div>
+          <div class="col-qty" :data-label="$t('customer.detail.colQuantity')">{{ item.quantity }}</div>
+          <div class="col-price" :data-label="$t('customer.detail.colTotalPrice')">{{ formatItemPrice(item) }}</div>
         </div>
       </div>
     </div>
@@ -136,7 +140,7 @@ import {
   ArrowRightOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons-vue';
-import dayjs from 'dayjs';
+import { formatDate } from '@/shared/utils/date.utils';
 import type { CustomerOrder } from '@/infrastructure/repositories/customer-order.repository';
 
 const props = defineProps<{
@@ -210,8 +214,6 @@ const handleRemoveSlip = () => {
 const formatAmount = (val: number) =>
   val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
-const formatDate = (dt: string) => dayjs(dt).format('DD/MM/YYYY');
-
 const getOrderTitle = (order: CustomerOrder): string => {
   const first = order.customerOrderItems?.[0];
   if (first?.productName) {
@@ -220,7 +222,7 @@ const getOrderTitle = (order: CustomerOrder): string => {
       : '';
     return first.productName + extra;
   }
-  return `${t('customer.orderLabel')} #${order.id}`;
+  return `${t('customer.orderLabel')} #${order.orderCode || order.id}`;
 };
 
 const statusClass = (status: string) => {
@@ -272,14 +274,85 @@ const statusClass = (status: string) => {
   margin-bottom: 10px;
 }
 .section-icon-sm { font-size: 15px; color: #475569; }
-.items-list { display: flex; flex-direction: column; gap: 8px; }
-.item-row { display: flex; justify-content: space-between; align-items: center; }
-.item-info { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
-.item-name { font-size: 13px; color: #334155; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.item-variant { font-size: 11px; color: #94a3b8; }
-.item-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-.item-qty { font-size: 12px; color: #94a3b8; }
-.item-price { font-size: 13px; font-weight: 700; color: #1d4ed8; }
+
+/* Items table layout */
+.items-table-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+}
+.items-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 80px 1fr;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+.items-table-body {
+  display: flex;
+  flex-direction: column;
+}
+.items-table-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 80px 1fr;
+  gap: 12px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #334155;
+  border-top: 1px dashed #e2e8f0;
+  align-items: center;
+}
+.items-table-row .col-product { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.items-table-row .col-variant { color: #64748b; font-size: 12px; }
+.items-table-row .col-qty { color: #64748b; text-align: left; }
+.items-table-row .col-price { font-weight: 700; color: #1d4ed8; text-align: left; }
+
+/* Mobile: card layout พร้อม label ในแต่ละ cell */
+@media (max-width: 576px) {
+  .items-table-header {
+    display: none;
+  }
+  .items-table-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 14px 16px;
+    border-top: 1px solid #e2e8f0;
+    align-items: stretch;
+  }
+  .items-table-row .col-product,
+  .items-table-row .col-variant,
+  .items-table-row .col-qty,
+  .items-table-row .col-price {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    text-align: left;
+  }
+  .items-table-row .col-product::before,
+  .items-table-row .col-variant::before,
+  .items-table-row .col-qty::before,
+  .items-table-row .col-price::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .items-table-row .col-product { font-weight: 600; white-space: normal; }
+  .items-table-row .col-variant,
+  .items-table-row .col-qty { color: #64748b; font-size: 12px; }
+  .items-table-row .col-price { font-weight: 700; color: #1d4ed8; }
+}
 
 .payment-status-message {
   margin-top: 12px;

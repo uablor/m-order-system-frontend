@@ -48,6 +48,21 @@ export interface CreateNotificationDto {
   customerId: number;
   customerOrderIds: number[];
   message?: string;
+  language?: 'en' | 'th' | 'la';
+}
+
+export interface CreateNotificationMultipleDto {
+  notifications: CreateNotificationDto[];
+  language?: 'en' | 'th' | 'la';
+}
+
+/** รายการ notification ที่ API create-multiple คืนค่า (สำหรับเปิด WhatsApp) */
+export interface CreateNotificationMultipleResponseItem {
+  recipientContact?: string;
+  notificationLink?: string | null;
+  language?: string | null;
+  customer?: { customerName?: string } | null;
+  relatedOrders?: number[] | null;
 }
 
 export class NotificationRepository {
@@ -66,6 +81,15 @@ export class NotificationRepository {
 
   async create(data: CreateNotificationDto): Promise<unknown> {
     return await this.apiClient.post<unknown>(API_ENDPOINTS.NOTIFICATIONS.CREATE, data);
+  }
+
+  async createMultiple(data: CreateNotificationMultipleDto): Promise<CreateNotificationMultipleResponseItem[]> {
+    const res = await this.apiClient.post<CreateNotificationMultipleResponseItem[] | { results?: CreateNotificationMultipleResponseItem[] }>(
+      API_ENDPOINTS.NOTIFICATIONS.CREATE_MULTIPLE,
+      data,
+    );
+    const arr = Array.isArray(res) ? res : (res as { results?: CreateNotificationMultipleResponseItem[] })?.results ?? [];
+    return arr;
   }
 
   async update(id: number, data: NotificationUpdateDto): Promise<void> {

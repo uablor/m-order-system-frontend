@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications Actions Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .action-preview {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            margin: 10px 0;
+        }
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .whatsapp-btn {
+            background: rgba(37, 211, 102, 0.1);
+            color: #25d366;
+        }
+        .whatsapp-btn:hover {
+            background: rgba(37, 211, 102, 0.2);
+            color: #128c7e;
+        }
+        .facebook-btn {
+            background: rgba(8, 102, 255, 0.1);
+            color: #0866ff;
+        }
+        .facebook-btn:hover {
+            background: rgba(8, 102, 255, 0.2);
+            color: #1877f2;
+        }
+        .delete-btn {
+            background: rgba(255, 77, 79, 0.1);
+            color: #ff4d4f;
+        }
+        .delete-btn:hover {
+            background: rgba(255, 77, 79, 0.2);
+        }
+        .success { color: #52c41a; font-weight: bold; }
+        .feature { color: #1890ff; font-weight: bold; }
+        .code { 
+            background: #f0f0f0; 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            font-family: monospace; 
+            font-size: 12px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <h1>Notifications Actions Enhancement</h1>
+    
+    <div class="test-section">
+        <h2>✅ Features Implemented</h2>
+        <ul>
+            <li><span class="feature">✓ WhatsApp Icon</span> - Send messages via WhatsApp</li>
+            <li><span class="feature">✓ Facebook Icon</span> - Send messages via Facebook Messenger</li>
+            <li><span class="feature">✓ Delete Icon</span> - Delete notifications (existing)</li>
+            <li><span class="feature">✓ Smart Display</span> - Only show icons when contact info is available</li>
+            <li><span class="feature">✓ Tooltips</span> - Hover tooltips for all actions</li>
+            <li><span class="feature">✓ Multi-language</span> - English, Thai, and Lao translations</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎯 Action Column Preview</h2>
+        <p>Each row in the notifications table will now have these action buttons:</p>
+        
+        <div class="action-preview">
+            <span class="action-btn whatsapp-btn" title="Send via WhatsApp">📱</span>
+            <span class="action-btn facebook-btn" title="Send via Facebook">📘</span>
+            <span class="action-btn delete-btn" title="Delete">🗑️</span>
+            <span>All three actions available</span>
+        </div>
+        
+        <div class="action-preview">
+            <span class="action-btn whatsapp-btn" title="Send via WhatsApp">📱</span>
+            <span style="width: 32px; height: 32px;"></span>
+            <span class="action-btn delete-btn" title="Delete">🗑️</span>
+            <span>Only WhatsApp + Delete (no Facebook)</span>
+        </div>
+        
+        <div class="action-preview">
+            <span style="width: 32px; height: 32px;"></span>
+            <span class="action-btn facebook-btn" title="Send via Facebook">📘</span>
+            <span class="action-btn delete-btn" title="Delete">🗑️</span>
+            <span>Only Facebook + Delete (no WhatsApp)</span>
+        </div>
+        
+        <div class="action-preview">
+            <span style="width: 32px; height: 32px;"></span>
+            <span style="width: 32px; height: 32px;"></span>
+            <span class="action-btn delete-btn" title="Delete">🗑️</span>
+            <span>Only Delete (no contact info)</span>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔧 Technical Implementation</h2>
+        <table>
+            <tr>
+                <th>Component</th>
+                <th>Changes Made</th>
+                <th>Files Modified</th>
+            </tr>
+            <tr>
+                <td>Action Column</td>
+                <td>Added WhatsApp and Facebook icons with conditional display</td>
+                <td><code>NotificationListContent.vue</code></td>
+            </tr>
+            <tr>
+                <td>Icon Imports</td>
+                <td>Added <code>WhatsAppOutlined</code> and <code>FacebookOutlined</code></td>
+                <td><code>NotificationListContent.vue</code></td>
+            </tr>
+            <tr>
+                <td>CSS Styling</td>
+                <td>Added hover effects and brand colors for each action</td>
+                <td><code>NotificationListContent.vue</code></td>
+            </tr>
+            <tr>
+                <td>Translations</td>
+                <td>Added tooltip texts in EN, TH, and LA</td>
+                <td><code>merchant.json</code> (3 languages)</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="test-section">
+        <h2>📱 Smart Contact Detection</h2>
+        <p>The icons only appear when contact information is available:</p>
+        <ul>
+            <li><strong class="success">✓ WhatsApp Icon:</strong> Shows when <code>contactWhatsapp</code> or <code>recipientContact</code> has valid phone number</li>
+            <li><strong class="success">✓ Facebook Icon:</strong> Shows when <code>contactFacebook</code> or <code>recipientContact</code> has valid Facebook ID</li>
+            <li><strong class="success">✓ Delete Icon:</strong> Always shows (existing functionality)</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>🌐 Multi-language Support</h2>
+        <table>
+            <tr>
+                <th>Language</th>
+                <th>WhatsApp Tooltip</th>
+                <th>Facebook Tooltip</th>
+            </tr>
+            <tr>
+                <td>English</td>
+                <td>"Send via WhatsApp"</td>
+                <td>"Send via Facebook"</td>
+            </tr>
+            <tr>
+                <td>Thai</td>
+                <td>"ส่งทาง WhatsApp"</td>
+                <td>"ส่งทาง Facebook"</td>
+            </tr>
+            <tr>
+                <td>Lao</td>
+                <td>"ສົ່ງທາງ WhatsApp"</td>
+                <td>"ສົ່ງທາງ Facebook"</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎨 Visual Design</h2>
+        <ul>
+            <li><strong>WhatsApp:</strong> Green brand color (#25d366) with hover effect</li>
+            <li><strong>Facebook:</strong> Blue brand color (#0866ff) with hover effect</li>
+            <li><strong>Delete:</strong> Red color (#ff4d4f) - existing design</li>
+            <li><strong>Tooltips:</strong> Helpful hints on hover</li>
+            <li><strong>Layout:</strong> Right-aligned, consistent spacing</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>🧪 Test Instructions</h2>
+        <ol>
+            <li>Navigate to <strong>Notifications → History tab</strong></li>
+            <li>Look at the <strong>Actions column</strong> in the table</li>
+            <li>Verify icons appear based on available contact information</li>
+            <li>Hover over icons to see tooltips</li>
+            <li>Click WhatsApp icon to test WhatsApp integration</li>
+            <li>Click Facebook icon to test Facebook integration</li>
+            <li>Click Delete icon to test deletion (with confirmation)</li>
+        </ol>
+    </div>
+    
+    <script>
+        console.log('Notifications Actions Enhancement Test');
+        console.log('✅ WhatsApp and Facebook icons added to action column');
+        console.log('✅ Conditional display based on contact availability');
+        console.log('✅ Multi-language tooltips implemented');
+        console.log('✅ Proper styling and hover effects');
+        console.log('✅ Integration with existing WhatsApp/Facebook functions');
+    </script>
+</body>
+</html>

@@ -16,7 +16,14 @@ export class ArrivalRepository {
     return await this.apiClient.post<{ id: number }>(API_ENDPOINTS.ARRIVALS.CREATE, data);
   }
 
-  async createMultiple(data: CreateMultipleArrivalsDto): Promise<{ success: boolean; arrivals: object[]; message: string; processedOrders: number; failedOrders: Array<{ orderId: number; error: string }> }> {
+  async createMultiple(data: CreateMultipleArrivalsDto): Promise<{
+    success: boolean;
+    arrivals: object[];
+    message: string;
+    processedOrders: number;
+    failedOrders: Array<{ orderId: number; error: string }>;
+    notifications: object[];
+  }> {
     const res = await this.apiClient.post<any>(API_ENDPOINTS.ARRIVALS.CREATE_MULTIPLE, data);
     const r = res?.results ?? res ?? {};
     return {
@@ -25,6 +32,7 @@ export class ArrivalRepository {
       message: r?.message ?? 'Created',
       processedOrders: r?.processedOrders ?? 0,
       failedOrders: r?.failedOrders ?? [],
+      notifications: r?.notifications ?? [],
     };
   }
 

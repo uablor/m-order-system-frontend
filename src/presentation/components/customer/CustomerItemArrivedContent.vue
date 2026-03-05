@@ -9,14 +9,21 @@
         <CustomerAppHeader
           :store-name="storeName"
           :customer-initial="customerInitial"
+          @open-filter="orderListRef?.openFilterModal?.()"
         />
         <CustomerOrderList
-          :orders="orders"
+          ref="orderListRef"
+          :orders="filteredOrders"
+          :summary="summary"
+          :pagination="displayPagination"
+          :filters="filters"
           :selected-order-id="selectedOrder?.id ?? null"
           :loading="loading"
           :error-msg="errorMsg"
           :customer-first-name="customerFirstName"
           @select="onSelectOrder"
+          @page-change="onPageChange"
+          @filter-change="onFilterChange"
         />
       </div>
 
@@ -61,12 +68,18 @@ import { useAuthStore } from '@/store/auth.store';
 import { storeToRefs } from 'pinia';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import { InboxOutlined } from '@ant-design/icons-vue';
-import { customerOrderRepository, type CustomerOrder } from '@/infrastructure/repositories/customer-order.repository';
+import {
+  customerOrderRepository,
+  type CustomerOrder,
+  type CustomerOrderSummaryItem,
+} from '@/infrastructure/repositories/customer-order.repository';
 import CustomerAppHeader from './partials/CustomerAppHeader.vue';
 import CustomerOrderList from './partials/CustomerOrderList.vue';
+import type { CustomerOrderFilters } from '@/infrastructure/repositories/customer-order.repository';
 import CustomerOrderDetail from './partials/CustomerOrderDetail.vue';
 
 const route = useRoute();
+const orderListRef = ref<InstanceType<typeof CustomerOrderList> | null>(null);
 const { isMobile } = useIsMobile();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
@@ -86,9 +99,50 @@ const storeName = computed(() => {
 
 /* --- State --- */
 const orders = ref<CustomerOrder[]>([]);
+const summary = ref<CustomerOrderSummaryItem[]>([]);
 const selectedOrder = ref<CustomerOrder | null>(null);
 const loading = ref(false);
 const errorMsg = ref('');
+const page = ref(1);
+const limit = ref(100); // ดึงข้อมูลจำนวนมากเพื่อ filter order code บน frontend ได้
+const pagination = ref({
+  total: 0,
+  page: 1,
+  limit: 10,
+  totalPages: 0,
+  hasNextPage: false,
+  hasPreviousPage: false,
+});
+const filters = ref<CustomerOrderFilters>({});
+
+/* --- Filter order code บน frontend (ไม่เรียก API ใหม่) --- */
+const filteredOrders = computed(() => {
+  const list = orders.value;
+  const searchVal = filters.value.orderCode?.trim();
+  if (!searchVal) return list;
+  const lower = searchVal.toLowerCase();
+  return list.filter((o) => {
+    const code = (o.orderCode ?? String(o.id)).toLowerCase();
+    return code.includes(lower);
+  });
+});
+
+/* --- Pagination สำหรับแสดงผล: เมื่อมี filter ใช้ข้อมูล filtered --- */
+const displayPagination = computed(() => {
+  const base = pagination.value;
+  const hasFilter = !!filters.value.orderCode?.trim();
+  if (!hasFilter) return base;
+  const total = filteredOrders.value.length;
+  return {
+    ...base,
+    total,
+    page: 1,
+    limit: total || 1,
+    totalPages: total > 0 ? 1 : 0,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  };
+});
 
 /* --- อ่าน token จาก URL: ?customerToken=xxx&notificationToken=xxx (จาก notification link) --- */
 const customerToken = computed(
@@ -96,21 +150,49 @@ const customerToken = computed(
 );
 const notificationToken = computed(() => (route.query.notificationToken as string) || '');
 
-/* --- Fetch orders by customerToken + notificationToken --- */
-const fetchOrders = async () => {
+/* --- Fetch orders + summary (ไม่ส่ง orderCode — filter ทำที่ frontend) --- */
+const fetchOrders = async (pageNum?: number, limitNum?: number) => {
   const ct = customerToken.value;
   if (!ct) {
     errorMsg.value = 'No customer token provided in URL.';
     return;
   }
+  const p = pageNum ?? page.value;
+  const l = limitNum ?? limit.value;
   loading.value = true;
   errorMsg.value = '';
   try {
-    const res = await customerOrderRepository.getByToken(
-      { customerToken: ct, notificationToken: notificationToken.value || undefined },
-      { limit: 50 },
-    );
-    orders.value = res.results ?? [];
+    const query: Record<string, unknown> = { page: p, limit: l };
+
+    const [ordersRes, summaryRes] = await Promise.all([
+      customerOrderRepository.getByToken(
+        { customerToken: ct, notificationToken: notificationToken.value || undefined },
+        query as any,
+      ),
+      customerOrderRepository.getSummaryByToken({
+        customerToken: ct,
+        notificationToken: notificationToken.value || undefined,
+      }),
+    ]);
+    const rawOrders = ordersRes.results ?? [];
+    orders.value = rawOrders;
+    summary.value = summaryRes ?? [];
+    if (ordersRes.pagination) {
+      pagination.value = ordersRes.pagination;
+      page.value = ordersRes.pagination.page;
+      limit.value = ordersRes.pagination.limit;
+    } else {
+      // Fallback: ถ้า backend ไม่ส่ง pagination ให้ derive จาก results
+      const total = orders.value.length;
+      pagination.value = {
+        total,
+        page: p,
+        limit: l,
+        totalPages: Math.max(1, Math.ceil(total / l)),
+        hasNextPage: p * l < total,
+        hasPreviousPage: p > 1,
+      };
+    }
     if (!isMobile.value && orders.value.length > 0 && !selectedOrder.value) {
       selectedOrder.value = orders.value[0] ?? null;
     }
@@ -140,6 +222,7 @@ const fetchOrders = async () => {
 
 /* --- Select an order: refresh detail from API --- */
 const onSelectOrder = async (order: CustomerOrder) => {
+  filters.value = {}; // เคลียร์ filter เพื่อแสดงรายการทั้งหมด
   selectedOrder.value = order;
   try {
     const fresh = await customerOrderRepository.getById(order.id);
@@ -155,7 +238,19 @@ const onSubmitted = async () => {
   await fetchOrders();
 };
 
-onMounted(fetchOrders);
+const onPageChange = (newPage: number, newLimit?: number) => {
+  // เมื่อมี filter order code อยู่ ไม่ refetch (แสดงผล filtered บน frontend)
+  if (filters.value.orderCode?.trim()) return;
+  page.value = newPage;
+  if (newLimit != null) limit.value = newLimit;
+  fetchOrders(newPage, newLimit ?? limit.value);
+};
+
+const onFilterChange = (newFilters: CustomerOrderFilters) => {
+  filters.value = newFilters;
+};
+
+onMounted(() => fetchOrders());
 </script>
 
 <style scoped>

@@ -9,6 +9,7 @@ export function useMerchantDetail() {
   const loading = ref(false);
   const merchant = ref<MerchantDetail | null>(null);
   const error = ref(false);
+  const priceCurrencySummary = ref<any[]>([]);
 
   const fetchDetail = async (id: number) => {
     loading.value = true;
@@ -16,6 +17,15 @@ export function useMerchantDetail() {
     try {
       const res = await merchantService.getDetail(id);
       merchant.value = res ?? null;
+      
+      // Fetch price currency summary using admin endpoint
+      try {
+        const currencyRes = await merchantService.getAdminPriceCurrencySummary(id);
+        priceCurrencySummary.value = currencyRes.results ?? [];
+      } catch (currencyErr) {
+        console.error('Failed to fetch price currency summary:', currencyErr);
+        priceCurrencySummary.value = [];
+      }
     } catch (err) {
       error.value = true;
       handleApiError(err, t);
@@ -35,6 +45,7 @@ export function useMerchantDetail() {
     summary,
     financial,
     owner,
+    priceCurrencySummary,
     fetchDetail,
   };
 }

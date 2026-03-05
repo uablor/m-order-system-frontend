@@ -109,8 +109,8 @@
       <a-button type="text" @click="clearSelection">{{ $t('common.cancel') }}</a-button>
     </div>
 
-    <!-- Desktop Table -->
-    <a-card v-if="!useMobileLayout" :bordered="false" class="panel-card">
+    <!-- Desktop/Tablet Table -->
+    <a-card v-if="!useMobileLayout" :bordered="false" class="panel-card" :class="{ 'tablet-layout': isTabletLayout }">
       <a-table
         :columns="columns"
         :data-source="payments"
@@ -174,6 +174,17 @@
     <!-- Mobile Cards -->
     <div v-else class="payments-mobile">
       <a-spin :spinning="loading">
+        <!-- Select All (mobile) -->
+        <div v-if="payments.length > 0 && pendingPaymentsOnPage.length > 0" class="mobile-select-all-row">
+          <a-checkbox
+            :checked="allPaymentsSelected"
+            :indeterminate="somePaymentsSelected && !allPaymentsSelected"
+            @change="toggleSelectAllPayments"
+          >
+            {{ $t('merchant.payment.selectAll') }}
+          </a-checkbox>
+        </div>
+
         <a-empty v-if="payments.length === 0 && !loading" :description="$t('merchant.payment.noPayments')" />
 
         <a-collapse accordion ghost class="payments-collapse">
@@ -182,16 +193,23 @@
           </template>
           <a-collapse-panel v-for="p in payments" :key="p.id" class="payment-panel">
             <template #header>
-              <div class="card-row">
+              <div class="card-row payment-card-header">
                 <a-checkbox
                   :checked="selectedIds.includes(p.id)"
                   @change="toggleSelect(p.id)"
                   @click.stop
-                  class="mr-2"
+                  class="payment-checkbox"
                 />
                 <div class="payment-info">
                   <div class="payment-code">{{ p.customerOrder?.order?.orderCode || '—' }}</div>
                   <div class="payment-sub">{{ p.customerOrder?.customer?.customerName || '—' }}</div>
+                  <div class="payment-meta">
+                    <span class="payment-date">{{ formatDate(p.paymentDate) }}</span>
+                    <a v-if="p.paymentProofUrl" :href="p.paymentProofUrl" target="_blank" class="payment-proof-mini" @click.stop>
+                      <LinkOutlined /> {{ $t('merchant.payment.viewProof') }}
+                    </a>
+                  </div>
+                  <div v-if="p.customerMessage" class="payment-msg-preview">{{ truncate(p.customerMessage, 30) }}</div>
                 </div>
                 <div class="amount-side">
                   <div class="amount-val">{{ formatNumber(p.paymentAmount) }}</div>
@@ -299,11 +317,14 @@ import { useIsMobile } from '@/shared/composables/useIsMobile';
 import { handleApiError } from '@/shared/utils/error';
 
 const { t } = useI18n();
-const { isMobile, windowWidth } = useIsMobile();
+const { isMobile, isTablet } = useIsMobile();
 
-/* แสดงปุ่ม filter และ mobile layout เมื่อ width < 1024 (Galaxy Tab S7) */
-const showFilterToggle = computed(() => (windowWidth?.value ?? 1280) < 1024);
-const useMobileLayout = computed(() => (windowWidth?.value ?? 1280) < 1024);
+/* แสดงปุ่ม filter และ mobile layout เมื่อ width < 768 (mobile only) */
+const showFilterToggle = computed(() => isMobile.value);
+const useMobileLayout = computed(() => isMobile.value);
+
+/* แสดง tablet layout adjustments สำหรับ Galaxy Tab S7 */
+const isTabletLayout = computed(() => isTablet.value);
 
 const loading = ref(false);
 const actionLoading = ref(false);
@@ -383,6 +404,10 @@ const statusLabel = (status: string) => {
 };
 
 const formatNumber = (val: string | number) => Number(val || 0).toLocaleString();
+const truncate = (text: string | null | undefined, max: number) => {
+  if (!text) return '';
+  return text.length > max ? text.slice(0, max) + '…' : text;
+};
 const truncNum = (val: string | number, maxLen = 12) => {
   const formatted = Number(val || 0).toLocaleString();
   return formatted.length > maxLen ? formatted.slice(0, maxLen) + '…' : formatted;
@@ -451,8 +476,24 @@ const handleTableChange = (pagination: TablePaginationConfig) => {
 const clearSelection = () => { selectedIds.value = []; };
 const toggleSelect = (id: number) => {
   const idx = selectedIds.value.indexOf(id);
-  if (idx >= 0) selectedIds.value.splice(idx, 1);
-  else selectedIds.value.push(id);
+  if (idx >= 0) selectedIds.value = selectedIds.value.filter((_, i) => i !== idx);
+  else selectedIds.value = [...selectedIds.value, id];
+};
+
+const pendingPaymentsOnPage = computed(() => payments.value.filter(p => p.status === 'PENDING').map(p => p.id));
+const allPaymentsSelected = computed(() => {
+  const pending = pendingPaymentsOnPage.value;
+  if (pending.length === 0) return false;
+  return pending.every(id => selectedIds.value.includes(id));
+});
+const somePaymentsSelected = computed(() => selectedIds.value.length > 0);
+const toggleSelectAllPayments = () => {
+  if (allPaymentsSelected.value) {
+    selectedIds.value = selectedIds.value.filter(id => !pendingPaymentsOnPage.value.includes(id));
+  } else {
+    const toAdd = pendingPaymentsOnPage.value.filter(id => !selectedIds.value.includes(id));
+    selectedIds.value = [...selectedIds.value, ...toAdd];
+  }
 };
 
 const handleVerify = async (id: number) => {
@@ -559,6 +600,14 @@ onMounted(() => { fetchPayments(); });
   .page-header { flex-wrap: wrap; }
   .search-input { min-width: 180px; flex: 1 1 auto; }
 }
+/* Tablet (Galaxy Tab S7 ~800px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .page-header { gap: 8px; }
+  .search-input { height: 40px; min-width: 200px; }
+  .filter-toggle-btn { height: 40px; width: 40px; font-size: 16px; }
+  .page-title { font-size: 18px; }
+  .page-subtitle { font-size: 12px; }
+}
 @media (max-width: 767px) {
   .title-block { order: 1; flex: 1 1 auto; }
   .filter-toggle-btn { order: 2; }
@@ -605,10 +654,32 @@ onMounted(() => { fetchPayments(); });
 
 :deep(.ant-table) { width: 100%; }
 :deep(.ant-table-thead > tr > th) { background: #f8fafc !important; color: #0f172a; font-weight: 700; }
-:deep(.ant-table-tbody > tr:hover > td) { background: rgba(24,144,255,.06) !important; }
+:deep(.ant-table-tbody > tr:hover > td:not(.ant-table-cell-fix-right)) { background: rgba(24,144,255,.06) !important; }
+
+/* ===== Tablet (Galaxy Tab S7) ===== */
+.tablet-layout :deep(.ant-table) {
+  font-size: 13px;
+}
+.tablet-layout :deep(.ant-table-thead > tr > th) {
+  padding: 8px 12px !important;
+  font-size: 12px;
+}
+.tablet-layout :deep(.ant-table-tbody > tr > td) {
+  padding: 8px 12px !important;
+}
+.tablet-layout :deep(.ant-table-cell-fix-right) {
+  padding: 8px 8px !important;
+}
 
 /* ===== Mobile ===== */
 .payments-mobile { display: flex; flex-direction: column; gap: 12px; }
+.mobile-select-all-row {
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
 .payments-collapse { background: transparent !important; border: none !important; }
 .payments-collapse :deep(.ant-collapse-item) {
   background: #fff !important; border-radius: 16px !important;
@@ -621,9 +692,16 @@ onMounted(() => { fetchPayments(); });
 .expand-icon { font-size: 13px; color: #94a3b8; transition: transform 260ms ease; }
 .expand-icon.rotated { transform: rotate(180deg); }
 .card-row { display: flex; align-items: center; gap: 10px; padding-right: 4px; }
+.payment-card-header { align-items: flex-start; }
+.payment-checkbox { flex-shrink: 0; margin-right: 4px; padding-top: 2px; }
 .payment-info { flex: 1; min-width: 0; }
 .payment-code { font-size: 15px; font-weight: 700; color: #1d4ed8; }
 .payment-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+.payment-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; font-size: 12px; }
+.payment-date { color: #64748b; }
+.payment-proof-mini { color: #1d4ed8; font-size: 12px; font-weight: 600; }
+.payment-proof-mini:hover { color: #2563eb; }
+.payment-msg-preview { font-size: 12px; color: #94a3b8; margin-top: 4px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .amount-side { flex-shrink: 0; text-align: right; }
 .status-tag { border-radius: 999px; font-weight: 700; font-size: 11px; display: block; margin-top: 4px; }
 .card-detail { padding-top: 10px; }

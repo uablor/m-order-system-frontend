@@ -13,9 +13,18 @@ export interface CreateArrivalDto {
   arrivalItems: CreateArrivalItemDto[];
 }
 
+export interface CreateNotificationDto {
+  customerOrderIds: number[];
+  message?: string;
+  customerId: number;
+}
+
 export interface CreateMultipleArrivalsDto {
   notes?: string;
   orders: CreateArrivalDto[];
+  notification?: boolean;
+  notis?: CreateNotificationDto[];
+  language?: 'en' | 'th' | 'la';
 }
 
 export interface ArrivalUpdateDto {
@@ -34,6 +43,7 @@ export interface ArrivalListQueryDto {
   merchantId?: number;
   orderId?: number;
   orderItemId?: number;
+  customerId?: number;
   startDate?: string;
   endDate?: string;
   customerName?: string;
@@ -41,6 +51,7 @@ export interface ArrivalListQueryDto {
   arrivalDate?: string;
   arrivalTime?: string;
   arrival?: boolean;
+  notification?: boolean;
 }
 
 export interface ArrivalItemListQueryDto {

@@ -6,23 +6,59 @@
         <div class="page-title">{{ $t('merchant.notifications.title') }}</div>
         <div class="page-subtitle">{{ $t('merchant.notifications.subtitle') }}</div>
       </div>
+
       <div class="header-actions">
-        <a-button type="primary" @click="openCreateModal">
-          <template #icon><PlusOutlined /></template>
-          {{ $t('merchant.notifications.create') }}
-        </a-button>
-        <a-button
-          v-if="showFilterToggle"
-          type="default"
-          class="filter-toggle-btn"
-          :class="{ active: showFilters }"
-          @click="showFilters = !showFilters"
-        >
-          <FilterOutlined />
-        </a-button>
+        <!-- Notification tab: Filter + Create Noti (เหมือน History) -->
+        <template v-if="activeTab === 'notification'">
+          <a-button
+            v-if="arrivalListShowFilterToggle"
+            type="default"
+            class="filter-toggle-btn"
+            :class="{ active: arrivalListShowFilters }"
+            @click="toggleArrivalListFilters"
+          >
+            <FilterOutlined />
+          </a-button>
+          <div v-if="arrivalListShowCreateNotiBar" class="create-noti-bar-inline">
+            <span class="create-noti-count">{{ $t('merchant.notifications.createNotiSelectedCount', { count: arrivalListSelectedCount }) }}</span>
+            <a-button type="primary" :loading="arrivalListCreateNotiSubmitting" @click="arrivalListOpenCreateNotiConfirm">
+              {{ $t('merchant.notifications.createNoti') }}
+            </a-button>
+          </div>
+        </template>
+        <!-- History tab -->
+        <template v-else>
+          <a-button type="primary" @click="openCreateModal">
+            <template #icon><PlusOutlined /></template>
+            {{ $t('merchant.notifications.create') }}
+          </a-button>
+          <a-button
+            v-if="showFilterToggle"
+            type="default"
+            class="filter-toggle-btn"
+            :class="{ active: showFilters }"
+            @click="showFilters = !showFilters"
+          >
+            <FilterOutlined />
+          </a-button>
+        </template>
       </div>
     </div>
 
+    <!-- Tabs: Notification (arrivals without notification) | History (notifications table) -->
+    <a-card :bordered="false" class="tabs-card mb-4">
+      <a-tabs v-model:activeKey="activeTab" class="notification-tabs">
+        <a-tab-pane :key="'notification'" :tab="$t('merchant.notifications.tabNotification')">
+          <ArrivalListContent
+            ref="arrivalListRef"
+            embedded
+            :notification-filter="false"
+            :controls-in-parent="true"
+          />
+        </a-tab-pane>
+        <a-tab-pane :key="'history'" :tab="$t('merchant.notifications.tabHistory')">
+          <!-- History tab content: notification table -->
+          <div class="history-tab-content">
     <!-- Filter Panel: Search + filters (filter ทำงานอัตโนมัติเมื่อเลือกค่า) -->
     <Transition name="filter-slide">
       <a-card
@@ -90,7 +126,7 @@
     </Transition>
 
     <!-- Desktop Table -->
-    <a-card v-if="!useMobileLayout" :bordered="false" class="panel-card">
+    <a-card v-if="!useMobileLayout" :bordered="false" class="panel-card" :class="{ 'tablet-layout': isTabletLayout }">
       <a-table
         :columns="columns"
         :data-source="notifications"
@@ -162,6 +198,31 @@
           </template>
           <template v-else-if="column.key === 'actions'">
             <div class="flex items-center justify-end gap-2">
+              <!-- WhatsApp Icon -->
+              <a-tooltip :title="$t('merchant.notifications.sendWhatsApp')">
+                <a-button 
+                  v-if="canOpenWhatsApp(record.customer?.contactWhatsapp ?? record.recipientContact)"
+                  type="text" 
+                  class="icon-action whatsapp-action"
+                  @click="handleWhatsAppClick(record)"
+                >
+                  <WhatsAppOutlined />
+                </a-button>
+              </a-tooltip>
+              
+              <!-- Facebook Icon -->
+              <a-tooltip :title="$t('merchant.notifications.sendFacebook')">
+                <a-button 
+                  v-if="canOpenFacebook(record)"
+                  type="text" 
+                  class="icon-action facebook-action"
+                  @click="handleFacebookClick(record)"
+                >
+                  <FacebookOutlined />
+                </a-button>
+              </a-tooltip>
+              
+              <!-- Delete Icon -->
               <a-popconfirm :title="$t('merchant.notifications.confirmDelete')" @confirm="handleDelete(record.id)">
                 <a-button type="text" danger class="icon-action"><DeleteOutlined /></a-button>
               </a-popconfirm>
@@ -292,6 +353,11 @@
       </a-spin>
     </div>
 
+          </div>
+        </a-tab-pane>
+      </a-tabs>
+    </a-card>
+
     <!-- Create Notification Modal -->
     <a-modal
       v-model:open="createModalVisible"
@@ -384,6 +450,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue';
 import {
   SearchOutlined,
   FilterOutlined,
@@ -391,8 +458,29 @@ import {
   DeleteOutlined,
   BellOutlined,
   PlusOutlined,
+  WhatsAppOutlined,
+  FacebookOutlined,
 } from '@ant-design/icons-vue';
+import ArrivalListContent from '../arrivals/ArrivalListContent.vue';
 import { useNotificationList } from './useNotificationList';
+import { useIsMobile } from '@/shared/composables/useIsMobile';
+
+const activeTab = ref<string>('notification');
+const arrivalListRef = ref<InstanceType<typeof ArrivalListContent> | null>(null);
+const { isMobile, isTablet } = useIsMobile();
+
+const arrivalListShowFilterToggle = computed(() => isMobile.value);
+const arrivalListShowFilters = computed(() => arrivalListRef.value?.showFilters ?? false);
+const arrivalListShowCreateNotiBar = computed(() => (arrivalListRef.value?.selectedArrivalIds?.size ?? 0) > 0);
+const arrivalListSelectedCount = computed(() => arrivalListRef.value?.selectedArrivalIds?.size ?? 0);
+const arrivalListCreateNotiSubmitting = computed(() => arrivalListRef.value?.createNotiSubmitting ?? false);
+
+const toggleArrivalListFilters = () => {
+  arrivalListRef.value?.toggleShowFilters?.();
+};
+const arrivalListOpenCreateNotiConfirm = () => {
+  arrivalListRef.value?.openCreateNotiConfirm?.();
+};
 
 const {
   loading,
@@ -439,10 +527,39 @@ const {
   handleCreateSubmit,
   getCustomerOrderLabel,
 } = useNotificationList();
+
+/* แสดง tablet layout adjustments สำหรับ Galaxy Tab S7 */
+const isTabletLayout = computed(() => isTablet.value);
 </script>
 
 <style scoped>
 .mb-4 { margin-bottom: 16px; }
+
+/* ===== Tabs ===== */
+.tabs-card {
+  background: #f8fafc;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.tabs-card :deep(.ant-card-body) {
+  padding: 0 16px 16px;
+}
+.notification-tabs :deep(.ant-tabs-nav) {
+  margin-bottom: 0;
+}
+.notification-tabs :deep(.ant-tabs-tab) {
+  padding: 12px 0;
+  font-weight: 500;
+}
+.notification-tabs :deep(.ant-tabs-ink-bar) {
+  background: #1677ff;
+}
+.notification-tabs :deep(.ant-tabs-tab-active .ant-tabs-tab-btn) {
+  color: #1677ff;
+}
+.history-tab-content {
+  padding-top: 16px;
+}
 
 /* ===== Page header ===== */
 .page-header {
@@ -468,6 +585,19 @@ const {
 }
 .filter-toggle-btn.active {
   background: #1677ff; color: #fff; border-color: #1677ff;
+}
+.create-noti-bar-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+}
+.create-noti-bar-inline .create-noti-count {
+  font-weight: 600;
+  color: #1d4ed8;
 }
 @media (max-width: 1023px) {
   .page-header { flex-wrap: wrap; }
@@ -536,12 +666,16 @@ const {
   .filter-date-single { width: 100%; }
   .filter-select { width: 100%; }
 }
-
 /* Tablet (Galaxy Tab S7 ~800px) */
 @media (min-width: 768px) and (max-width: 1024px) {
-  .filter-bar .search-input { min-width: 160px; flex: 1 1 180px; }
-  .filter-date-single { min-width: 140px; flex: 1 1 140px; }
-  .filter-select { min-width: 140px; flex: 1 1 140px; }
+  .filter-bar { gap: 8px; }
+  .filter-bar .search-input {
+    height: 36px; min-width: 200px; flex: 1 1 200px;
+  }
+  .filter-date-single { min-width: 140px; }
+  .filter-select { min-width: 140px; }
+  .page-header { gap: 8px; }
+  .filter-toggle-btn { height: 36px; width: 36px; font-size: 16px; }
 }
 
 /* Filter slide animation for mobile */
@@ -563,13 +697,32 @@ const {
 .pill-tag { border-radius: 999px; padding: 2px 10px; font-weight: 800; font-size: 12px; }
 .icon-action { border-radius: 10px; }
 .icon-action:hover { background: rgba(29, 78, 216, 0.08) !important; color: #1d4ed8; }
+.whatsapp-action { color: #25d366; }
+.whatsapp-action:hover { background: rgba(37, 211, 102, 0.1) !important; color: #128c7e !important; }
+.facebook-action { color: #0866ff; }
+.facebook-action:hover { background: rgba(8, 102, 255, 0.1) !important; color: #1877f2 !important; }
 
 :deep(.ant-table) { width: 100%; }
 :deep(.ant-table-thead > tr > th) {
   background: #f8fafc !important; color: #0f172a; font-weight: 700;
 }
-:deep(.ant-table-tbody > tr:hover > td) {
+:deep(.ant-table-tbody > tr:hover > td:not(.ant-table-cell-fix-right)) {
   background: rgba(24, 144, 255, 0.06) !important;
+}
+
+/* ===== Tablet (Galaxy Tab S7) ===== */
+.tablet-layout :deep(.ant-table) {
+  font-size: 13px;
+}
+.tablet-layout :deep(.ant-table-thead > tr > th) {
+  padding: 8px 12px !important;
+  font-size: 12px;
+}
+.tablet-layout :deep(.ant-table-tbody > tr > td) {
+  padding: 8px 12px !important;
+}
+.tablet-layout :deep(.ant-table-cell-fix-right) {
+  padding: 8px 8px !important;
 }
 
 /* ===== Mobile card list ===== */

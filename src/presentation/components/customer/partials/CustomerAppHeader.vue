@@ -8,6 +8,9 @@
       </div>
     </div>
     <div class="header-actions">
+      <!-- <button class="icon-btn" title="Search orders" @click="$emit('open-filter')">
+        <SearchOutlined />
+      </button> -->
       <a-dropdown placement="bottomRight" :trigger="['click']">
         <button class="icon-btn lang-btn" :title="currentLangLabel">
           <GlobalOutlined />
@@ -27,10 +30,10 @@
           </a-menu>
         </template>
       </a-dropdown>
-      <button class="icon-btn" title="PDF">
+      <!-- <button class="icon-btn" title="PDF">
         <FileTextOutlined />
-      </button>
-      <div class="user-avatar">{{ customerInitial }}</div>
+      </button> -->
+      <!-- <div class="user-avatar">{{ customerInitial }}</div> -->
     </div>
   </div>
 </template>
@@ -38,7 +41,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { GlobalOutlined, FileTextOutlined } from '@ant-design/icons-vue';
+import { GlobalOutlined, FileTextOutlined, SearchOutlined } from '@ant-design/icons-vue';
+
+defineEmits<{ (e: 'open-filter'): void }>();
 
 const props = defineProps<{
   storeName: string;

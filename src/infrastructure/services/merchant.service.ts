@@ -30,6 +30,10 @@ export class MerchantServiceImpl implements IMerchantService {
   async delete(id: number): Promise<void> {
     return this.repository.delete(id);
   }
+
+  async getAdminPriceCurrencySummary(merchantId: number): Promise<any> {
+    return this.repository.getAdminPriceCurrencySummary(merchantId);
+  }
 }
 
 export const merchantService = new MerchantServiceImpl();

@@ -151,7 +151,7 @@
                 <span class="c-label">{{ $t('merchant.dashboard.totalPrice') }}</span>
                 <a-tooltip v-if="displayLakCurrency" :overlay-class-name="'blue-tooltip'">
                   <template #title>{{ fmtCurrency(displayLakCurrency.totalAll) }}</template>
-                  <span class="c-val num-truncate">{{ fmtCompact(displayLakCurrency.totalAll) }}</span>
+                  <span class="c-val num-truncate">{{ fmtCurrency(displayLakCurrency.totalAll) }}</span>
                 </a-tooltip>
                 <span v-else class="c-val">{{ fmtCurrency(0) }}</span>
               </div>
@@ -159,7 +159,7 @@
                 <span class="c-label">{{ $t('merchant.dashboard.pricePaid') }}</span>
                 <a-tooltip v-if="displayLakCurrency" :overlay-class-name="'blue-tooltip'">
                   <template #title>{{ fmtCurrency(displayLakCurrency.totalPaid) }}</template>
-                  <span class="c-val text-green num-truncate">{{ fmtCompact(displayLakCurrency.totalPaid) }}</span>
+                  <span class="c-val text-green num-truncate">{{ fmtCurrency(displayLakCurrency.totalPaid) }}</span>
                 </a-tooltip>
                 <span v-else class="c-val text-green">{{ fmtCurrency(0) }}</span>
               </div>
@@ -167,7 +167,7 @@
                 <span class="c-label">{{ $t('merchant.dashboard.priceUnpaid') }}</span>
                 <a-tooltip v-if="displayLakCurrency" :overlay-class-name="'blue-tooltip'">
                   <template #title>{{ fmtCurrency(displayLakCurrency.totalUnpaid) }}</template>
-                  <span class="c-val text-red num-truncate">{{ fmtCompact(displayLakCurrency.totalUnpaid) }}</span>
+                  <span class="c-val text-red num-truncate">{{ fmtCurrency(displayLakCurrency.totalUnpaid) }}</span>
                 </a-tooltip>
                 <span v-else class="c-val text-red">{{ fmtCurrency(0) }}</span>
               </div>

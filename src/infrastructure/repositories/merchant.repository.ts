@@ -44,6 +44,10 @@ export class MerchantRepository {
   async delete(id: number): Promise<void> {
     await this.apiClient.delete<void>(API_ENDPOINTS.MERCHANTS.DELETE(id));
   }
+
+  async getAdminPriceCurrencySummary(merchantId: number): Promise<any> {
+    return await this.apiClient.post<any>('/dashboard/admin/merchant-price-currency-summary', { merchantId });
+  }
 }
 
 export const merchantRepository = new MerchantRepository();

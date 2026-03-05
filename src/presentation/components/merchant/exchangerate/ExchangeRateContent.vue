@@ -631,7 +631,7 @@ onMounted(() => fetchRates(buildQuery()));
 
 :deep(.ant-table) { width: 100%; }
 :deep(.ant-table-thead > tr > th) { background: #f8fafc !important; color: #0f172a; font-weight: 700; }
-:deep(.ant-table-tbody > tr:hover > td) { background: rgba(24, 144, 255, 0.06) !important; }
+:deep(.ant-table-tbody > tr:hover > td:not(.ant-table-cell-fix-right)) { background: rgba(24, 144, 255, 0.06) !important; }
 
 /* ===== Mobile / Tablet (Galaxy Tab S7) ===== */
 .rates-mobile { display: flex; flex-direction: column; }

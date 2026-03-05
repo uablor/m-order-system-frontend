@@ -134,6 +134,80 @@
       </div>
     </a-modal>
 
+    <!-- Confirm Create Modal - total orders + Notification toggle + 2-grid customer selection -->
+    <a-modal
+      v-model:open="confirmModalVisible"
+      :title="$t('merchant.arrivals.confirmCreateTitle')"
+      :width="600"
+      :z-index="2000"
+      :footer="null"
+      @after-open="onConfirmModalOpen"
+    >
+      <div class="confirm-modal-content">
+        <div class="confirm-total-summary">
+          {{ $t('merchant.arrivals.totalOrdersCount', { count: bucket.length }) }}
+        </div>
+        <div class="confirm-controls-row">
+          <a-checkbox
+            v-model:checked="sendNotification"
+            :disabled="customerGroups.length === 0"
+            class="confirm-notification-checkbox"
+          >
+            <BellOutlined class="confirm-notification-icon" />
+            {{ $t('merchant.arrivals.notification') }}
+          </a-checkbox>
+          <div class="confirm-controls-actions">
+            <a-button @click="confirmModalVisible = false">
+              {{ $t('merchant.arrivals.cancel') }}
+            </a-button>
+            <a-button
+              type="primary"
+              :loading="submitting"
+              :disabled="!canSubmit"
+              @click="handleConfirmCreate"
+            >
+              <template #icon><CheckOutlined /></template>
+              {{ $t('merchant.arrivals.createMultiple') }}
+            </a-button>
+          </div>
+        </div>
+        <template v-if="sendNotification && customerGroups.length > 0">
+          <div class="confirm-language-row">
+            <span class="confirm-language-label">{{ $t('merchant.arrivals.notificationMessageLanguage') }}:</span>
+            <a-radio-group v-model:value="notificationLanguage" size="small" class="confirm-language-options">
+              <a-radio-button value="en">{{ $t('merchant.arrivals.notificationLangEn') }}</a-radio-button>
+              <a-radio-button value="th">{{ $t('merchant.arrivals.notificationLangTh') }}</a-radio-button>
+              <a-radio-button value="la">{{ $t('merchant.arrivals.notificationLangLa') }}</a-radio-button>
+            </a-radio-group>
+          </div>
+          <p class="confirm-select-hint">{{ $t('merchant.arrivals.selectCustomersForNotification') }}</p>
+          <div class="confirm-customer-grid">
+            <div
+              v-for="group in customerGroups"
+              :key="group.customerId"
+              class="confirm-customer-card"
+            >
+              <a-checkbox
+                :checked="selectedCustomerIds.has(group.customerId)"
+                @change="(e: { target?: { checked?: boolean } }) => toggleCustomerNotification(group.customerId, e?.target?.checked ?? false)"
+              >
+                <div class="confirm-customer-card-body">
+                  <div class="confirm-customer-card-header">
+                    <UserOutlined class="confirm-customer-icon" />
+                    <span class="confirm-customer-name">{{ group.customerName }}</span>
+                  </div>
+                  <div class="confirm-customer-stats">
+                    <span>{{ $t('merchant.arrivals.orderCount', { count: group.orderCount }) }}</span>
+                    <span>{{ $t('merchant.arrivals.orderItemCount', { count: group.orderItemCount }) }}</span>
+                  </div>
+                </div>
+              </a-checkbox>
+            </div>
+          </div>
+        </template>
+      </div>
+    </a-modal>
+
     <!-- Order Detail Modal - แสดงข้อมูลออเดอร์และรายการสินค้า (z-index สูงกว่า View Details modal) -->
     <a-modal
       v-model:open="orderDetailModalVisible"
@@ -219,7 +293,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { message, Modal } from 'ant-design-vue';
+import { message } from 'ant-design-vue';
 import {
   ArrowLeftOutlined,
   PlusOutlined,
@@ -227,17 +301,21 @@ import {
   SearchOutlined,
   DeleteOutlined,
   EditOutlined,
+  UserOutlined,
+  BellOutlined,
 } from '@ant-design/icons-vue';
 import { arrivalRepository } from '@/infrastructure/repositories/arrival.repository';
 import { orderRepository } from '@/infrastructure/repositories/order.repository';
 import type { Order, OrderItem } from '@/domain/entities/user.entity';
 import type { ArrivalItemCondition } from '@/domain/entities/user.entity';
-import type { CreateMultipleArrivalsDto } from '@/application/dto/arrival.dto';
+import type { CreateMultipleArrivalsDto, CreateNotificationDto } from '@/application/dto/arrival.dto';
 import { useAuthStore } from '@/store/auth.store';
 import { storeToRefs } from 'pinia';
 import { handleApiError } from '@/shared/utils/error';
+import { useWhatsApp } from '@/shared/composables/useWhatsApp';
 
 const { t } = useI18n();
+const { openWhatsAppChat, isValidWhatsAppPhone, formatPhoneForWhatsApp } = useWhatsApp();
 const router = useRouter();
 const authStore = useAuthStore();
 const { authPayload } = storeToRefs(authStore);
@@ -282,6 +360,10 @@ const addingToBucket = ref(false);
 const submitting = ref(false);
 const viewDetailsModalVisible = ref(false);
 const orderDetailModalVisible = ref(false);
+const confirmModalVisible = ref(false);
+const sendNotification = ref(false);
+const notificationLanguage = ref<'en' | 'th' | 'la'>('en');
+const selectedCustomerIds = ref<Set<number>>(new Set());
 const selectedOrderDetail = ref<BucketItem | null>(null);
 const orderDetailEditMode = ref(false);
 const orderDetailEditNotes = ref('');
@@ -290,7 +372,9 @@ const bucketSearchQuery = ref('');
 
 const availableOrders = computed(() => {
   const inBucketIds = bucket.value.map(b => b.orderId);
-  return orderOptions.value.filter(o => !inBucketIds.includes(o.id));
+  return orderOptions.value.filter(
+    o => !inBucketIds.includes(o.id) && (o.arrivalStatus === 'NOT_ARRIVED' || !o.arrivalStatus),
+  );
 });
 
 const visibleBucketItems = computed(() => bucket.value.slice(0, VISIBLE_CARD_COUNT));
@@ -308,6 +392,97 @@ const filteredBucketForModal = computed(() => {
 });
 
 const canSubmit = computed(() => bucket.value.length > 0);
+
+interface CustomerGroup {
+  customerId: number;
+  customerName: string;
+  customerOrders: { id: number; orderId: number; orderCode: string }[];
+  orderCount: number;
+  orderItemCount: number;
+}
+
+const customerGroups = computed<CustomerGroup[]>(() => {
+  const map = new Map<number, CustomerGroup>();
+  for (const item of bucket.value) {
+    const order = item.order;
+    const orderCode = order?.orderCode ?? `#${item.orderId}`;
+    const customerOrders = order?.customerOrders ?? [];
+    for (const co of customerOrders) {
+      const cid = co.customerId;
+      const name = co.customer?.customerName ?? `Customer #${cid}`;
+      const orderItemCount = co.customerOrderItems?.length ?? 0;
+      if (!map.has(cid)) {
+        map.set(cid, {
+          customerId: cid,
+          customerName: name,
+          customerOrders: [],
+          orderCount: 0,
+          orderItemCount: 0,
+        });
+      }
+      const g = map.get(cid)!;
+      if (!g.customerOrders.some(x => x.id === co.id)) {
+        g.customerOrders.push({ id: co.id, orderId: item.orderId, orderCode });
+        g.orderCount += 1;
+        g.orderItemCount += orderItemCount;
+      }
+    }
+  }
+  return Array.from(map.values());
+});
+
+const toggleCustomerNotification = (customerId: number, checked: boolean) => {
+  const next = new Set(selectedCustomerIds.value);
+  if (checked) next.add(customerId);
+  else next.delete(customerId);
+  selectedCustomerIds.value = next;
+};
+
+const onConfirmModalOpen = () => {
+  sendNotification.value = false;
+  notificationLanguage.value = 'en';
+  selectedCustomerIds.value = new Set();
+};
+
+interface NotificationForWhatsApp {
+  recipientContact?: string;
+  notificationLink?: string | null;
+  language?: string | null;
+  customer?: { customerName?: string } | null;
+  relatedOrders?: number[] | null;
+}
+
+const openWhatsAppTabsForNotifications = (notifications: NotificationForWhatsApp[]) => {
+  const valid = notifications.filter(
+    n => n.recipientContact && isValidWhatsAppPhone(formatPhoneForWhatsApp(n.recipientContact)),
+  );
+  valid.forEach((n, i) => {
+    setTimeout(() => {
+      const raw = n.language;
+      const lang: 'en' | 'th' | 'la' = raw === 'th' || raw === 'la' ? raw : 'en';
+      const customerName = n.customer?.customerName ?? (lang === 'en' ? 'Customer' : lang === 'th' ? 'ลูกค้า' : 'ລູກຄ້າ');
+      openWhatsAppChat({
+        phone: n.recipientContact!,
+        template: {
+          customerName,
+          orderNumbers: n.relatedOrders ?? undefined,
+        },
+        notificationLink: n.notificationLink ?? undefined,
+        lang,
+      });
+    }, i * 250);
+  });
+};
+
+const buildNotisFromSelectedGroups = (): CreateNotificationDto[] => {
+  return customerGroups.value
+    .filter(g => selectedCustomerIds.value.has(g.customerId))
+    .map(g => ({
+      customerId: g.customerId,
+      customerOrderIds: g.customerOrders.map(co => co.id),
+      message: 'Your orders have arrived!',
+    }));
+};
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '-';
@@ -492,20 +667,18 @@ const goBack = () => {
 
 const openConfirmModal = () => {
   if (!canSubmit.value) return;
-  const count = bucket.value.length;
-  Modal.confirm({
-    title: t('merchant.arrivals.confirmCreateTitle'),
-    content: t('merchant.arrivals.confirmCreateMessage', { count }),
-    okText: t('merchant.arrivals.confirmCreate'),
-    cancelText: t('merchant.arrivals.cancel'),
-    onOk: () => handleCreateMultiple(),
-  });
+  confirmModalVisible.value = true;
+};
+
+const handleConfirmCreate = async () => {
+  await handleCreateMultiple();
 };
 
 const handleCreateMultiple = async () => {
   if (!canSubmit.value) return;
   submitting.value = true;
   try {
+    const notis = buildNotisFromSelectedGroups();
     const payload: CreateMultipleArrivalsDto = {
       orders: bucket.value.map(b => ({
         orderId: b.orderId,
@@ -517,6 +690,9 @@ const handleCreateMultiple = async () => {
           notes: i.notes || undefined,
         })),
       })),
+      notification: notis.length > 0,
+      notis: notis.length > 0 ? notis : undefined,
+      language: notis.length > 0 ? notificationLanguage.value : undefined,
     };
     const res = await arrivalRepository.createMultiple(payload);
     if (res.failedOrders && res.failedOrders.length > 0) {
@@ -525,10 +701,15 @@ const handleCreateMultiple = async () => {
     } else {
       message.success(t('merchant.arrivals.createMultipleSuccess'));
     }
+    if (res.notifications && res.notifications.length > 0) {
+      openWhatsAppTabsForNotifications(res.notifications);
+    }
+    confirmModalVisible.value = false;
     clearBucketStorage();
     router.push('/merchant/arrivals');
   } catch (err) {
     handleApiError(err, t);
+    throw err;
   } finally {
     submitting.value = false;
   }
@@ -849,6 +1030,124 @@ onMounted(async () => {
 
 .bucket-list-info-clickable {
   cursor: pointer;
+}
+
+/* Confirm create modal */
+.confirm-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.confirm-total-summary {
+  font-size: 16px;
+  font-weight: 600;
+  color: #334155;
+  text-align: center;
+  padding: 8px 0;
+}
+
+.confirm-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.confirm-notification-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.confirm-notification-icon {
+  font-size: 16px;
+  color: #0ea5e9;
+}
+
+.confirm-controls-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.confirm-language-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.confirm-language-label {
+  font-size: 13px;
+  color: #334155;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.confirm-language-options {
+  flex: 1;
+}
+
+.confirm-select-hint {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 8px 0;
+}
+
+.confirm-customer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.confirm-customer-card {
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.confirm-customer-card :deep(.ant-checkbox-wrapper) {
+  align-items: flex-start;
+  width: 100%;
+}
+
+.confirm-customer-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.confirm-customer-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.confirm-customer-icon {
+  font-size: 16px;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.confirm-customer-name {
+  font-weight: 600;
+  color: #334155;
+  font-size: 14px;
+}
+
+.confirm-customer-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: #64748b;
+  padding-left: 24px;
 }
 
 </style>

@@ -23,14 +23,14 @@ import type { Customer } from '@/domain/entities/user.entity';
 
 export function useNotificationList() {
   const { t } = useI18n();
-  const { windowWidth } = useIsMobile();
+  const { isMobile } = useIsMobile();
   const { openWhatsAppChat, isValidWhatsAppPhone, formatPhoneForWhatsApp } = useWhatsApp({ openInNewTab: true });
   const { openFacebookMessengerChat, isValidFacebookId } = useFacebookMessenger({ openInNewTab: true });
   const authStore = useAuthStore();
   const { authPayload } = storeToRefs(authStore);
 
-  const showFilterToggle = computed(() => (windowWidth?.value ?? 1280) < 1024);
-  const useMobileLayout = computed(() => (windowWidth?.value ?? 1280) < 1024);
+  const showFilterToggle = computed(() => isMobile.value);
+  const useMobileLayout = computed(() => isMobile.value);
 
   const loading = ref(false);
   const notifications = ref<NotificationItem[]>([]);
@@ -64,7 +64,7 @@ export function useNotificationList() {
     { title: t('merchant.notifications.colRetry'), key: 'retryCount', dataIndex: 'retryCount', width: 80, align: 'center' as const },
     { title: t('merchant.notifications.colStatus'), key: 'status', dataIndex: 'status', width: 100, align: 'center' as const },
     { title: t('merchant.notifications.colSentAt'), key: 'sentAt', dataIndex: 'sentAt', width: 140 },
-    { title: t('merchant.notifications.colActions'), key: 'actions', fixed: 'right' as const, width: 80, align: 'right' as const },
+    { title: t('merchant.notifications.colActions'), key: 'actions', fixed: 'right' as const, width: 150, align: 'right' as const },
   ]);
 
   const paginationConfig = computed((): TablePaginationConfig => ({

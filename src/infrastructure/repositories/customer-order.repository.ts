@@ -18,6 +18,7 @@ export interface CustomerOrderItem {
 export interface CustomerOrder {
   id: number;
   orderId: number;
+  orderCode?: string | null;
   customerId: number;
   customerName: string;
   customerToken: string;
@@ -35,13 +36,35 @@ export interface CustomerOrder {
   updatedAt: string;
 }
 
+export interface CustomerOrderFilters {
+  orderCode?: string;
+  customerOrderId?: number;
+  paymentStatus?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
 export interface CustomerOrderListQuery {
   page?: number;
   limit?: number;
   orderId?: number;
+  orderCode?: string;
+  customerOrderId?: number;
   customerId?: number;
   customerToken?: string;
   notificationToken?: string;
+  paymentStatus?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+/** รูปแบบ summary จาก API summary-by-token */
+export interface CustomerOrderSummaryItem {
+  baseCurrency?: string;
+  targetCurrency?: string;
+  totalAll: number;
+  totalUnpaid: number;
+  totalPaid: number;
 }
 
 class CustomerOrderRepository {
@@ -65,6 +88,11 @@ class CustomerOrderRepository {
       customerToken: params.customerToken,
     };
     if (params.notificationToken) requestParams.notificationToken = params.notificationToken;
+    if (query?.orderId != null) requestParams.orderId = query.orderId;
+    if (query?.customerOrderId != null) requestParams.customerOrderId = query.customerOrderId;
+    if (query?.paymentStatus) requestParams.paymentStatus = query.paymentStatus;
+    if (query?.startDate) requestParams.startDate = query.startDate;
+    if (query?.endDate) requestParams.endDate = query.endDate;
 
     return this.apiClient.getParams<BackendPaginatedResponse<CustomerOrder>>(
       API_ENDPOINTS.CUSTOMER_ORDERS.BY_TOKEN,
@@ -77,6 +105,26 @@ class CustomerOrderRepository {
     const order = extractSingleResult<CustomerOrder>(res);
     if (!order) throw new Error('Customer order not found in response');
     return order;
+  }
+
+  /**
+   * ดึง summary ตาม customerToken และ notificationToken
+   * API: GET /customer-orders/summary-by-token?customerToken=xxx&notificationToken=xxx
+   */
+  async getSummaryByToken(
+    params: { customerToken: string; notificationToken?: string },
+  ): Promise<CustomerOrderSummaryItem[]> {
+    const requestParams: Record<string, string> = {
+      customerToken: params.customerToken,
+    };
+    if (params.notificationToken) requestParams.notificationToken = params.notificationToken;
+
+    const res = await this.apiClient.getParams<CustomerOrderSummaryItem[] | { results?: CustomerOrderSummaryItem[] }>(
+      API_ENDPOINTS.CUSTOMER_ORDERS.SUMMARY_BY_TOKEN,
+      requestParams,
+    );
+    if (Array.isArray(res)) return res;
+    return (res as { results?: CustomerOrderSummaryItem[] })?.results ?? [];
   }
 
   async getList(query?: CustomerOrderListQuery): Promise<BackendPaginatedResponse<CustomerOrder>> {

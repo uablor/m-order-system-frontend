@@ -561,7 +561,7 @@ onMounted(() => {
 :deep(.ant-table-thead > tr > th) {
   background: #f8fafc !important; color: #0f172a; font-weight: 700;
 }
-:deep(.ant-table-tbody > tr:hover > td) {
+:deep(.ant-table-tbody > tr:hover > td:not(.ant-table-cell-fix-right)) {
   background: rgba(24, 144, 255, 0.06) !important;
 }
 
