@@ -4,18 +4,6 @@
       <div class="chart-title">{{ $t('merchant.dashboard.chartTitle') }}</div>
       <div class="chart-subtitle">{{ $t('merchant.dashboard.chartSubtitle') }}</div>
     </div>
-    <!-- <div class="chart-controls">
-      <a-range-picker
-        v-model:value="dateRange"
-        :presets="rangePresets"
-        format="DD/MM/YYYY"
-        :placeholder="[$t('merchant.dashboard.startDate'), $t('merchant.dashboard.endDate')]"
-      />
-      <a-button type="primary" :loading="chartLoading" @click="fetchChartData">
-        {{ $t('merchant.dashboard.apply') }}
-      </a-button>
-    </div> -->
-
     <div v-if="chartLoading" class="chart-loading">
       <a-spin size="large" />
     </div>

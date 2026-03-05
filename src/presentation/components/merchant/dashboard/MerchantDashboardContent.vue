@@ -1,11 +1,5 @@
 <template>
   <div class="m-dashboard">
-    <!-- <div class="page-header">
-      <div class="page-title">{{ $t('merchant.dashboard.title') }}</div>
-      <div class="page-subtitle">{{ $t('merchant.dashboard.subtitle') }}</div>
-    </div> -->
-
-
     <a-spin :spinning="loading && !error">
       <!-- Error State -->
       <div v-if="error" class="error-state">
@@ -171,15 +165,6 @@
                 </a-tooltip>
                 <span v-else class="c-val text-red">{{ fmtCurrency(0) }}</span>
               </div>
-              <!-- <div class="currency-divider" />
-              <div class="currency-row">
-                <span class="c-label">{{ $t('merchant.dashboard.totalInLak') }}</span>
-                <a-tooltip v-if="displayLakCurrency" :overlay-class-name="'blue-tooltip'">
-                  <template #title>{{ fmtCurrency(displayLakCurrency.totalAllConverted) }}</template>
-                  <span class="c-val text-blue num-truncate">{{ fmtCompact(displayLakCurrency.totalAllConverted) }}</span>
-                </a-tooltip>
-                <span v-else class="c-val text-blue">{{ fmtCurrency(0) }}</span>
-              </div> -->
             </div>
           </a-card>
         </a-col>
@@ -190,10 +175,6 @@
           <PriceCurrencyChart />
         </a-col>
       </a-row>
-
-      
-
-      
 
       <div class="page-header !mt-5">
         <div class="page-titlek">{{ $t('merchant.dashboard.sectionTopCustomersAndOrderItems') }}</div>
@@ -363,7 +344,6 @@ async function fetchLatestOrderItems() {
 }
 
 onMounted(() => {
-  console.log('Dashboard component mounted');
   fetchWithTimeout();
   fetchLatestOrderItems();
 });
@@ -377,30 +357,6 @@ function fmtCurrency(val: number | undefined): string {
   return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(val);
 }
 
-/* ใช้เมื่อ uncomment Financial Summary section
-function getTotalRevenue(): number {
-  if (!dashboard.value?.priceCurrencySummary?.length) return 0;
-  return dashboard.value.priceCurrencySummary.reduce((sum, currency) => {
-    if (!currency?.totalAllConverted) return sum;
-    return sum + currency.totalAllConverted;
-  }, 0);
-}
-function getTotalPaid(): number {
-  if (!dashboard.value?.priceCurrencySummary?.length) return 0;
-  return dashboard.value.priceCurrencySummary.reduce((sum, currency) => {
-    if (!currency?.totalPaidConverted) return sum;
-    return sum + currency.totalPaidConverted;
-  }, 0);
-}
-function getTotalUnpaid(): number {
-  if (!dashboard.value?.priceCurrencySummary?.length) return 0;
-  return dashboard.value.priceCurrencySummary.reduce((sum, currency) => {
-    if (!currency?.totalUnpaidConverted) return sum;
-    return sum + currency.totalUnpaidConverted;
-  }, 0);
-}
-function getTotalInLak(): number { return getTotalRevenue(); }
-*/
 </script>
 
 <style scoped>
