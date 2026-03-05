@@ -41,7 +41,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { GlobalOutlined, FileTextOutlined, SearchOutlined } from '@ant-design/icons-vue';
+import { GlobalOutlined } from '@ant-design/icons-vue';
 
 defineEmits<{ (e: 'open-filter'): void }>();
 

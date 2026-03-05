@@ -85,7 +85,7 @@
 import { computed, h } from 'vue';
 import dayjs from 'dayjs';
 import type { TableColumnsType, TablePaginationConfig } from 'ant-design-vue';
-import { PlusOutlined, DownOutlined } from '@ant-design/icons-vue';
+import { DownOutlined } from '@ant-design/icons-vue';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import type { Permission } from '@/domain/entities/user.entity';
 

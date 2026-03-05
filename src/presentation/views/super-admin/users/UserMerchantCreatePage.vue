@@ -232,8 +232,6 @@ import {
   ShopOutlined,
   PhoneOutlined,
   HomeOutlined,
-  DollarOutlined,
-  PictureOutlined,
 } from '@ant-design/icons-vue';
 import type { CurrencyCode, UserMerchantCreateDto } from '@/application/dto/user.dto';
 import { useSuperAdminUsers } from '@/presentation/composables/super-admin/useSuperAdminUsers';

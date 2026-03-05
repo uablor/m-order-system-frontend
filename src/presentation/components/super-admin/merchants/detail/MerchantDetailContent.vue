@@ -229,7 +229,7 @@
               >
                 <div class="currency-card-header">
                   <div>
-                   <span class="currency-label">ສະກຸນເງີນ</span> 
+                   <span class="currency-label !mr-2">ສະກຸນເງີນ</span> 
                     <span class="currency-badge">{{ item.baseCurrency }}</span>
                   </div>
                   <!-- <span class="currency-orders">{{ Math.round(item.totalAll) }} {{ $t('merchants.detail.orders') }}</span> -->

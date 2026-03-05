@@ -320,7 +320,7 @@ const filterCurrencies = (input: string) => {
 };
 
 const { t } = useI18n();
-const { isMobile, windowWidth } = useIsMobile();
+const { windowWidth } = useIsMobile();
 const { loading, rates, pagination, fetchRates, createRate, deleteRate } = useMerchantExchangeRates();
 
 /* แสดงปุ่ม filter เมื่อ width < 1024 (mobile + tablet รวม Galaxy Tab S7) */

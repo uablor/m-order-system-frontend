@@ -133,7 +133,7 @@ const route = useRoute();
 const { locale } = useI18n();
 const authStore = useAuthStore();
 useAuth();
-const { isMobile, isTablet } = useIsMobile();
+const { isMobile } = useIsMobile();
 
 const currentLocale = computed(() => locale.value);
 const username = computed(() => authStore.user?.fullName || authStore.user?.email || 'Admin');

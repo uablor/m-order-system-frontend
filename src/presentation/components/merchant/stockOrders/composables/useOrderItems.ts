@@ -36,6 +36,7 @@ export function useOrderItems(isMobile: Ref<boolean>) {
       purchasePrice: 0, shippingPrice: 0,
       discountType: undefined, discountValue: 0, sellingPriceForeign: 0,
       customers: [],
+      quantity: 0,
     });
     if (isMobile.value) nextTick(() => scrollToItem(items.value.length - 1));
   };

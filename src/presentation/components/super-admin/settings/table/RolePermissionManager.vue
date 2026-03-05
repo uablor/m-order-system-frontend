@@ -109,7 +109,7 @@ import { computed, h, onMounted, ref } from 'vue';
 import { message } from 'ant-design-vue';
 import { useI18n } from 'vue-i18n';
 import type { TableColumnsType } from 'ant-design-vue';
-import { PlusOutlined, DownOutlined } from '@ant-design/icons-vue';
+import { DownOutlined } from '@ant-design/icons-vue';
 
 const expandCollapseIcon = ({ isActive }: { isActive: boolean }) =>
   h(DownOutlined, { class: 'expand-icon', style: { transform: isActive ? 'rotate(180deg)' : 'rotate(0deg)' } });
@@ -190,10 +190,6 @@ const handleRoleChange = async (roleId: number | undefined) => {
   await loadAssigned(roleId);
 };
 
-const openAssignModal = () => {
-  selectedPermissionId.value = undefined;
-  assignModalOpen.value = true;
-};
 const closeAssignModal = () => { assignModalOpen.value = false; };
 
 const confirmAssign = async () => {

@@ -377,14 +377,6 @@ function fmtCurrency(val: number | undefined): string {
   return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(val);
 }
 
-function fmtCompact(val: number | undefined): string {
-  const n = val ?? 0;
-  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(1) + 'B';
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
-  return fmtCurrency(n);
-}
-
 /* ใช้เมื่อ uncomment Financial Summary section
 function getTotalRevenue(): number {
   if (!dashboard.value?.priceCurrencySummary?.length) return 0;

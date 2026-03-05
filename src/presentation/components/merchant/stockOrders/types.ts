@@ -4,6 +4,18 @@ export interface CustomerInItemForm {
   qty: number;
 }
 
+export interface CoItemForm {
+  orderItemIndex: number;
+  quantity: number;
+  sellingPriceForeign: number;
+}
+
+export interface CustomerOrderForm {
+  uid: string;
+  customerId: number | undefined;
+  items: CoItemForm[];
+}
+
 export interface ItemForm {
   uid: string;
   productName: string;
@@ -14,6 +26,7 @@ export interface ItemForm {
   discountValue: number;
   sellingPriceForeign: number;
   customers: CustomerInItemForm[];
+  quantity: number; // Add missing quantity property
 }
 
 export interface DraftData {
