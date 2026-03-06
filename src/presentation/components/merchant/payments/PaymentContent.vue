@@ -6,6 +6,45 @@
         <div class="page-title">{{ $t('merchant.payment.title') }}</div>
         <div class="page-subtitle">{{ $t('merchant.payment.subtitle') }}</div>
       </div>
+      
+    </div>
+
+   
+
+    <!-- Financial Summary: 4-grid layout -->
+    <div class="page-header" style="margin-top: 24px;">
+      <div class="title-block">
+        <div class="page-title">{{ $t('merchant.dashboard.sectionFinancialOverview') }}</div>
+        <div class="page-subtitle">{{ $t('merchant.dashboard.sectionFinancialOverviewDesc') }}</div>
+      </div>
+    </div>
+    
+    <!-- Row: Price by Currency — 3-grid layout like dashboard -->
+    <a-row :gutter="[16, 16]" class="stats-row">
+      <a-col :xs="24" :sm="12" :md="8" :lg="6" v-for="(currency, i) in displayCurrencies" :key="currency ? (currency.baseCurrency || currency.targetCurrency || 'unknown') : `placeholder-${i}`">
+        <a-card :bordered="false" class="panel-card currency-card" :class="currency ? `currency-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'currency-placeholder'">
+          <div class="currency-header">
+            <span>{{ $t('merchant.dashboard.currency') }}</span>
+            <span class="currency-badge" :class="currency ? `badge-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'badge-placeholder'">{{ currency ? (currency.baseCurrency || currency.targetCurrency || 'Unknown') : '—' }}</span>
+          </div>
+          <div class="currency-rows">
+            <div class="currency-row">
+              <span class="c-label">{{ $t('merchant.dashboard.totalPrice') }}</span>
+              <span class="c-val">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalAll)) : fmtCurrency(0) }}</span>
+            </div>
+            <div class="currency-row">
+              <span class="c-label">{{ $t('merchant.dashboard.pricePaid') }}</span>
+              <span class="c-val text-green">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalPaid)) : fmtCurrency(0) }}</span>
+            </div>
+            <div class="currency-row">
+              <span class="c-label">{{ $t('merchant.dashboard.priceUnpaid') }}</span>
+              <span class="c-val text-red">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalUnpaid)) : fmtCurrency(0) }}</span>
+            </div>
+          </div>
+        </a-card>
+      </a-col>
+    </a-row>
+    <div class="search-filter-container">
       <a-input
         v-model:value="filters.search"
         allow-clear
@@ -25,8 +64,7 @@
         <FilterOutlined />
       </a-button>
     </div>
-
-    <!-- Filter Panel -->
+     <!-- Filter Panel -->
     <a-card v-if="!showFilterToggle || showFilters" :bordered="false" class="filter-card mb-4">
       <div class="filter-bar">
         <a-date-picker
@@ -56,45 +94,6 @@
       </div>
     </a-card>
 
-    <!-- Summary Cards -->
-    <div class="summary-grid mb-4">
-      <div class="summary-card">
-        <div class="summary-icon payments-icon"><OrderedListOutlined /></div>
-        <div class="summary-body">
-          <div class="summary-label">{{ $t('merchant.payment.summaryTotalPayments') }}</div>
-          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ summary.totalPayments }}</template><div class="summary-value num-truncate">{{ summary.totalPayments }}</div></a-tooltip>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon amount-icon"><WalletOutlined /></div>
-        <div class="summary-body">
-          <div class="summary-label">{{ $t('merchant.payment.summaryTotalAmount') }}</div>
-          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(summary.totalAmount) }}</template><div class="summary-value num-truncate">{{ truncNum(summary.totalAmount) }}</div></a-tooltip>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon pending-icon"><ClockCircleOutlined /></div>
-        <div class="summary-body">
-          <div class="summary-label">{{ $t('merchant.payment.summaryPending') }}</div>
-          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ summary.totalPending }}</template><div class="summary-value num-truncate">{{ summary.totalPending }}</div></a-tooltip>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon verified-icon"><CheckCircleOutlined /></div>
-        <div class="summary-body">
-          <div class="summary-label">{{ $t('merchant.payment.summaryVerified') }}</div>
-          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ summary.totalVerified }}</template><div class="summary-value num-truncate">{{ summary.totalVerified }}</div></a-tooltip>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon rejected-icon"><CloseCircleOutlined /></div>
-        <div class="summary-body">
-          <div class="summary-label">{{ $t('merchant.payment.summaryRejected') }}</div>
-          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ summary.totalRejected }}</template><div class="summary-value num-truncate">{{ summary.totalRejected }}</div></a-tooltip>
-        </div>
-      </div>
-    </div>
-
     <!-- Bulk Action Bar -->
     <div v-if="selectedIds.length > 0" class="bulk-bar mb-4">
       <span class="bulk-count">
@@ -110,14 +109,14 @@
     </div>
 
     <!-- Desktop/Tablet Table -->
-    <a-card v-if="!useMobileLayout" :bordered="false" class="panel-card" :class="{ 'tablet-layout': isTabletLayout }">
+    <a-card v-if="!isMobile" :bordered="false" class="panel-card">
       <a-table
         :columns="columns"
         :data-source="payments"
         :pagination="paginationConfig"
         row-key="id"
         size="middle"
-        :loading="loading"
+        :loading="paymentsLoading"
         :scroll="{ x: 1100 }"
         :row-selection="rowSelection"
         @change="handleTableChange"
@@ -173,7 +172,7 @@
 
     <!-- Mobile Cards -->
     <div v-else class="payments-mobile">
-      <a-spin :spinning="loading">
+      <a-spin :spinning="paymentsLoading">
         <!-- Select All (mobile) -->
         <div v-if="payments.length > 0 && pendingPaymentsOnPage.length > 0" class="mobile-select-all-row">
           <a-checkbox
@@ -185,7 +184,7 @@
           </a-checkbox>
         </div>
 
-        <a-empty v-if="payments.length === 0 && !loading" :description="$t('merchant.payment.noPayments')" />
+        <a-empty v-if="payments.length === 0 && !paymentsLoading" :description="$t('merchant.payment.noPayments')" />
 
         <a-collapse accordion ghost class="payments-collapse">
           <template #expandIcon="{ isActive }">
@@ -307,26 +306,18 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   LinkOutlined,
-  WalletOutlined,
-  OrderedListOutlined,
-  ClockCircleOutlined,
 } from '@ant-design/icons-vue';
 import dayjs from 'dayjs';
 import { paymentRepository, type PaymentItem } from '@/infrastructure/repositories/payment.repository';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import { handleApiError } from '@/shared/utils/error';
+import { useMerchantDashboard } from '../../../composables/merchant/useMerchantDashboard';
 
 const { t } = useI18n();
-const { isMobile, isTablet } = useIsMobile();
+const { isMobile } = useIsMobile();
+const { dashboard, fetchDashboard } = useMerchantDashboard();
 
-/* แสดงปุ่ม filter และ mobile layout เมื่อ width < 768 (mobile only) */
-const showFilterToggle = computed(() => isMobile.value);
-const useMobileLayout = computed(() => isMobile.value);
-
-/* แสดง tablet layout adjustments สำหรับ Galaxy Tab S7 */
-const isTabletLayout = computed(() => isTablet.value);
-
-const loading = ref(false);
+const paymentsLoading = ref(false);
 const actionLoading = ref(false);
 const bulkLoading = ref(false);
 const payments = ref<PaymentItem[]>([]);
@@ -335,32 +326,25 @@ const currentPage = ref(1);
 const pageSize = ref(10);
 const showFilters = ref(false);
 
-const selectedIds = ref<number[]>([]);
-const rejectModalVisible = ref(false);
-const bulkRejectModalVisible = ref(false);
-const rejectTargetId = ref<number | null>(null);
-const rejectReason = ref('');
-const bulkRejectReason = ref('');
-
-const filters = reactive<{
-  search: string;
-  status: string | undefined;
-  startDate: string | null;
-  endDate: string | null;
-}>({
-  search: '',
-  status: undefined,
-  startDate: null,
-  endDate: null,
+// Financial Summary computed properties
+const allCurrencies = computed(() =>
+  (dashboard.value?.priceCurrencySummary ?? []).filter((c) => c?.baseCurrency || c?.targetCurrency)
+);
+const displayCurrencies = computed(() => {
+  const list = allCurrencies.value;
+  if (!list.length) return [];
+  
+  // Separate baseCurrency and targetCurrency items
+  const baseCurrencies = list.filter(c => c.baseCurrency);
+  const targetCurrencies = list.filter(c => c.targetCurrency);
+  
+  // Combine: baseCurrencies first, then targetCurrencies
+  const combined = [...baseCurrencies, ...targetCurrencies];
+  
+  return combined;
 });
 
-const summary = ref({
-  totalPayments: 0,
-  totalAmount: '0',
-  totalPending: 0,
-  totalVerified: 0,
-  totalRejected: 0,
-});
+const showFilterToggle = computed(() => isMobile.value);
 
 const columns = computed<TableColumnsType>(() => [
   { title: t('merchant.payment.colId'), key: 'index', width: 55 },
@@ -389,6 +373,24 @@ const paginationConfig = computed((): TablePaginationConfig => ({
   showTotal: (tot: number) => `Total ${tot}`,
 }));
 
+// Helper functions
+function fmtCurrency(val: number | undefined): string {
+  if (val == null) return '0';
+  return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(val);
+}
+
+function parseCurrencyString(val: string | number): number {
+  if (typeof val === 'number') return val;
+  if (!val || val === '') return 0;
+  return parseFloat(val.replace(/,/g, ''));
+}
+
+const formatNumber = (val: string | number) => Number(val || 0).toLocaleString();
+const truncate = (text: string | null | undefined, max: number) => {
+  if (!text) return '';
+  return text.length > max ? text.slice(0, max) + '…' : text;
+};
+const formatDate = (d: string | null) => (d ? dayjs(d).format('DD/MM/YYYY HH:mm') : '—');
 const statusColor = (status: string) => {
   if (status === 'VERIFIED') return 'success';
   if (status === 'REJECTED') return 'error';
@@ -403,16 +405,32 @@ const statusLabel = (status: string) => {
   return map[status] ?? status;
 };
 
-const formatNumber = (val: string | number) => Number(val || 0).toLocaleString();
-const truncate = (text: string | null | undefined, max: number) => {
-  if (!text) return '';
-  return text.length > max ? text.slice(0, max) + '…' : text;
-};
-const truncNum = (val: string | number, maxLen = 12) => {
-  const formatted = Number(val || 0).toLocaleString();
-  return formatted.length > maxLen ? formatted.slice(0, maxLen) + '…' : formatted;
-};
-const formatDate = (d: string | null) => (d ? dayjs(d).format('DD/MM/YYYY HH:mm') : '—');
+const selectedIds = ref<number[]>([]);
+const rejectModalVisible = ref(false);
+const bulkRejectModalVisible = ref(false);
+const rejectTargetId = ref<number | null>(null);
+const rejectReason = ref('');
+const bulkRejectReason = ref('');
+
+const filters = reactive<{
+  search: string;
+  status: string | undefined;
+  startDate: string | null;
+  endDate: string | null;
+}>({
+  search: '',
+  status: undefined,
+  startDate: null,
+  endDate: null,
+});
+
+const summary = ref({
+  totalPayments: 0,
+  totalAmount: '0',
+  totalPending: 0,
+  totalVerified: 0,
+  totalRejected: 0,
+});
 
 const buildQuery = () => ({
   page: currentPage.value,
@@ -431,7 +449,7 @@ const buildSummaryQuery = () => ({
 });
 
 const fetchPayments = async () => {
-  loading.value = true;
+  paymentsLoading.value = true;
   try {
     const [listRes, summaryRes] = await Promise.all([
       paymentRepository.getByMerchant(buildQuery()),
@@ -449,7 +467,7 @@ const fetchPayments = async () => {
   } catch (err) {
     handleApiError(err, t);
   } finally {
-    loading.value = false;
+    paymentsLoading.value = false;
   }
 };
 
@@ -576,17 +594,79 @@ const submitBulkReject = async () => {
   }
 };
 
-onMounted(() => { fetchPayments(); });
+onMounted(() => { 
+  fetchDashboard(); 
+  fetchPayments(); 
+});
 </script>
 
 <style scoped>
 .mb-4 { margin-bottom: 16px; }
 
-/* ===== Page Header ===== */
-.page-header {
-  display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+/* ===== Search & Filter Container ===== */
+.search-filter-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
 }
-.title-block { flex: 1 1 auto; min-width: 0; }
+
+.search-input {
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+}
+
+.filter-toggle-btn {
+  flex-shrink: 0;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+}
+
+/* Mobile responsive */
+@media (max-width: 767px) {
+  .search-filter-container {
+    gap: 6px;
+  }
+  .search-input {
+    min-width: 160px;
+    max-width: 280px;
+  }
+  .filter-toggle-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+  }
+}
+
+/* Galaxy Tab S7 responsive (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .search-filter-container {
+    gap: 10px;
+  }
+  .search-input {
+    min-width: 220px;
+    max-width: 350px;
+  }
+  .filter-toggle-btn {
+    min-width: 38px;
+    height: 38px;
+    padding: 0 11px;
+  }
+}
+
+/* Tablet layout adjustments */
+@media (max-width: 1023px) {
+  .search-filter-container {
+    gap: 8px;
+  }
+  .search-input {
+    min-width: 180px;
+    max-width: 320px;
+  }
+}
 .page-title { font-size: 22px; font-weight: 600; color: #0f172a; line-height: 1.25; }
 .page-subtitle { font-size: 13px; color: #64748b; margin-top: 2px; }
 .search-input { height: 44px; border-radius: 12px; width: min(320px, 100%); }
@@ -761,10 +841,91 @@ onMounted(() => { fetchPayments(); });
 @media (max-width: 1023px) {
   .summary-grid { grid-template-columns: repeat(3, 1fr); }
 }
+/* ===== Financial Summary Cards ===== */
+.stats-row { margin-bottom: 16px; }
+.currency-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 1px 2px rgba(15,23,42,0.06), 0 10px 25px rgba(15,23,42,0.04);
+  border: 1px solid rgba(148,163,184,0.12);
+  height: 100%;
+}
+.currency-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.currency-badge {
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+.badge-lak { background: #f59e0b; color: #fff; }
+.badge-cny { background: #ef4444; color: #fff; }
+.badge-thb { background: #f97316; color: #fff; }
+.badge-usd { background: #3b82f6; color: #fff; }
+
+/* Target currency specific styles */
+.currency-target {
+  background: linear-gradient(135deg, #f8fafc, #e0f2fe);
+  border: 2px solid #3b82f6;
+  position: relative;
+}
+.currency-target::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  border-radius: 14px 14px 0 0;
+}
+.badge-usdt { background: #fbbf24; color: #fff; }
+.badge-placeholder { background: #f3f4f6; color: #94a3b8; }
+.currency-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+.currency-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.c-label { font-size: 12px; font-weight: 600; color: #64748b; min-width: 60px; }
+.c-val { font-weight: 700; color: #0f172a; text-align: right; }
+.text-green { color: #16a34a; }
+.text-red { color: #dc2626; }
+.num-truncate {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 @media (max-width: 767px) {
-  .summary-grid { grid-template-columns: 1fr; gap: 10px; }
-  .summary-card { padding: 12px 14px; border-radius: 10px; }
-  .summary-value { font-size: 15px; }
+  .currency-card { padding: 12px 14px; border-radius: 10px; }
+  .c-label { font-size: 11px; }
+  .c-val { font-size: 13px; }
+}
+@media (min-width: 768px) and (max-width: 1024px) {
+  .currency-card { padding: 14px 16px; }
+}
+@media (max-width: 1023px) {
+  .currency-card { padding: 12px 14px; }
+}
+@media (max-width: 767px) {
+  .currency-card { padding: 12px 14px; border-radius: 10px; }
 }
 </style>
 

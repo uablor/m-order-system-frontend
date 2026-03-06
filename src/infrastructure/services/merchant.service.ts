@@ -34,6 +34,10 @@ export class MerchantServiceImpl implements IMerchantService {
   async getAdminPriceCurrencySummary(merchantId: number): Promise<any> {
     return this.repository.getAdminPriceCurrencySummary(merchantId);
   }
+
+  async getPriceCurrencySummaryByDate(merchantId: number): Promise<any> {
+    return this.repository.getPriceCurrencySummaryByDate(merchantId);
+  }
 }
 
 export const merchantService = new MerchantServiceImpl();

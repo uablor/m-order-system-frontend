@@ -27,7 +27,8 @@
   "orderLabel": "ອໍເດີ",
   "moreItems": "ລາຍການເພີ່ມ",
   "paymentStatus": {
-    "UNPAID": "ຍັງບໍ່ຊຳລະ",
+    "UNPAID": "ລໍຖ້າການຢືນຢັນການຊຳລະເງີນ",
+    "NOT_CREATED": "ຍັງບໍ່ຊຳລະ",
     "PARTIAL": "ຊຳລະບາງສ່ວນ",
     "PAID": "ຊຳລະແລ້ວ",
     "PENDING_VERIFICATION": "ລໍຖ້າການຢືນຢັນການຊຳລະເງີນ"
@@ -54,6 +55,10 @@
     "uploadText": "ກົດທີ່ນີ້ເພື່ອອັບໂຫລດສລິບ",
     "uploadHint": "ຮອງຮັບໄຟລ໌ JPG, PNG ເທົ່ານັ້ນ",
     "uploadNote": "ອັບໂຫລດຮູບສລິບການໂອນເງິນ ລະບົບຈະສົ່ງໃຫ້ຮ້ານຄ້າກວດສອບ",
+    "uploadedSlipTitle": "ສລິບໂອນເງິນທີ່ອັບໂຫລດ",
+    "paymentSubmitted": "ສົ່ງການຊຳລະເງິນສຳເລັດ",
+    "waitingForVerification": "ລໍຖ້າການກວດສອບຈາກຮ້ານຄ້າ",
+    "clickToPreview": "ກົດເພື່ອດູຮູບ",
     "submitBtn": "ສົ່ງການຊຳລະເງິນ",
     "removeSlip": "ລຶບ"
   },

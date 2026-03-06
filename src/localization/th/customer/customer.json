@@ -35,7 +35,8 @@
   "orderLabel": "ออเดอร์",
   "moreItems": "รายการเพิ่มเติม",
   "paymentStatus": {
-    "UNPAID": "ยังไม่ชำระ",
+    "UNPAID": "รอการยืนยันการชำระเงิน",
+    "NOT_CREATED": "ยังไม่ชำระ",
     "PARTIAL": "ชำระบางส่วน",
     "PAID": "ชำระแล้ว",
     "PENDING_VERIFICATION": "รอการยืนยันการชำระเงิน"
@@ -58,10 +59,14 @@
     "colTotalPrice": "ราคารวม",
     "messageTitle": "ข้อความถึงร้านค้า",
     "messagePlaceholder": "พิมพ์ข้อความเพิ่มเติมถึงร้านค้า...",
-    "uploadTitle": "อัปโหลดสลิปโอนเงิน",
-    "uploadText": "กดที่นี่เพื่ออัปโหลดสลิป",
+    "uploadTitle": "อัพโหลดสลิปการโอนเงิน",
+    "uploadText": "คลิกที่นี่เพื่ออัพโหลดสลิป",
     "uploadHint": "รองรับไฟล์ JPG, PNG เท่านั้น",
-    "uploadNote": "อัปโหลดรูปสลิปการโอนเงิน ระบบจะส่งให้ร้านค้าตรวจสอบ",
+    "uploadNote": "อัพโหลดรูปสลิปการโอนเงินของคุณ ระบบจะส่งให้ร้านค้าเพื่อตรวจสอบ",
+    "uploadedSlipTitle": "สลิปการโอนเงินที่อัพโหลด",
+    "paymentSubmitted": "ส่งการชำระเงินเรียบร้อย",
+    "waitingForVerification": "รอการตรวจสอบจากร้านค้า",
+    "clickToPreview": "คลิกเพื่อดูรูป",
     "submitBtn": "ส่งการชำระเงิน",
     "removeSlip": "ลบ"
   },

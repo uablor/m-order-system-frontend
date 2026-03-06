@@ -391,5 +391,6 @@ export function useNotificationList() {
     canSubmitCreate,
     handleCreateSubmit,
     getCustomerOrderLabel,
+    fetchNotifications,
   };
 }

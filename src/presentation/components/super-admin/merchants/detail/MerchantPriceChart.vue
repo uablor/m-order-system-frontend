@@ -1,20 +1,9 @@
 <template>
   <a-card :bordered="false" class="panel-card chart-card">
     <div class="chart-header">
-      <div class="chart-title">{{ $t('merchant.dashboard.chartTitle') }}</div>
-      <div class="chart-subtitle">{{ $t('merchant.dashboard.chartSubtitle') }}</div>
+      <div class="chart-title">{{ $t('merchants.detail.chartTitle') }}</div>
+      <div class="chart-subtitle">{{ $t('merchants.detail.chartSubtitle') }}</div>
     </div>
-    <!-- <div class="chart-controls">
-      <a-range-picker
-        v-model:value="dateRange"
-        :presets="rangePresets"
-        format="DD/MM/YYYY"
-        :placeholder="[$t('merchant.dashboard.startDate'), $t('merchant.dashboard.endDate')]"
-      />
-      <a-button type="primary" :loading="chartLoading" @click="fetchChartData">
-        {{ $t('merchant.dashboard.apply') }}
-      </a-button>
-    </div> -->
 
     <div v-if="chartLoading" class="chart-loading">
       <a-spin size="large" />
@@ -26,7 +15,7 @@
       <!-- Total Statistic -->
       <div class="chart-statistic">
         <a-statistic
-          :title="$t('merchant.dashboard.totalRevenue')"
+          :title="$t('merchants.detail.totalRevenue')"
           :value="displayTotal"
           :precision="selectedCurrency === 'LAK' ? 0 : 2"
         >
@@ -38,7 +27,7 @@
 
       <!-- Currency Filter: Checkable Tags -->
       <div class="chart-filter">
-        <span class="filter-label">{{ $t('merchant.dashboard.filterByCurrency') }}:</span>
+        <span class="filter-label">{{ $t('merchants.detail.filterByCurrency') }}:</span>
         <a-space :size="[8, 8]" wrap >
           <a-tag
             v-for="curr in currencyOptions"
@@ -58,38 +47,32 @@
       </div>
     </template>
     <div v-else class="chart-empty">
-      <a-empty :description="$t('merchant.dashboard.noChartData')" />
+      <a-empty :description="$t('merchants.detail.noChartData')" />
     </div>
   </a-card>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { Dayjs } from 'dayjs';
-import * as dayjsModule from 'dayjs';
-// dayjs ใช้ export = (ไม่มี default) จึงต้องดึงจาก namespace
-const dayjs = ((dayjsModule as { default?: unknown }).default ?? dayjsModule) as typeof import('dayjs');
 import 'echarts';
 import VChart from 'vue-echarts';
-import { dashboardService } from '@/infrastructure/services/dashboard.service';
+import { merchantService } from '@/infrastructure/services/merchant.service';
 import { extractSingleResult } from '@/shared/types/backend-response.types';
 import type { PriceCurrencySummaryByDateResponseDto } from '@/domain/entities/user.entity';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 
+interface Props {
+  merchantId: number;
+}
+
+const props = defineProps<Props>();
 const { t } = useI18n();
 const { windowWidth, isMobile, isTablet } = useIsMobile(768);
-const dateRange = ref<[Dayjs, Dayjs] | null>(null);
 const chartLoading = ref(false);
 const chartError = ref<string | null>(null);
 const chartData = ref<PriceCurrencySummaryByDateResponseDto | null>(null);
 const selectedCurrency = ref<string>('LAK');
-
-/* ค่าเริ่มต้น: ปีปัจจุบัน */
-function getDefaultRange(): [Dayjs, Dayjs] {
-  const now = dayjs();
-  return [now.startOf('year'), now.endOf('year')];
-}
 
 /* รายการสกุลเงิน: LAK (รวมทั้งหมด) + CNY, USDT, THB ฯลฯ จากข้อมูล */
 const currencyOptions = computed(() => {
@@ -144,16 +127,25 @@ const chartOption = computed(() => {
   const months = chartData.value?.months ?? [];
   const curr = selectedCurrency.value;
   const layout = chartLayout.value;
-  if (!months.length) return {};
+  if (!months.length) {
+    return {
+      tooltip: { show: false },
+      legend: { show: false },
+      grid: { show: false },
+      xAxis: { show: false },
+      yAxis: { show: false },
+      series: [],
+    };
+  }
 
   const monthLabelsFull = months.map((m) => {
     const d = new Date(m.year, m.month - 1, 1);
-    return dayjs(d).format('MMM YYYY');
+    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   });
   const monthLabels = layout.shortMonth
     ? months.map((m) => {
         const d = new Date(m.year, m.month - 1, 1);
-        return dayjs(d).format('MMM');
+        return d.toLocaleDateString('en-US', { month: 'short' });
       })
     : monthLabelsFull;
 
@@ -189,14 +181,14 @@ const chartOption = computed(() => {
           <strong>${monthLabelsFull[idx]}</strong><br/>
           ${params[0].marker} ${params[0].seriesName}: ${formatNum(paid)} ${unit}<br/>
           ${params[1].marker} ${params[1].seriesName}: ${formatNum(unpaid)} ${unit}<br/>
-          <strong>${t('merchant.dashboard.totalPrice')}: ${formatNum(total)} ${unit}</strong>
+          <strong>${t('merchants.detail.totalPrice')}: ${formatNum(total)} ${unit}</strong>
         </div>`;
       },
     },
     legend: {
       data: [
-        { name: t('merchant.dashboard.pricePaid'), itemStyle: { color: '#52c41a' } },
-        { name: t('merchant.dashboard.priceUnpaid'), itemStyle: { color: '#ff4d4f' } },
+        { name: t('merchants.detail.pricePaid'), itemStyle: { color: '#52c41a' } },
+        { name: t('merchants.detail.priceUnpaid'), itemStyle: { color: '#ff4d4f' } },
       ],
       bottom: 0,
       itemWidth: layout.fontSize < 12 ? 12 : 14,
@@ -224,7 +216,7 @@ const chartOption = computed(() => {
     },
     series: [
       {
-        name: t('merchant.dashboard.pricePaid'),
+        name: t('merchants.detail.pricePaid'),
         type: 'bar',
         barWidth: '28%',
         barGap: '20%',
@@ -233,7 +225,7 @@ const chartOption = computed(() => {
         itemStyle: { color: '#52c41a' },
       },
       {
-        name: t('merchant.dashboard.priceUnpaid'),
+        name: t('merchants.detail.priceUnpaid'),
         type: 'bar',
         barWidth: '28%',
         barGap: '20%',
@@ -256,18 +248,13 @@ function formatCompact(n: number): string {
 }
 
 async function fetchChartData() {
-  const range = dateRange.value ?? getDefaultRange();
-  const startDate = range[0].format('YYYY-MM-DD');
-  const endDate = range[1].format('YYYY-MM-DD');
+  if (!props.merchantId) return;
 
   chartLoading.value = true;
   chartError.value = null;
   try {
-    const res = await dashboardService.getMerchantPriceCurrencySummaryByDate({
-      startDate,
-      endDate,
-    });
-    const data = extractSingleResult(res);
+    const res = await merchantService.getPriceCurrencySummaryByDate(props.merchantId);
+    const data = extractSingleResult(res) as PriceCurrencySummaryByDateResponseDto | null;
     if (data) {
       chartData.value = data;
       selectedCurrency.value = 'LAK';
@@ -283,9 +270,17 @@ async function fetchChartData() {
   }
 }
 
+// Watch for merchantId changes
+watch(() => props.merchantId, (newId) => {
+  if (newId) {
+    fetchChartData();
+  }
+}, { immediate: true });
+
 onMounted(() => {
-  dateRange.value = getDefaultRange();
-  fetchChartData();
+  if (props.merchantId) {
+    fetchChartData();
+  }
 });
 </script>
 
@@ -298,13 +293,6 @@ onMounted(() => {
 .chart-header { margin-bottom: 16px; }
 .chart-title { font-size: 18px; font-weight: 600; color: #0f172a; }
 .chart-subtitle { font-size: 13px; color: #64748b; margin-top: 4px; }
-.chart-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 20px;
-}
 .chart-statistic {
   margin-bottom: 20px;
   padding: 16px;

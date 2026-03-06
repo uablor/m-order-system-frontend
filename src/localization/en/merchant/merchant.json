@@ -12,6 +12,7 @@
     "sectionFinancialOverview": "Financial Summary",
     "sectionFinancialOverviewDesc": "Total revenue in LAK equivalent",
     "sectionTopCustomers": "Top Customers",
+    "currency": "Currency",
     "sectionTopCustomersDesc": "Best performing customers by purchase amount",
     "sectionTopCustomersAndOrderItems": "Top Customers & Latest Order Items",
     "sectionTopCustomersAndOrderItemsDesc": "Best customers and recent order items",
@@ -366,7 +367,9 @@
     "summaryTotalOrders": "Total Orders",
     "summaryTotalCost": "Total Cost",
     "summaryTotalSelling": "Total Selling",
-    "summaryTotalProfit": "Total Profit"
+    "summaryTotalProfit": "Total Profit",
+    "summaryArrivalStatus": "Arrival Status",
+    "summaryPaymentStatus": "Payment Status"
   },
   "orderDetail": {
     "breadcrumbOrders": "Orders",

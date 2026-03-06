@@ -109,6 +109,32 @@
     </div>
   </div>
 
+  <!-- Uploaded slip preview (when payment submitted) -->
+  <div v-else-if="order.paymentStatus !== 'PAID' && order.hasPendingPayment" class="detail-section">
+    <div class="detail-section-header">
+      <CreditCardOutlined class="section-icon-sm" />
+      <span>{{ $t('customer.detail.uploadedSlipTitle') }}</span>
+    </div>
+    <div class="uploaded-slip-preview">
+      <div class="slip-preview-container">
+        <img 
+          :src="getPaymentProofUrl()" 
+          alt="Payment slip" 
+          class="uploaded-slip-img"
+          @click="previewSlip"
+        />
+        <div class="slip-overlay" @click="previewSlip">
+          <EyeOutlined class="preview-icon" />
+          <span class="preview-text">{{ $t('customer.detail.clickToPreview') }}</span>
+        </div>
+      </div>
+      <div class="slip-info">
+        <div class="slip-status">{{ $t('customer.detail.paymentSubmitted') }}</div>
+        <div class="slip-note">{{ $t('customer.detail.waitingForVerification') }}</div>
+      </div>
+    </div>
+  </div>
+
   <template v-if="canSubmit">
     <a-button
       type="primary"
@@ -139,6 +165,7 @@ import {
   CloudUploadOutlined,
   ArrowRightOutlined,
   ShoppingCartOutlined,
+  EyeOutlined,
 } from '@ant-design/icons-vue';
 import { formatDate } from '@/shared/utils/date.utils';
 import type { CustomerOrder } from '@/infrastructure/repositories/customer-order.repository';
@@ -160,20 +187,35 @@ const currencySymbol = (code: string | null) => {
   return map[code] ?? code;
 };
 
-const formatItemPrice = (item: { sellingTotal: string; targetCurrencySellingTotal: string | null }) => {
+const formatItemPrice = (item: { 
+  sellingTotal: string; 
+  targetCurrencySellingTotal: string | null; 
+  exchangeRateSell?: { baseCurrency: string } | null;
+}) => {
   const amount = item.targetCurrencySellingTotal != null
     ? parseFloat(item.targetCurrencySellingTotal)
     : parseFloat(item.sellingTotal);
-  const sym = currencySymbol(props.order.targetCurrency);
+  // Use exchangeRateSell.baseCurrency for currency symbol
+  const sym = currencySymbol(item.exchangeRateSell?.baseCurrency ?? null);
   return `${formatAmount(amount)} ${sym}`;
 };
 
-const formatTotalDue = (o: CustomerOrder) => {
-  const amount = o.targetCurrencyRemainingAmount != null
-    ? parseFloat(o.targetCurrencyRemainingAmount)
-    : parseFloat(o.remainingAmount);
-  const sym = currencySymbol(o.targetCurrency);
-  return `${formatAmount(amount)} ${sym}`;
+const formatTotalDue = (o: CustomerOrder & { 
+  customerOrderItems?: Array<{ 
+    sellingTotal: string; 
+    exchangeRateSell?: { baseCurrency: string } | null;
+  }>;
+}) => {
+  // Calculate total from sellingTotal of all items
+  const totalAmount = o.customerOrderItems?.reduce((sum, item) => {
+    return sum + parseFloat(item.sellingTotal || '0');
+  }, 0) || 0;
+  
+  // Use exchangeRateSell.baseCurrency from first item for currency symbol
+  const firstItem = o.customerOrderItems?.[0];
+  const sym = currencySymbol(firstItem?.exchangeRateSell?.baseCurrency ?? null);
+  
+  return `${formatAmount(totalAmount)} ${sym}`;
 };
 
 /** สถานะที่แสดง: ถ้ามี payment รอตรวจสอบ ให้แสดง PENDING_VERIFICATION แทน UNPAID/PARTIAL */
@@ -209,6 +251,28 @@ const emit = defineEmits<{
 const handleRemoveSlip = () => {
   if (fileInputRef.value) fileInputRef.value.value = '';
   emit('removeSlip');
+};
+
+const getPaymentProofUrl = () => {
+  // TODO: This needs to be implemented by fetching payment data for the customer order
+  // For now, we'll return a placeholder - in a real implementation, you would:
+  // 1. Call payment repository to get payment by customerOrderId
+  // 2. Return the paymentProofUrl from the payment data
+  
+  // Placeholder implementation - replace with actual API call
+  console.log('Getting payment proof URL for order:', props.order.id);
+  return ''; // Return empty string for now, should be replaced with actual URL
+};
+
+const previewSlip = () => {
+  const url = getPaymentProofUrl();
+  if (url) {
+    // Open image in new tab for preview
+    window.open(url, '_blank');
+  } else {
+    // Show message that payment proof is not available
+    console.log('Payment proof URL not available');
+  }
 };
 
 const formatAmount = (val: number) =>
@@ -441,6 +505,66 @@ const statusClass = (status: string) => {
 .upload-preview { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .slip-preview-img { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; border: 2px solid #bbf7d0; }
 .slip-filename { font-size: 12px; color: #475569; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Uploaded slip preview styles */
+.uploaded-slip-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.slip-preview-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  cursor: pointer;
+}
+.uploaded-slip-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+}
+.slip-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 12px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.slip-preview-container:hover .slip-overlay {
+  opacity: 1;
+}
+.preview-icon {
+  font-size: 24px;
+  color: white;
+  margin-bottom: 4px;
+}
+.preview-text {
+  font-size: 12px;
+  color: white;
+  text-align: center;
+  font-weight: 500;
+}
+.slip-info {
+  text-align: center;
+}
+.slip-status {
+  font-size: 14px;
+  font-weight: 600;
+  color: #059669;
+  margin-bottom: 4px;
+}
+.slip-note {
+  font-size: 12px;
+  color: #6b7280;
+}
 
 .submit-btn-inline {
   display: flex !important;

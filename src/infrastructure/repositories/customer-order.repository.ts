@@ -13,6 +13,17 @@ export interface CustomerOrderItem {
   sellingTotal: string;
   targetCurrencySellingTotal: string | null;
   profit: string;
+  exchangeRateSell?: {
+    id: number;
+    createdAt: string;
+    updatedAt: string;
+    baseCurrency: string;
+    targetCurrency: string;
+    rateType: string;
+    rate: string;
+    isActive: boolean;
+    rateDate: string;
+  } | null;
 }
 
 export interface CustomerOrder {

@@ -15,8 +15,8 @@
     }"
   >
     <div class="logo">
-      <img v-if="!collapsed" src="/logo.svg" alt="Logo" class="logo-img" />
-      <img v-else src="/logo-small.svg" alt="Logo" class="logo-img-small" />
+      <img v-if="!collapsed" src="/images/store_likeA.avif" alt="Store Logo" class="logo-img" />
+      <img v-else src="/images/store_likeA.avif" alt="Store Logo" class="logo-img-small" />
     </div>
 
     <a-menu
@@ -89,19 +89,35 @@ const handleMenuClick = (item: any) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
-  margin: 16px;
-  border-radius: 8px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.logo:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.02);
 }
 
 .logo-img {
-  height: 40px;
+  height: 48px;
   width: auto;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
 }
 
 .logo-img-small {
-  height: 32px;
+  height: 36px;
   width: auto;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
 }
 
 :deep(.ant-menu-dark) {

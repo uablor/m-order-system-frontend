@@ -112,21 +112,22 @@
         <a-col :xs="24" :sm="8" :md="8" v-for="(currency, i) in displayNonLakCurrencies" :key="currency ? (currency.baseCurrency || currency.targetCurrency || 'unknown') : `placeholder-${i}`">
           <a-card :bordered="false" class="panel-card currency-card" :class="currency ? `currency-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'currency-placeholder'">
             <div class="currency-header">
+              <span>{{ $t('merchant.dashboard.currency') }}</span>
               <span class="currency-badge" :class="currency ? `badge-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'badge-placeholder'">{{ currency ? (currency.baseCurrency || currency.targetCurrency || 'Unknown') : '—' }}</span>
-              <span class="currency-title">{{ currency ? $t('merchant.dashboard.priceInCurrency', { currency: currency.baseCurrency || currency.targetCurrency || 'Unknown' }) : $t('merchant.dashboard.noData') }}</span>
+              <!-- <span class="currency-title">{{ currency ? $t('merchant.dashboard.priceInCurrency', { currency: currency.baseCurrency || currency.targetCurrency || 'Unknown' }) : $t('merchant.dashboard.noData') }}</span> -->
             </div>
             <div class="currency-rows">
               <div class="currency-row">
                 <span class="c-label">{{ $t('merchant.dashboard.totalPrice') }}</span>
-                <span class="c-val">{{ currency ? fmtCurrency(currency.totalAll) : fmtCurrency(0) }}</span>
+                <span class="c-val">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalAll)) : fmtCurrency(0) }}</span>
               </div>
               <div class="currency-row">
                 <span class="c-label">{{ $t('merchant.dashboard.pricePaid') }}</span>
-                <span class="c-val text-green">{{ currency ? fmtCurrency(currency.totalPaid) : fmtCurrency(0) }}</span>
+                <span class="c-val text-green">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalPaid)) : fmtCurrency(0) }}</span>
               </div>
               <div class="currency-row">
                 <span class="c-label">{{ $t('merchant.dashboard.priceUnpaid') }}</span>
-                <span class="c-val text-red">{{ currency ? fmtCurrency(currency.totalUnpaid) : fmtCurrency(0) }}</span>
+                <span class="c-val text-red">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalUnpaid)) : fmtCurrency(0) }}</span>
               </div>
               <!-- <div class="currency-divider" />
               <div class="currency-row">
@@ -141,33 +142,34 @@
       <!-- Row 2b: LAK card — full width, always render, placeholder when empty -->
       <a-row :gutter="[16, 16]" class="stats-row">
         <a-col :xs="24">
-          <a-card :bordered="false" class="panel-card currency-card currency-card--full currency-lak" :class="{ 'currency-placeholder': !displayLakCurrency }">
+          <a-card :bordered="false" class="panel-card currency-card currency-card--full currency-lak" :class="{ 'currency-placeholder': !displaySummaryLakCurrency }">
             <div class="currency-header">
-              <span class="currency-badge" :class="displayLakCurrency ? 'badge-lak' : 'badge-placeholder'">{{ displayLakCurrency ? (displayLakCurrency.baseCurrency || displayLakCurrency.targetCurrency || 'LAK') : 'LAK' }}</span>
-              <span class="currency-title">{{ displayLakCurrency ? $t('merchant.dashboard.priceInCurrency', { currency: displayLakCurrency.baseCurrency || displayLakCurrency.targetCurrency || 'LAK' }) : $t('merchant.dashboard.noData') }}</span>
+              <span>{{ $t('merchant.dashboard.currency') }}</span>
+              <span class="currency-badge" :class="displaySummaryLakCurrency ? 'badge-lak' : 'badge-placeholder'">{{ displaySummaryLakCurrency ? (displaySummaryLakCurrency.baseCurrency || displaySummaryLakCurrency.targetCurrency || 'LAK') : 'LAK' }}</span>
+             
             </div>
             <div class="lak-summary-rows">
               <div class="currency-row">
                 <span class="c-label">{{ $t('merchant.dashboard.totalPrice') }}</span>
-                <a-tooltip v-if="displayLakCurrency" :overlay-class-name="'blue-tooltip'">
-                  <template #title>{{ fmtCurrency(displayLakCurrency.totalAll) }}</template>
-                  <span class="c-val num-truncate">{{ fmtCurrency(displayLakCurrency.totalAll) }}</span>
+                <a-tooltip v-if="displaySummaryLakCurrency" :overlay-class-name="'blue-tooltip'">
+                  <template #title>{{ fmtCurrency(parseCurrencyString(displaySummaryLakCurrency.totalAll)) }}</template>
+                  <span class="c-val num-truncate">{{ fmtCurrency(parseCurrencyString(displaySummaryLakCurrency.totalAll)) }}</span>
                 </a-tooltip>
                 <span v-else class="c-val">{{ fmtCurrency(0) }}</span>
               </div>
               <div class="currency-row">
                 <span class="c-label">{{ $t('merchant.dashboard.pricePaid') }}</span>
-                <a-tooltip v-if="displayLakCurrency" :overlay-class-name="'blue-tooltip'">
-                  <template #title>{{ fmtCurrency(displayLakCurrency.totalPaid) }}</template>
-                  <span class="c-val text-green num-truncate">{{ fmtCurrency(displayLakCurrency.totalPaid) }}</span>
+                <a-tooltip v-if="displaySummaryLakCurrency" :overlay-class-name="'blue-tooltip'">
+                  <template #title>{{ fmtCurrency(parseCurrencyString(displaySummaryLakCurrency.totalPaid)) }}</template>
+                  <span class="c-val text-green num-truncate">{{ fmtCurrency(parseCurrencyString(displaySummaryLakCurrency.totalPaid)) }}</span>
                 </a-tooltip>
                 <span v-else class="c-val text-green">{{ fmtCurrency(0) }}</span>
               </div>
               <div class="currency-row">
                 <span class="c-label">{{ $t('merchant.dashboard.priceUnpaid') }}</span>
-                <a-tooltip v-if="displayLakCurrency" :overlay-class-name="'blue-tooltip'">
-                  <template #title>{{ fmtCurrency(displayLakCurrency.totalUnpaid) }}</template>
-                  <span class="c-val text-red num-truncate">{{ fmtCurrency(displayLakCurrency.totalUnpaid) }}</span>
+                <a-tooltip v-if="displaySummaryLakCurrency" :overlay-class-name="'blue-tooltip'">
+                  <template #title>{{ fmtCurrency(parseCurrencyString(displaySummaryLakCurrency.totalUnpaid)) }}</template>
+                  <span class="c-val text-red num-truncate">{{ fmtCurrency(parseCurrencyString(displaySummaryLakCurrency.totalUnpaid)) }}</span>
                 </a-tooltip>
                 <span v-else class="c-val text-red">{{ fmtCurrency(0) }}</span>
               </div>
@@ -175,8 +177,8 @@
               <div class="currency-row">
                 <span class="c-label">{{ $t('merchant.dashboard.totalInLak') }}</span>
                 <a-tooltip v-if="displayLakCurrency" :overlay-class-name="'blue-tooltip'">
-                  <template #title>{{ fmtCurrency(displayLakCurrency.totalAllConverted) }}</template>
-                  <span class="c-val text-blue num-truncate">{{ fmtCompact(displayLakCurrency.totalAllConverted) }}</span>
+                  <template #title>{{ fmtCurrency(parseCurrencyString(displayLakCurrency.totalAllConverted)) }}</template>
+                  <span class="c-val text-blue num-truncate">{{ fmtCompact(parseCurrencyString(displayLakCurrency.totalAllConverted)) }}</span>
                 </a-tooltip>
                 <span v-else class="c-val text-blue">{{ fmtCurrency(0) }}</span>
               </div> -->
@@ -298,10 +300,12 @@ const nonLakCurrencies = computed(() =>
     return curr !== 'LAK';
   })
 );
-const lakCurrency = computed(() =>
-  allCurrencies.value.find((c) => (c.baseCurrency || c.targetCurrency || '').toUpperCase() === 'LAK')
-);
-
+const lakCurrencyTarget = computed(() => {
+  const found = allCurrencies.value.find((c) => (c.targetCurrency || '').toUpperCase() === 'LAK');
+  console.log('All currencies:', allCurrencies.value);
+  console.log('Found LAK currency:', found);
+  return found;
+});
 /* Financial Summary: stable grid 3 — เสมอ 3 cards (เติม placeholder ถ้ามีน้อยกว่า 3) */
 const displayNonLakCurrencies = computed(() => {
   const list = nonLakCurrencies.value;
@@ -309,8 +313,7 @@ const displayNonLakCurrencies = computed(() => {
   const placeholders = Array(Math.max(0, 3 - list.length)).fill(null);
   return [...list, ...placeholders] as (typeof list[0] | null)[];
 });
-const displayLakCurrency = computed(() => lakCurrency.value ?? null);
-
+const displaySummaryLakCurrency = computed(() => lakCurrencyTarget.value ?? null);
 const safeFetchDashboard = async () => {
   error.value = null;
   try {
@@ -375,6 +378,13 @@ function fmt(val: number | undefined): string {
 function fmtCurrency(val: number | undefined): string {
   if (val == null) return '0';
   return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(val);
+}
+
+function parseCurrencyString(val: string | number): number {
+  if (typeof val === 'number') return val;
+  if (!val || val === '') return 0;
+  // Remove commas and convert to number
+  return parseFloat(val.replace(/,/g, ''));
 }
 
 /* ใช้เมื่อ uncomment Financial Summary section

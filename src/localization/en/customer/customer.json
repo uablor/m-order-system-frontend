@@ -27,7 +27,8 @@
   "orderLabel": "Order",
   "moreItems": "more items",
   "paymentStatus": {
-    "UNPAID": "Unpaid",
+    "UNPAID": "Awaiting Payment Verification",
+    "NOT_CREATED":"Unpaid",
     "PARTIAL": "Partially Paid",
     "PAID": "Paid",
     "PENDING_VERIFICATION": "Awaiting Payment Verification"
@@ -54,6 +55,10 @@
     "uploadText": "Click here to upload slip",
     "uploadHint": "JPG, PNG files only",
     "uploadNote": "Upload your payment slip image. It will be sent to the store for verification.",
+    "uploadedSlipTitle": "Uploaded Payment Slip",
+    "paymentSubmitted": "Payment submitted successfully",
+    "waitingForVerification": "Waiting for store verification",
+    "clickToPreview": "Click to preview",
     "submitBtn": "Submit Payment",
     "removeSlip": "Remove"
   },

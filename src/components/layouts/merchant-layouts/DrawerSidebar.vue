@@ -1,7 +1,8 @@
 <template>
   <div class="drawer-sidebar">
     <div class="logo">
-      <img src="/logo.svg" alt="Logo" class="logo-img" />
+      <img src="/images/store_likeA.avif" alt="Store Logo" class="logo-img" />
+      <span class="logo-text">store</span>
     </div>
 
     <a-menu 
@@ -68,28 +69,46 @@ const handleMenuClick = (info: any) => {
   height: 64px; 
   display: flex; 
   align-items: center; 
-  justify-content: center; 
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-  margin: 16px; 
-  border-radius: 16px; 
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  justify-content: space-between; 
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
-  animation: logoPulse 2s ease-in-out;
+  margin: 16px; 
 }
-@keyframes logoPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
+
 .logo:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.02);
 }
+
 .logo-img { 
-  height: 40px; 
+  height: 48px; 
   width: auto; 
-  filter: brightness(0) invert(1);
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
 }
+
+.logo-text {
+  margin-left: 12px !important;
+  font-size: 24px;
+  font-weight: 700;
+  color: #ff6b35;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.logo:hover .logo-text {
+  color: #ff8c42;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
 :deep(.ant-menu) { 
   background: #ffffff;
   border: none;

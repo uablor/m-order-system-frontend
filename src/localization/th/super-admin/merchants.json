@@ -81,6 +81,15 @@
     "status": "สถานะ",
     "neverLoggedIn": "ยังไม่เคย",
     "lak": "LAK",
-    "thb": "THB"
+    "thb": "THB",
+    "chartTitle": "รายได้ตามเดือน",
+    "chartSubtitle": "การแบ่งรายได้ประจำเดือนตามสถานะการชำระเงินและสกุลเงิน",
+    "totalRevenue": "รายได้ทั้งหมด",
+    "filterByCurrency": "กรองตามสกุลเงิน",
+    "currency": "สกุลเงิน",
+    "noChartData": "ไม่มีข้อมูลกราฟ",
+    "totalPrice": "ราคาทั้งหมด",
+    "pricePaid": "ชำระแล้ว",
+    "priceUnpaid": "ยังไม่จ่าย"
   }
 }

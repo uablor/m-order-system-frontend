@@ -229,7 +229,7 @@
               >
                 <div class="currency-card-header">
                   <div>
-                   <span class="currency-label !mr-2">ສະກຸນເງີນ</span> 
+                   <span class="currency-label !mr-2">{{ $t('merchants.detail.currency') }}</span> 
                     <span class="currency-badge">{{ item.baseCurrency }}</span>
                   </div>
                   <!-- <span class="currency-orders">{{ Math.round(item.totalAll) }} {{ $t('merchants.detail.orders') }}</span> -->
@@ -284,6 +284,13 @@
         </a-col>
       </a-row>
 
+      <!-- Row 5: Price Currency Chart -->
+      <a-row :gutter="[16, 16]" class="section-row" style="margin-top: 0;">
+        <a-col :xs="24" class="define-top-margin">
+          <MerchantPriceChart :merchant-id="merchantId" />
+        </a-col>
+      </a-row>
+
     </template>
   </div>
 </template>
@@ -302,6 +309,7 @@ import {
   ShoppingOutlined,
 } from '@ant-design/icons-vue';
 import { useMerchantDetail } from '@/presentation/composables/super-admin/useMerchantDetail';
+import MerchantPriceChart from './MerchantPriceChart.vue';
 
 const route = useRoute();
 const router = useRouter();

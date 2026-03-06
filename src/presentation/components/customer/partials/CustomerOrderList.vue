@@ -3,8 +3,8 @@
     <!-- Greeting -->
     <div class="greeting-section">
       <div class="greeting-row">
-        <div class="greeting-text">{{ $t('customer.greeting') }} {{ customerFirstName }}</div>
-        <span class="status-badge pending">● {{ $t('customer.statusPending') }}</span>
+        <div class="greeting-text">{{ $t('customer.greeting') }} {{ props.orders[0]?.customerName }}</div>
+        <span class="status-badge" :class="statusClass(props.orders[0]?.paymentStatus)">● {{ getStatusText(props.orders[0]?.paymentStatus || '') }}</span>
       </div>
       <div class="greeting-sub">{{ $t('customer.greetingSub') }}</div>
     </div>
@@ -122,7 +122,7 @@
                 {{ getOrderTitle(order) }}
               </div>
               <div class="product-bottom-row">
-                <span class="product-price">{{ formatOrderAmount(order.remainingAmount, order.targetCurrency) }}</span>
+                <span class="product-price">{{ formatOrderAmount(order.remainingAmount, order.customerOrderItems?.[0]?.exchangeRateSell?.baseCurrency || null) }}</span>
                 <span class="product-status" :class="statusClass(displayPaymentStatus(order))">
                   {{ $t(`customer.paymentStatus.${displayPaymentStatus(order)}`) }}
                 </span>
@@ -376,11 +376,16 @@ const displayPaymentStatus = (order: CustomerOrder): string => {
   return order.paymentStatus;
 };
 
-const statusClass = (status: string) => {
+const statusClass = (status: string | undefined) => {
+  if (!status) return 'status-pending';
   if (status === 'PAID') return 'status-ready';
   if (status === 'PARTIAL') return 'status-waiting';
   if (status === 'PENDING_VERIFICATION') return 'status-waiting';
   return 'status-pending';
+};
+
+const getStatusText = (status: string) => {
+  return t(`customer.paymentStatus.${status}`);
 };
 </script>
 
@@ -549,7 +554,7 @@ const statusClass = (status: string) => {
 }
 .product-bottom-row { display: flex; justify-content: space-between; align-items: center; }
 .product-price { font-size: 16px; font-weight: 800; color: #1d4ed8; }
-.product-status { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 9px; }
+.product-status { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 9px; display: inline-block; text-align: center; }
 .status-ready { background: #dcfce7; color: #15803d; }
 .status-pending { background: #fef3c7; color: #b45309; }
 .status-waiting { background: #e0e7ff; color: #3730a3; }

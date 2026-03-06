@@ -450,7 +450,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import {
   SearchOutlined,
   FilterOutlined,
@@ -526,10 +526,22 @@ const {
   canSubmitCreate,
   handleCreateSubmit,
   getCustomerOrderLabel,
+  fetchNotifications,
 } = useNotificationList();
 
 /* แสดง tablet layout adjustments สำหรับ Galaxy Tab S7 */
 const isTabletLayout = computed(() => isTablet.value);
+
+// Watch for tab switching - auto refetch notifications when switching to history tab
+watch(
+  () => activeTab.value,
+  async (newTab) => {
+    if (newTab === 'history') {
+      // Auto refetch notifications when switching to history tab
+      await fetchNotifications();
+    }
+  }
+);
 </script>
 
 <style scoped>

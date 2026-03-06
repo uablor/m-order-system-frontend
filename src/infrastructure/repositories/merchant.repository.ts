@@ -48,6 +48,10 @@ export class MerchantRepository {
   async getAdminPriceCurrencySummary(merchantId: number): Promise<any> {
     return await this.apiClient.post<any>('/dashboard/admin/merchant-price-currency-summary', { merchantId });
   }
+
+  async getPriceCurrencySummaryByDate(merchantId: number): Promise<any> {
+    return await this.apiClient.post<any>('/merchants/price-currency-summary-by-date', { merchantId });
+  }
 }
 
 export const merchantRepository = new MerchantRepository();

@@ -12,6 +12,7 @@
     "sectionFinancialOverview": "ສະຫຼຸບການເງິນ",
     "sectionFinancialOverviewDesc": "ລາຍຮັບລວມເທົ່າທຽມ LAK",
     "sectionTopCustomers": "ລູກຄ້າອັນດັບຕົ້ນ",
+    "currency": "ສະກຸນເງີນ",
     "sectionTopCustomersDesc": "ລູກຄ້າທີ່ມີຍອດຊື້ສູງສຸດ",
     "sectionTopCustomersAndOrderItems": "ລູກຄ້າອັນດັບຕົ້ນ & ລາຍການສິນຄ້າຫຼ້າສຸດ",
     "sectionTopCustomersAndOrderItemsDesc": "ລູກຄ້າທີ່ມີຍອດຊື້ສູງສຸດແລະລາຍການສິນຄ້າຫຼ້າສຸດ",
@@ -366,7 +367,9 @@
     "summaryTotalOrders": "ອໍເດີທັງໝົດ",
     "summaryTotalCost": "ຕົ້ນທຶນລວມ",
     "summaryTotalSelling": "ຍອດຂາຍລວມ",
-    "summaryTotalProfit": "ກຳໄລລວມ"
+    "summaryTotalProfit": "ກຳໄລລວມ",
+    "summaryArrivalStatus": "ສະຖານະການມາຮອດ",
+    "summaryPaymentStatus": "ສະຖານະການຊຳລະ"
   },
   "orderDetail": {
     "breadcrumbOrders": "ອໍເດີ",

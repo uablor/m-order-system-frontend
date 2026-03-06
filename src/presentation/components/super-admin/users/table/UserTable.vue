@@ -516,9 +516,9 @@ const columns = computed<TableColumnsType>(() => [
 :deep(.ant-table-tbody .ant-table-cell-fix-right) {
   z-index: 2 !important;
 }
-:deep(.ant-table-tbody > tr:hover .ant-table-cell-fix-right) {
+/* :deep(.ant-table-tbody > tr:hover .ant-table-cell-fix-right) {
   background: rgba(24, 144, 255, 0.06) !important;
-}
+} */
 .role-tag { border-radius: 999px; font-size: 12px; font-weight: 700; }
 .pill-tag { border-radius: 999px; font-weight: 700; }
 

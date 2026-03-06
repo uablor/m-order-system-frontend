@@ -81,6 +81,15 @@
     "status": "Status",
     "neverLoggedIn": "Never",
     "lak": "LAK",
-    "thb": "THB"
+    "thb": "THB",
+    "chartTitle": "Revenue by Month",
+    "chartSubtitle": "Monthly revenue breakdown by payment status and currency",
+    "totalRevenue": "Total Revenue",
+    "filterByCurrency": "Filter by Currency",
+    "currency": "Currency",
+    "noChartData": "No chart data available",
+    "totalPrice": "Total Price",
+    "pricePaid": "Paid",
+    "priceUnpaid": "Unpaid"
   }
 }

@@ -6,17 +6,6 @@
         <div class="page-subtitle">{{ $t('merchant.orderList.subtitle') }}</div>
       </div>
 
-      <a-input
-        v-model:value="filters.search"
-        allow-clear
-        class="search-input"
-        :placeholder="$t('merchant.orderList.searchPlaceholder')"
-        data-testid="order-search-input"
-        @pressEnter="triggerSearch"
-      >
-        <template #prefix><SearchOutlined /></template>
-      </a-input>
-
       <a-button
         v-if="isMobile"
         type="default"
@@ -38,24 +27,35 @@
         </div>
       </div>
       <div class="summary-card">
-        <div class="summary-icon cost-icon"><DollarOutlined /></div>
+        <div class="summary-icon arrival-icon"><CheckCircleOutlined /></div>
         <div class="summary-body">
-          <div class="summary-label">{{ $t('merchant.orderList.summaryTotalCost') }}</div>
-          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(summary.totalFinalCost) }}</template><div class="summary-value num-truncate">{{ truncNum(summary.totalFinalCost) }}</div></a-tooltip>
+          <div class="summary-label">{{ $t('merchant.orderList.summaryArrivalStatus') }}</div>
+          <div class="summary-sub-grid">
+            <div class="summary-sub-item">
+              <span class="summary-sub-label">{{ $t('merchant.orderList.arrivalArrived') }}</span>
+              <span class="summary-sub-value text-green">{{ summary.arrivedOrders || 0 }}</span>
+            </div>
+            <div class="summary-sub-item">
+              <span class="summary-sub-label">{{ $t('merchant.orderList.arrivalNotArrived') }}</span>
+              <span class="summary-sub-value text-orange">{{ summary.notArrivedOrders || 0 }}</span>
+            </div>
+          </div>
         </div>
       </div>
       <div class="summary-card">
-        <div class="summary-icon selling-icon"><ShoppingCartOutlined /></div>
+        <div class="summary-icon payment-icon"><DollarOutlined /></div>
         <div class="summary-body">
-          <div class="summary-label">{{ $t('merchant.orderList.summaryTotalSelling') }}</div>
-          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(summary.totalSellingAmount) }}</template><div class="summary-value num-truncate">{{ truncNum(summary.totalSellingAmount) }}</div></a-tooltip>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon profit-icon"><RiseOutlined /></div>
-        <div class="summary-body">
-          <div class="summary-label">{{ $t('merchant.orderList.summaryTotalProfit') }}</div>
-          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(summary.totalProfit) }}</template><div class="summary-value num-truncate" :class="{ 'profit-positive': Number(summary.totalProfit) >= 0, 'profit-negative': Number(summary.totalProfit) < 0 }">{{ truncNum(summary.totalProfit) }}</div></a-tooltip>
+          <div class="summary-label">{{ $t('merchant.orderList.summaryPaymentStatus') }}</div>
+          <div class="summary-sub-grid">
+            <div class="summary-sub-item">
+              <span class="summary-sub-label">{{ $t('merchant.orderList.paymentPaid') }}</span>
+              <span class="summary-sub-value text-green">{{ summary.paidOrders || 0 }}</span>
+            </div>
+            <div class="summary-sub-item">
+              <span class="summary-sub-label">{{ $t('merchant.orderList.paymentUnpaid') }}</span>
+              <span class="summary-sub-value text-red">{{ summary.unpaidOrders || 0 }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -68,67 +68,60 @@
         class="filter-card mb-4"
       >
         <div class="filter-bar">
-        <a-date-picker
-          v-model:value="startDate"
-          class="filter-date-single"
-          :placeholder="$t('merchant.orderList.startDate')"
-          :popup-class-name="'blue-picker-popup'"
-          @change="onFilterChange"
-        />
-        <a-date-picker
-          v-model:value="endDate"
-          class="filter-date-single"
-          :placeholder="$t('merchant.orderList.endDate')"
-          :popup-class-name="'blue-picker-popup'"
-          @change="onFilterChange"
-        />
+          <a-date-picker
+            v-model:value="startDate"
+            class="filter-date-single"
+            :placeholder="$t('merchant.orderList.startDate')"
+            :popup-class-name="'blue-picker-popup'"
+            @change="onFilterChange"
+          />
 
-        <a-select
-          v-model:value="filters.arrivalStatus"
-          allow-clear
-          class="filter-select"
-          :placeholder="$t('merchant.orderList.arrivalStatusFilter')"
-          @change="onFilterChange"
-        >
-          <a-select-option value="NOT_ARRIVED">{{ $t('merchant.orderList.arrivalNotArrived') }}</a-select-option>
-          <a-select-option value="ARRIVED">{{ $t('merchant.orderList.arrivalArrived') }}</a-select-option>
-        </a-select>
+          <a-select
+            v-model:value="filters.arrivalStatus"
+            allow-clear
+            class="filter-select"
+            :placeholder="$t('merchant.orderList.arrivalStatusFilter')"
+            @change="onFilterChange"
+          >
+            <a-select-option value="ARRIVED">{{ $t('merchant.orderList.arrivalArrived') }}</a-select-option>
+            <a-select-option value="NOT_ARRIVED">{{ $t('merchant.orderList.arrivalNotArrived') }}</a-select-option>
+          </a-select>
 
-        <a-select
-          v-model:value="filters.paymentStatus"
-          allow-clear
-          class="filter-select"
-          :placeholder="$t('merchant.orderList.paymentStatusFilter')"
-          @change="onFilterChange"
-        >
-          <a-select-option value="UNPAID">{{ $t('merchant.orderList.paymentUnpaid') }}</a-select-option>
-          <a-select-option value="PARTIAL">{{ $t('merchant.orderList.paymentPartial') }}</a-select-option>
-          <a-select-option value="PAID">{{ $t('merchant.orderList.paymentPaid') }}</a-select-option>
-        </a-select>
+          <a-select
+            v-model:value="filters.paymentStatus"
+            allow-clear
+            class="filter-select"
+            :placeholder="$t('merchant.orderList.paymentStatusFilter')"
+            @change="onFilterChange"
+          >
+            <a-select-option value="UNPAID">{{ $t('merchant.orderList.paymentUnpaid') }}</a-select-option>
+            <a-select-option value="PARTIAL">{{ $t('merchant.orderList.paymentPartial') }}</a-select-option>
+            <a-select-option value="PAID">{{ $t('merchant.orderList.paymentPaid') }}</a-select-option>
+          </a-select>
 
-        <a-input
-          v-model:value="filters.customerName"
-          allow-clear
-          class="filter-input"
-          :placeholder="$t('merchant.orderList.customerNameFilter')"
-          @pressEnter="onFilterChange"
-          @change="onCustomerNameChange"
-        >
-          <template #prefix><UserOutlined /></template>
-        </a-input>
+          <a-input
+            v-model:value="filters.search"
+            allow-clear
+            class="filter-input"
+            :placeholder="$t('merchant.orderList.searchPlaceholder')"
+            @pressEnter="onFilterChange"
+            @change="onSearchChange"
+          >
+            <template #prefix><SearchOutlined /></template>
+          </a-input>
 
-        <a-select
-          v-model:value="filters.sort"
-          allow-clear
-          class="filter-select filter-select--sort"
-          :placeholder="$t('merchant.orderList.sortDirection')"
-          @change="onFilterChange"
-        >
-          <a-select-option value="DESC">{{ $t('merchant.orderList.sortDesc') }}</a-select-option>
-          <a-select-option value="ASC">{{ $t('merchant.orderList.sortAsc') }}</a-select-option>
-        </a-select>
-      </div>
-    </a-card>
+          <a-select
+            v-model:value="filters.sort"
+            allow-clear
+            class="filter-select filter-select--sort"
+            :placeholder="$t('merchant.orderList.sortDirection')"
+            @change="onFilterChange"
+          >
+            <a-select-option value="DESC">{{ $t('merchant.orderList.sortDesc') }}</a-select-option>
+            <a-select-option value="ASC">{{ $t('merchant.orderList.sortAsc') }}</a-select-option>
+          </a-select>
+        </div>
+      </a-card>
     </Transition>
 
     <!-- Desktop: table inside card -->
@@ -273,16 +266,12 @@ import type { Dayjs } from 'dayjs';
 import type { TableColumnsType, TablePaginationConfig } from 'ant-design-vue';
 import {
   SearchOutlined,
-  EyeOutlined,
-  DeleteOutlined,
   FilterOutlined,
-  DownOutlined,
+  EyeOutlined,
+  OrderedListOutlined,
   DollarOutlined,
-  ShoppingCartOutlined,
-  RiseOutlined,
-  UserOutlined,
+  CheckCircleOutlined,
 } from '@ant-design/icons-vue';
-import { OrderedListOutlined } from '@ant-design/icons-vue';
 import { orderRepository } from '@/infrastructure/repositories/order.repository';
 import type { Order, ArrivalStatusEnum, PaymentStatusEnum } from '@/domain/entities/user.entity';
 import type { OrderListQueryDto } from '@/application/dto/order.dto';
@@ -302,9 +291,10 @@ const orders = ref<Order[]>([]);
 const total = ref(0);
 const summary = ref({
   totalOrders: 0,
-  totalFinalCost: '0',
-  totalSellingAmount: '0',
-  totalProfit: '0',
+  arrivedOrders: 0,
+  notArrivedOrders: 0,
+  paidOrders: 0,
+  unpaidOrders: 0,
 });
 const currentPage = ref(1);
 const pageSize = ref(10);
@@ -316,13 +306,11 @@ const filters = reactive<{
   search: string;
   arrivalStatus: ArrivalStatusEnum | undefined;
   paymentStatus: PaymentStatusEnum | undefined;
-  customerName: string;
   sort: 'ASC' | 'DESC' | undefined;
 }>({
   search: '',
   arrivalStatus: undefined,
   paymentStatus: undefined,
-  customerName: '',
   sort: undefined,
 });
 
@@ -370,10 +358,6 @@ const paymentLabel = (status: PaymentStatusEnum) => {
 };
 
 const formatNumber = (val: string | number) => Number(val || 0).toLocaleString();
-const truncNum = (val: string | number, maxLen = 12) => {
-  const formatted = Number(val || 0).toLocaleString();
-  return formatted.length > maxLen ? formatted.slice(0, maxLen) + '…' : formatted;
-};
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '-';
   return new Date(dateStr).toLocaleDateString();
@@ -385,11 +369,14 @@ const onFilterChange = () => {
 };
 
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
-const triggerSearch = () => {
+const onSearchChange = () => {
   clearTimeout(searchTimer);
-  currentPage.value = 1;
-  fetchOrders();
+  searchTimer = setTimeout(() => {
+    currentPage.value = 1;
+    fetchOrders();
+  }, 450);
 };
+
 watch(() => filters.search, () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
@@ -398,15 +385,6 @@ watch(() => filters.search, () => {
   }, 450);
 });
 
-let customerNameTimer: ReturnType<typeof setTimeout> | undefined;
-const onCustomerNameChange = () => {
-  clearTimeout(customerNameTimer);
-  customerNameTimer = setTimeout(() => {
-    currentPage.value = 1;
-    fetchOrders();
-  }, 450);
-};
-
 const buildQuery = (): OrderListQueryDto => {
   const query: OrderListQueryDto = {
     page: currentPage.value,
@@ -414,7 +392,6 @@ const buildQuery = (): OrderListQueryDto => {
     merchantId: authPayload.value?.merchantId,
   };
   if (filters.search?.trim()) query.search = filters.search.trim();
-  if (filters.customerName?.trim()) query.customerName = filters.customerName.trim();
   if (filters.sort) query.sort = filters.sort;
   if (startDate.value) query.startDate = startDate.value.format('YYYY-MM-DD');
   if (endDate.value) query.endDate = endDate.value.format('YYYY-MM-DD');
@@ -431,7 +408,6 @@ const fetchOrders = async () => {
       orderRepository.getList(query) as Promise<any>,
       orderRepository.getSummaryByMerchant({
         search: query.search,
-        customerName: query.customerName,
         startDate: query.startDate,
         endDate: query.endDate,
         arrivalStatus: query.arrivalStatus,
@@ -440,11 +416,14 @@ const fetchOrders = async () => {
     ]);
     orders.value = listRes.results ?? [];
     total.value = listRes.pagination?.total ?? 0;
+    
+    // Use summary data from backend API
     summary.value = {
       totalOrders: summaryRes.totalOrders ?? 0,
-      totalFinalCost: summaryRes.totalFinalCostLak ?? '0',
-      totalSellingAmount: summaryRes.totalSellingAmountLak ?? '0',
-      totalProfit: summaryRes.totalProfitLak ?? '0',
+      arrivedOrders: summaryRes.arrivedOrders ?? 0,
+      notArrivedOrders: summaryRes.notArrivedOrders ?? 0,
+      paidOrders: summaryRes.paidOrders ?? 0,
+      unpaidOrders: summaryRes.unpaidOrders ?? 0,
     };
   } catch (err) {
     handleApiError(err, t);
@@ -484,51 +463,119 @@ onMounted(() => {
 /* ===== Summary Cards ===== */
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
 }
 .summary-card {
   background: #fff;
   border-radius: 14px;
-  padding: 16px 18px;
+  padding: 20px;
   display: flex;
-  align-items: center;
-  gap: 14px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.05);
+  align-items: flex-start;
+  gap: 16px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 10px 25px rgba(15, 23, 42, 0.04);
   border: 1px solid rgba(148, 163, 184, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(15, 23, 42, 0.1), 0 20px 25px rgba(15, 23, 42, 0.06);
 }
 .summary-icon {
-  width: 44px; height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
 }
 .orders-icon { background: rgba(29, 78, 216, 0.1); color: #1d4ed8; }
-.cost-icon { background: rgba(234, 88, 12, 0.1); color: #ea580c; }
-.selling-icon { background: rgba(22, 163, 74, 0.1); color: #16a34a; }
-.profit-icon { background: rgba(139, 92, 246, 0.1); color: #7c3aed; }
-.summary-body { flex: 1; min-width: 0; }
-.summary-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; }
-.summary-value { font-size: 18px; font-weight: 800; color: #0f172a; line-height: 1.3; }
-.summary-sub { font-size: 11px; color: #94a3b8; font-weight: 600; }
-.num-truncate {
-  display: inline-block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.arrival-icon { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.payment-icon { background: rgba(249, 115, 22, 0.1); color: #f97316; }
+
+.summary-body {
+  flex: 1;
+  min-width: 0;
 }
-.count-tag {
-  border-radius: 999px; font-size: 12px; font-weight: 800;
-  background: #eff6ff; color: #1d4ed8; border: none;
+.summary-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 8px;
+  line-height: 1.4;
 }
-@media (max-width: 1023px) {
-  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+.summary-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
 }
+.summary-sub-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+.summary-sub-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.summary-sub-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #94a3b8;
+  line-height: 1.3;
+}
+.summary-sub-value {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.text-green { color: #16a34a; }
+.text-orange { color: #f97316; }
+.text-red { color: #dc2626; }
+
+/* Responsive adjustments */
 @media (max-width: 767px) {
-  .summary-grid { grid-template-columns: 1fr; gap: 10px; }
-  .summary-card { padding: 12px 14px; border-radius: 10px; }
-  .summary-value { font-size: 15px; }
+  .summary-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .summary-card {
+    padding: 16px;
+    gap: 12px;
+  }
+  .summary-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+  .summary-label {
+    font-size: 12px;
+  }
+  .summary-value {
+    font-size: 20px;
+  }
+  .summary-sub-grid {
+    gap: 8px;
+  }
+  .summary-sub-value {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 18px;
+  }
+  .summary-card {
+    padding: 18px;
+  }
 }
 
 /* ===== Page header ===== */

@@ -515,9 +515,9 @@ const columns = computed<TableColumnsType>(() => [
 :deep(.ant-table-tbody .ant-table-cell-fix-right) {
   z-index: 2 !important;
 }
-:deep(.ant-table-tbody > tr:hover .ant-table-cell-fix-right) {
+/* :deep(.ant-table-tbody > tr:hover .ant-table-cell-fix-right) {
   background: rgba(24, 144, 255, 0.06) !important;
-}
+} */
 
 .eye-btn { color: #6366f1; }
 .eye-btn:hover { background: rgba(99, 102, 241, 0.1) !important; color: #4f46e5; }

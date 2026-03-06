@@ -305,6 +305,7 @@ export interface PriceCurrencySummaryByDateResponseDto {
 export interface PriceCurrencySummaryByDateRequestDto {
   startDate?: string;
   endDate?: string;
+  merchantId?: number;
 }
 
 export type RateType = 'BUY' | 'SELL';
@@ -370,6 +371,17 @@ export interface CustomerOrderItem {
   quantity: number;
   sellingTotal: string;
   profit: string;
+  exchangeRateSell?: {
+    id: number;
+    createdAt: string;
+    updatedAt: string;
+    baseCurrency: string;
+    targetCurrency: string;
+    rateType: string;
+    rate: string;
+    isActive: boolean;
+    rateDate: string;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }

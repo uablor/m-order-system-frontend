@@ -73,17 +73,19 @@ export class OrderRepository {
 
   async getSummaryByMerchant(query: Omit<OrderListQueryDto, 'page' | 'limit'>): Promise<{
     totalOrders: number;
-    totalFinalCostLak: string;
-    totalSellingAmountLak: string;
-    totalProfitLak: string;
+    arrivedOrders: number;
+    notArrivedOrders: number;
+    paidOrders: number;
+    unpaidOrders: number;
   }> {
     const res = await this.apiClient.getParams<any>(API_ENDPOINTS.ORDERS.BY_MERCHANT_SUMMARY, query);
     const data = extractSingleResult(res) ?? res;
     return {
       totalOrders: data?.totalOrders ?? 0,
-      totalFinalCostLak: data?.totalFinalCostLak ?? '0',
-      totalSellingAmountLak: data?.totalSellingAmountLak ?? '0',
-      totalProfitLak: data?.totalProfitLak ?? '0',
+      arrivedOrders: data?.arrivedOrders ?? 0,
+      notArrivedOrders: data?.notArrivedOrders ?? 0,
+      paidOrders: data?.paidOrders ?? 0,
+      unpaidOrders: data?.unpaidOrders ?? 0,
     };
   }
 

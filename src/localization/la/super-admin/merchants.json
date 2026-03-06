@@ -81,6 +81,15 @@
     "status": "ສະຖານະ",
     "neverLoggedIn": "ຍັງບໍ່ເຄີຍ",
     "lak": "LAK",
-    "thb": "THB"
+    "thb": "THB",
+    "chartTitle": "ລາຍຮັບຕາມເດືອນ",
+    "chartSubtitle": "ການແບ່ອຍລາຍຮັບປະຈຳເດືອນຕາມສະຖານະການຊຳລະເງິນ ແລະ ສະກຸນເງິນ",
+    "totalRevenue": "ລາຍຮັບທັງໝົດ",
+    "filterByCurrency": "ກັ່ອງຕາມສະກຸນເງິນ",
+    "currency": "ສະກຸນເງີນ",
+    "noChartData": "ບໍ່ມີຂໍ້ມູນກຣາຟ",
+    "totalPrice": "ລາຄາທັງໝົດ",
+    "pricePaid": "ຊຳລະແລ້ວ",
+    "priceUnpaid": "ຍັງບໍ່ທັນ"
   }
 }

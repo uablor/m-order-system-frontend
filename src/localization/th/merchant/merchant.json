@@ -12,6 +12,7 @@
     "sectionFinancialOverview": "สรุปการเงิน",
     "sectionFinancialOverviewDesc": "รายได้รวมเทียบเท่า LAK",
     "sectionTopCustomers": "ลูกค้าอันดับต้น",
+    "currency": "สกุลเงิน",
     "sectionTopCustomersDesc": "ลูกค้าที่มียอดซื้อสูงสุด",
     "sectionTopCustomersAndOrderItems": "ลูกค้าอันดับต้น & รายการสินค้าล่าสุด",
     "sectionTopCustomersAndOrderItemsDesc": "ลูกค้าที่มียอดซื้อสูงสุดและรายการสินค้าล่าสุด",
@@ -366,7 +367,9 @@
     "summaryTotalOrders": "ออเดอร์ทั้งหมด",
     "summaryTotalCost": "ต้นทุนรวม",
     "summaryTotalSelling": "ยอดขายรวม",
-    "summaryTotalProfit": "กำไรรวม"
+    "summaryTotalProfit": "กำไรรวม",
+    "summaryArrivalStatus": "สถานะการมาถึง",
+    "summaryPaymentStatus": "สถานะการชำระ"
   },
   "orderDetail": {
     "breadcrumbOrders": "ออเดอร์",
