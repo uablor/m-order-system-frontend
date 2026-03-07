@@ -464,8 +464,8 @@ const onFieldChange = (field: string) => {
   display: flex; align-items: center; gap: 8px;
   margin-bottom: 6px; padding: 0 2px;
 }
-.cust-label-customer { flex: 1; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; }
-.cust-label-qty { width: 120px; flex-shrink: 0; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; }
+.cust-label-customer { flex: 1; min-width: 150px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; }
+.cust-label-qty { width: 280px; flex-shrink: 0; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; }
 .cust-label-action { width: 72px; flex-shrink: 0; }
 
 /* Customer row — desktop */
@@ -475,8 +475,8 @@ const onFieldChange = (field: string) => {
   border: 1px solid rgba(148, 163, 184, 0.12);
 }
 .cust-row-inner { display: flex; align-items: center; gap: 8px; }
-.cust-col-customer { flex: 1; min-width: 0; }
-.cust-col-qty { width: 120px; flex-shrink: 0; }
+.cust-col-customer { flex: 1; min-width: 150px; }
+.cust-col-qty { width: 280px; flex-shrink: 0; }
 .cust-col-actions { width: 72px; flex-shrink: 0; display: flex; gap: 2px; justify-content: flex-end; }
 .create-cust-btn { border-radius: 8px; color: #7c3aed; }
 .create-cust-btn:hover { background: #f5f3ff !important; }

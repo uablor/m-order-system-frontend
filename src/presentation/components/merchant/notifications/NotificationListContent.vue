@@ -27,7 +27,7 @@
           </div>
         </template>
         <!-- History tab -->
-        <template v-else>
+        <!-- <template v-else>
           <a-button type="primary" @click="openCreateModal">
             <template #icon><PlusOutlined /></template>
             {{ $t('merchant.notifications.create') }}
@@ -41,7 +41,7 @@
           >
             <FilterOutlined />
           </a-button>
-        </template>
+        </template> -->
       </div>
     </div>
 

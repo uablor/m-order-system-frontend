@@ -1,7 +1,9 @@
 <template>
   <div class="app-header">
     <div class="store-info">
-      <div class="store-avatar">💎</div>
+      <div class="store-avatar">
+        <img src="/images/image_B.jpeg" alt="Store Logo" class="store-logo" />
+      </div>
       <div class="store-text">
         <div class="store-name">{{ storeName }}</div>
         <div class="store-type">{{ $t('customer.premiumStore') }}</div>
@@ -81,6 +83,19 @@ const switchLang = (lang: string) => {
   border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   font-size: 20px; flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+.store-logo {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.store-logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 .store-name { font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.2; }
 .store-type { font-size: 10px; font-weight: 600; color: #64748b; letter-spacing: 0.08em; margin-top: 1px; }

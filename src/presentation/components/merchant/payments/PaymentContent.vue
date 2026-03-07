@@ -12,15 +12,15 @@
    
 
     <!-- Financial Summary: 4-grid layout -->
-    <div class="page-header" style="margin-top: 24px;">
+    <!-- <div class="page-header" style="margin-top: 24px;">
       <div class="title-block">
         <div class="page-title">{{ $t('merchant.dashboard.sectionFinancialOverview') }}</div>
         <div class="page-subtitle">{{ $t('merchant.dashboard.sectionFinancialOverviewDesc') }}</div>
       </div>
     </div>
-    
+     -->
     <!-- Row: Price by Currency — 3-grid layout like dashboard -->
-    <a-row :gutter="[16, 16]" class="stats-row">
+    <a-row :gutter="[16, 16]" class="stats-row !mt-3">
       <a-col :xs="24" :sm="12" :md="8" :lg="6" v-for="(currency, i) in displayCurrencies" :key="currency ? (currency.baseCurrency || currency.targetCurrency || 'unknown') : `placeholder-${i}`">
         <a-card :bordered="false" class="panel-card currency-card" :class="currency ? `currency-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'currency-placeholder'">
           <div class="currency-header">
@@ -44,7 +44,7 @@
         </a-card>
       </a-col>
     </a-row>
-    <div class="search-filter-container">
+    <!-- <div class="search-filter-container">
       <a-input
         v-model:value="filters.search"
         allow-clear
@@ -63,10 +63,28 @@
       >
         <FilterOutlined />
       </a-button>
-    </div>
+    </div> -->
      <!-- Filter Panel -->
     <a-card v-if="!showFilterToggle || showFilters" :bordered="false" class="filter-card mb-4">
       <div class="filter-bar">
+         <a-input
+        v-model:value="filters.search"
+        allow-clear
+        class="search-input"
+        :placeholder="$t('merchant.payment.searchPlaceholder')"
+        @pressEnter="triggerSearch"
+      >
+        <template #prefix><SearchOutlined /></template>
+      </a-input>
+      <a-button
+        v-if="showFilterToggle"
+        type="default"
+        class="filter-toggle-btn"
+        :class="{ active: showFilters }"
+        @click="showFilters = !showFilters"
+      >
+        <FilterOutlined />
+      </a-button>
         <a-date-picker
           v-model:value="filters.startDate"
           class="filter-date-single"
