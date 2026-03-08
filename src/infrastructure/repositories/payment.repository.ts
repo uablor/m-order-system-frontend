@@ -112,6 +112,20 @@ export class PaymentRepository {
   async bulkReject(dto: PaymentBulkRejectDto): Promise<void> {
     await this.apiClient.putOrPatch<void>(API_ENDPOINTS.PAYMENTS.BULK_REJECT, dto, 'PATCH');
   }
+
+  async getByCustomerOrderId(customerOrderId: number): Promise<PaymentItem | null> {
+    try {
+      const response = await this.apiClient.getParams<any>(
+        API_ENDPOINTS.PAYMENTS.BY_CUSTOMER_ORDER(customerOrderId),
+        {},
+      );
+      const data = extractSingleResult(response) ?? response;
+      return data || null;
+    } catch (error) {
+      console.error('Error fetching payment by customer order ID:', error);
+      return null;
+    }
+  }
 }
 
 export const paymentRepository = new PaymentRepository();

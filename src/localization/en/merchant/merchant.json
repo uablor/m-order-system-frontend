@@ -649,7 +649,10 @@
     "summaryTotalAmount": "Total Amount",
     "summaryPending": "Pending",
     "summaryVerified": "Verified",
-    "summaryRejected": "Rejected"
+    "summaryRejected": "Rejected",
+    "paymentProofPreview": "Payment Proof Preview",
+    "loadingImage": "Loading image...",
+    "imageLoadError": "Failed to load image"
   },
   "notifications": {
     "breadcrumb": "Notifications",

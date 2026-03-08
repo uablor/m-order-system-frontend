@@ -59,6 +59,7 @@
     "paymentSubmitted": "Payment submitted successfully",
     "waitingForVerification": "Waiting for store verification",
     "clickToPreview": "Click to preview",
+     "paymentProofPreview": "Payment Proof Preview",
     "submitBtn": "Submit Payment",
     "removeSlip": "Remove"
   },

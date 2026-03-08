@@ -67,6 +67,7 @@
     "paymentSubmitted": "ส่งการชำระเงินเรียบร้อย",
     "waitingForVerification": "รอการตรวจสอบจากร้านค้า",
     "clickToPreview": "คลิกเพื่อดูรูป",
+    "paymentProofPreview":"หลักฐานกานขำละเงีน",
     "submitBtn": "ส่งการชำระเงิน",
     "removeSlip": "ลบ"
   },

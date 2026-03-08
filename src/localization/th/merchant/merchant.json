@@ -647,6 +647,7 @@
     "noSelected": "กรุณาเลือกอย่างน้อย 1 รายการ",
     "summaryTotalPayments": "การชำระทั้งหมด",
     "summaryTotalAmount": "ยอดรวม",
+     "paymentProofPreview": "หลักฐานกานขำละเงีน",
     "summaryPending": "รอดำเนินการ",
     "summaryVerified": "ยืนยันแล้ว",
     "summaryRejected": "ปฏิเสธ"

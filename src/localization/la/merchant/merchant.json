@@ -649,7 +649,10 @@
     "summaryTotalAmount": "ຍອດລວມ",
     "summaryPending": "ລໍຖ້າ",
     "summaryVerified": "ຢືນຢັນແລ້ວ",
-    "summaryRejected": "ປະຕິເສດ"
+    "summaryRejected": "ປະຕິເສດ",
+    "paymentProofPreview": "ຫຼັກຖານການຊຳລະເງີນ",
+    "loadingImage": "ການຮັພົຍານ...",
+    "imageLoadError": "ບໍ່ພົບການຮັພົຍານ"
   },
   "notifications": {
     "breadcrumb": "ການແຈ້ງເຕືອນ",

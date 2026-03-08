@@ -121,9 +121,9 @@
           :src="getPaymentProofUrl()" 
           alt="Payment slip" 
           class="uploaded-slip-img"
-          @click="previewSlip"
+          @click="showImageModal = true"
         />
-        <div class="slip-overlay" @click="previewSlip">
+        <div class="slip-overlay" @click="showImageModal = true">
           <EyeOutlined class="preview-icon" />
           <span class="preview-text">{{ $t('customer.detail.clickToPreview') }}</span>
         </div>
@@ -134,6 +134,39 @@
       </div>
     </div>
   </div>
+
+  <!-- Image Preview Modal -->
+  <Teleport to="body">
+    <Transition name="modal-fade" appear>
+      <div v-if="showImageModal && paymentProofUrl" class="image-modal-overlay" @click="closeImageModal">
+        <div class="image-modal-container" @click.stop>
+          <div class="image-modal-header">
+            <div class="modal-title">{{ $t('customer.detail.paymentProofPreview') }}</div>
+            <button class="modal-close-btn" @click="closeImageModal">
+              <CloseOutlined />
+            </button>
+          </div>
+          <div class="image-modal-content">
+            <img 
+              :src="paymentProofUrl" 
+              alt="Payment proof preview" 
+              class="modal-image"
+              @load="imageLoaded = true"
+              @error="imageError = true"
+            />
+            <div v-if="!imageLoaded && !imageError" class="image-loading">
+              <LoadingOutlined class="loading-icon" />
+              <span>{{ $t('customer.detail.loadingImage') }}</span>
+            </div>
+            <div v-if="imageError" class="image-error">
+              <ExclamationCircleOutlined class="error-icon" />
+              <span>{{ $t('customer.detail.imageLoadError') }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 
   <template v-if="canSubmit">
     <a-button
@@ -155,7 +188,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   ShoppingOutlined,
@@ -166,9 +199,14 @@ import {
   ArrowRightOutlined,
   ShoppingCartOutlined,
   EyeOutlined,
+  CloseOutlined,
+  LoadingOutlined,
+  ExclamationCircleOutlined,
 } from '@ant-design/icons-vue';
 import { formatDate } from '@/shared/utils/date.utils';
 import type { CustomerOrder } from '@/infrastructure/repositories/customer-order.repository';
+import { paymentRepository } from '@/infrastructure/repositories/payment.repository';
+import type { PaymentItem } from '@/infrastructure/repositories/payment.repository';
 
 const props = defineProps<{
   order: CustomerOrder;
@@ -238,6 +276,73 @@ const paymentStatusMessage = computed(() => {
 
 const { t } = useI18n();
 const fileInputRef = ref<HTMLInputElement | null>(null);
+const paymentData = ref<PaymentItem | null>(null);
+const paymentLoading = ref(false);
+
+// Modal state
+const showImageModal = ref(false);
+const imageLoaded = ref(false);
+const imageError = ref(false);
+
+// Computed property for payment proof URL
+const paymentProofUrl = computed(() => {
+  return paymentData.value?.paymentProofUrl || '';
+});
+
+// Watch for order changes to reset payment data
+watch(() => props.order.id, () => {
+  paymentData.value = null;
+  fetchPaymentData();
+});
+
+// Watch for modal open/close to reset image states
+watch(showImageModal, (newValue) => {
+  if (newValue) {
+    imageLoaded.value = false;
+    imageError.value = false;
+  }
+});
+
+// Modal control functions
+const closeImageModal = () => {
+  showImageModal.value = false;
+};
+
+// Handle ESC key to close modal
+const handleEscKey = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && showImageModal.value) {
+    closeImageModal();
+  }
+};
+
+// Add and remove keyboard event listener
+onMounted(() => {
+  document.addEventListener('keydown', handleEscKey);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleEscKey);
+});
+
+// Fetch payment data when component mounts or order changes
+const fetchPaymentData = async () => {
+  if (!props.order.hasPendingPayment) {
+    return;
+  }
+  
+  paymentLoading.value = true;
+  try {
+    const payment = await paymentRepository.getByCustomerOrderId(props.order.id);
+    paymentData.value = payment;
+  } catch (error) {
+    console.error('Error fetching payment data:', error);
+  } finally {
+    paymentLoading.value = false;
+  }
+};
+
+// Initial fetch
+fetchPaymentData();
 const emit = defineEmits<{
   (e: 'update:message', val: string): void;
   (e: 'fileChange', ev: Event): void;
@@ -254,25 +359,7 @@ const handleRemoveSlip = () => {
 };
 
 const getPaymentProofUrl = () => {
-  // TODO: This needs to be implemented by fetching payment data for the customer order
-  // For now, we'll return a placeholder - in a real implementation, you would:
-  // 1. Call payment repository to get payment by customerOrderId
-  // 2. Return the paymentProofUrl from the payment data
-  
-  // Placeholder implementation - replace with actual API call
-  console.log('Getting payment proof URL for order:', props.order.id);
-  return ''; // Return empty string for now, should be replaced with actual URL
-};
-
-const previewSlip = () => {
-  const url = getPaymentProofUrl();
-  if (url) {
-    // Open image in new tab for preview
-    window.open(url, '_blank');
-  } else {
-    // Show message that payment proof is not available
-    console.log('Payment proof URL not available');
-  }
+  return paymentProofUrl.value;
 };
 
 const formatAmount = (val: number) =>
@@ -564,6 +651,204 @@ const statusClass = (status: string) => {
 .slip-note {
   font-size: 12px;
   color: #6b7280;
+}
+
+/* Image Modal Styles */
+.image-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.image-modal-container {
+  background: white;
+  border-radius: 16px;
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 100%;
+  max-width: 800px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.image-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 16px;
+}
+
+.modal-close-btn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.image-modal-content {
+  position: relative;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background: #f3f4f6;
+}
+
+.modal-image {
+  max-width: 100%;
+  max-height: 70vh;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  object-fit: contain;
+  animation: imageZoomIn 0.3s ease-out;
+}
+
+.image-loading,
+.image-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.loading-icon {
+  font-size: 24px;
+  color: #3b82f6;
+  animation: spin 1s linear infinite;
+}
+
+.error-icon {
+  font-size: 24px;
+  color: #ef4444;
+}
+
+/* Modal Animations */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-fade-enter-from {
+  opacity: 0;
+}
+
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-fade-enter-active .image-modal-container {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-fade-leave-active .image-modal-container {
+  animation: modalSlideOut 0.3s ease-in;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalSlideOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+}
+
+@keyframes imageZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .image-modal-overlay {
+    padding: 10px;
+  }
+  
+  .image-modal-container {
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 12px;
+  }
+  
+  .image-modal-header {
+    padding: 12px 16px;
+  }
+  
+  .modal-title {
+    font-size: 14px;
+  }
+  
+  .image-modal-content {
+    padding: 16px;
+    min-height: 150px;
+  }
+  
+  .modal-image {
+    max-height: 60vh;
+  }
 }
 
 .submit-btn-inline {

@@ -38,10 +38,10 @@ export function useAuth() {
             fullName: response.user.fullName,
             roleId: response.user.roleId,
             roleName: response.user.roleName,
-            isActive: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            lastLogin: null,
+            isActive: response.user.isActive,
+            createdAt: response.user.createdAt,
+            updatedAt: response.user.updatedAt,
+            lastLogin: response.user.lastLogin,
           } as any);
         }
 
@@ -123,10 +123,10 @@ export function useAuth() {
           fullName: profile.fullName,
           roleId: profile.roleId,
           roleName: profile.roleName,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          lastLogin: null,
+          isActive: profile.isActive,
+          createdAt: profile.createdAt,
+          updatedAt: profile.updatedAt,
+          lastLogin: profile.lastLogin,
         } as any);
       }
     } catch (error) {

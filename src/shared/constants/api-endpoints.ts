@@ -201,6 +201,7 @@ const PAYMENTS_ENDPOINTS = {
   BASE: PAYMENTS_BASE,
   CREATE: PAYMENTS_BASE,
   MY_PAYMENTS: `${PAYMENTS_BASE}/my-payments`,
+  BY_CUSTOMER_ORDER: (customerOrderId: number) => `${PAYMENTS_BASE}/by-customer-order/${customerOrderId}`,
   BY_MERCHANT: `${PAYMENTS_BASE}/merchant`,
   BY_MERCHANT_SUMMARY: `${PAYMENTS_BASE}/merchant/summary`,
   GET_BY_ID: (id: number) => `${PAYMENTS_BASE}/${id}`,
