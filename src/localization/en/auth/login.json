@@ -12,6 +12,8 @@
   "emailInvalid": "Please input a valid email!",
   "passwordRequired": "Please input your password!",
   "success": "Login successful!",
-  "invalidCredentials": "Incorrect email or password. Please try again."
+  "invalidCredentials": "Incorrect email or password. Please try again.",
+  "emailNotFound": "Email not found. Please check your email address.",
+  "passwordIncorrect": "Incorrect password. Please try again."
 }
 

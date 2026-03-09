@@ -57,6 +57,14 @@
       </div>
     </div>
   </Transition>
+
+  <!-- Payment Result Modal -->
+  <PaymentResultModal
+    :visible="showModal"
+    :type="modalType"
+    @close="closeModal"
+    @retry="retryPayment"
+  />
 </template>
 
 <script setup lang="ts">
@@ -65,6 +73,7 @@ import { useI18n } from 'vue-i18n';
 import { message as antMessage } from 'ant-design-vue';
 import { ArrowLeftOutlined, EllipsisOutlined } from '@ant-design/icons-vue';
 import DetailBody from './CustomerOrderDetailBody.vue';
+import PaymentResultModal from './PaymentResultModal.vue';
 import { ApiClient } from '@/infrastructure/apis/api';
 import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
 import { uploadFilesForCustomer } from '@/infrastructure/repositories/upload.repository';
@@ -88,6 +97,10 @@ const slipFile = ref<File | null>(null);
 const slipPreview = ref('');
 const isDragging = ref(false);
 const submitting = ref(false);
+
+// Modal state
+const showModal = ref(false);
+const modalType = ref<'success' | 'error'>('success');
 
 const canSubmit = computed(() => {
   const o = props.order;
@@ -153,13 +166,32 @@ const handleSubmit = async () => {
       paymentProofImageId: imageId,
       customerMessage: message.value.trim() || undefined,
     });
-    antMessage.success(t('customer.toast.submitSuccess'));
-    emit('submitted');
+    
+    // Show success modal instead of toast
+    modalType.value = 'success';
+    showModal.value = true;
+    
+    // Emit submitted event after a short delay to allow modal to show
+    setTimeout(() => {
+      emit('submitted');
+    }, 500);
   } catch {
-    antMessage.error(t('customer.toast.submitError'));
+    // Show error modal instead of toast
+    modalType.value = 'error';
+    showModal.value = true;
   } finally {
     submitting.value = false;
   }
+};
+
+const closeModal = () => {
+  showModal.value = false;
+};
+
+const retryPayment = () => {
+  showModal.value = false;
+  // Retry the payment submission
+  handleSubmit();
 };
 </script>
 

@@ -18,6 +18,8 @@ export function useAuth() {
   const loading = ref(false);
   /** ข้อความ error สำหรับแสดงใน login form inline */
   const loginError = ref<string | null>(null);
+  const emailError = ref<string | null>(null);
+  const passwordError = ref<string | null>(null);
 
   /**
    * Login
@@ -25,6 +27,8 @@ export function useAuth() {
   const login = async (credentials: LoginDto) => {
     loading.value = true;
     loginError.value = null;
+    emailError.value = null;
+    passwordError.value = null;
     try {
       const response = await authRepository.login(credentials);
       if (response?.access_token) {
@@ -72,8 +76,21 @@ export function useAuth() {
         const msg = Array.isArray(data.message) ? data.message.join(', ') : data.message;
 
         if (status === 401 || status === 400) {
-          /* รหัสผ่านหรืออีเมลผิด — แสดง inline ใน form */
-          loginError.value = msg || t('login.invalidCredentials');
+          // Analyze error message to determine field-specific errors
+          const errorMsg = (msg || '').toLowerCase();
+          
+          if (errorMsg.includes('email not found') || errorMsg.includes('email not found')) {
+            emailError.value = t('login.emailNotFound');
+          } else if (errorMsg.includes('incorrect password') || errorMsg.includes('password incorrect')) {
+            passwordError.value = t('login.passwordIncorrect');
+          } else if (errorMsg.includes('email') || errorMsg.includes('user') || errorMsg.includes('not found')) {
+            emailError.value = t('login.emailNotFound');
+          } else if (errorMsg.includes('password') || errorMsg.includes('incorrect') || errorMsg.includes('invalid')) {
+            passwordError.value = t('login.passwordIncorrect');
+          } else {
+            // Generic fallback for other credential errors
+            emailError.value = t('login.invalidCredentials');
+          }
         } else {
           /* error อื่น — toast ตามปกติ */
           handleApiError(error, t);
@@ -138,12 +155,28 @@ export function useAuth() {
     }
   };
 
-  const clearLoginError = () => { loginError.value = null; };
+  const clearLoginError = () => { 
+    loginError.value = null; 
+    emailError.value = null; 
+    passwordError.value = null; 
+  };
+
+  const clearEmailError = () => { 
+    emailError.value = null; 
+  };
+
+  const clearPasswordError = () => { 
+    passwordError.value = null; 
+  };
 
   return {
     loading: computed(() => loading.value),
     loginError: computed(() => loginError.value),
+    emailError: computed(() => emailError.value),
+    passwordError: computed(() => passwordError.value),
     clearLoginError,
+    clearEmailError,
+    clearPasswordError,
     token,
     user,
     isAuthenticated,

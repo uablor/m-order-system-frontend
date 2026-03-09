@@ -4,10 +4,7 @@
       <div class="store-avatar">
         <img src="/images/image_B.jpeg" alt="Store Logo" class="store-logo" />
       </div>
-      <div class="store-text">
-        <div class="store-name">{{ storeName }}</div>
-        <div class="store-type">{{ $t('customer.premiumStore') }}</div>
-      </div>
+      
     </div>
     <div class="header-actions">
       <!-- <button class="icon-btn" title="Search orders" @click="$emit('open-filter')">

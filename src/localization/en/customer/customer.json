@@ -68,5 +68,16 @@
     "uploadRequired": "Please upload a payment slip first",
     "submitSuccess": "Payment submitted successfully!",
     "submitError": "Failed to submit payment. Please try again."
+  },
+  "paymentModal": {
+    "successTitle": "Payment Submitted!",
+    "successMessage": "Your payment has been successfully submitted and is now being processed.",
+    "successSubMessage": "You will receive a notification once the payment is verified.",
+    "successBtn": "Ok",
+    "errorTitle": "Payment Failed",
+    "errorMessage": "We couldn't submit your payment at this time.",
+    "errorSubMessage": "Please check your connection and try again, or contact support if the problem persists.",
+    "errorBtn": "Cancel",
+    "retryBtn": "Try Again"
   }
 }
