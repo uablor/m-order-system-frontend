@@ -65,7 +65,6 @@ export function useMerchantDashboard() {
   const fetchDashboard = async () => {
     loading.value = true;
     try {
-      console.log('Starting dashboard fetch...');
       
       // Fetch summary first (most important)
       try {
@@ -73,10 +72,8 @@ export function useMerchantDashboard() {
         const summaryData = extractSingleResult(summaryRes);
         if (summaryData) {
           summary.value = summaryData;
-          console.log('Summary loaded:', summaryData);
         }
       } catch (error) {
-        console.error('Failed to fetch summary:', error);
       }
       
       // Fetch price currency summary
@@ -86,10 +83,8 @@ export function useMerchantDashboard() {
         const priceCurrencyData = (raw.length === 1 && Array.isArray(raw[0])) ? raw[0] : raw as MerchantPriceCurrencySummaryDto[];
         if (priceCurrencyData && Array.isArray(priceCurrencyData)) {
           priceCurrencySummary.value = priceCurrencyData;
-          console.log('Price currency summary loaded:', priceCurrencyData);
         }
       } catch (error) {
-        console.error('Failed to fetch price currency summary:', error);
       }
       
       // Fetch top customers
@@ -98,16 +93,12 @@ export function useMerchantDashboard() {
         const topCustomersData = extractSingleResult(topCustomersRes);
         if (topCustomersData) {
           topCustomers.value = topCustomersData;
-          console.log('Top customers loaded:', topCustomersData);
         }
       } catch (error) {
-        console.error('Failed to fetch top customers:', error);
       }
       
-      console.log('Dashboard fetch completed');
       return true;
     } catch (error) {
-      console.error('Dashboard fetch error:', error);
       handleApiError(error, t);
       return false;
     } finally {
