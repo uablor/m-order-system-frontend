@@ -581,7 +581,15 @@
     "orderDetailProduct": "สินค้า",
     "orderDetailVariant": "ตัวเลือก",
     "orderDetailQty": "จำนวน",
-    "edit": "แก้ไข"
+    "edit": "แก้ไข",
+    "noValidWhatsAppNumbers": "ไม่พบเบอร์ WhatsApp ที่ถูกต้อง",
+    "whatsappTabsOpened": "เปิด WhatsApp {count} แท็บสำเร็จแล้ว",
+    "whatsappOpenError": "เกิดข้อผิดพลาดในการเปิด WhatsApp",
+    "openingWhatsApp": "กำลังเปิด WhatsApp",
+    "openingWhatsAppMessages": "กำลังเปิดข้อความ WhatsApp",
+    "progress": "{current} จาก {total}",
+    "currentlyOpening": "กำลังเปิดให้",
+    "whatsappProgressNote": "กรุณารอสักครู่ขณะที่เราเปิด WhatsApp สำหรับแต่ละลูกค้า เบราว์เซอร์อาจขออนุญาตในการเปิดป็อบอัป"
   },
   "arrivalDetail": {
     "breadcrumbArrivals": "การมาถึง",

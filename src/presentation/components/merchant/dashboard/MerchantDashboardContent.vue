@@ -372,7 +372,6 @@ function fmtCurrency(val: number | undefined): string {
   return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(val);
 }
 
-<<<<<<< HEAD
 function parseCurrencyString(val: string | number): number {
   if (typeof val === 'number') return val;
   if (!val || val === '') return 0;
@@ -380,32 +379,6 @@ function parseCurrencyString(val: string | number): number {
   return parseFloat(val.replace(/,/g, ''));
 }
 
-/* ใช้เมื่อ uncomment Financial Summary section
-function getTotalRevenue(): number {
-  if (!dashboard.value?.priceCurrencySummary?.length) return 0;
-  return dashboard.value.priceCurrencySummary.reduce((sum, currency) => {
-    if (!currency?.totalAllConverted) return sum;
-    return sum + currency.totalAllConverted;
-  }, 0);
-}
-function getTotalPaid(): number {
-  if (!dashboard.value?.priceCurrencySummary?.length) return 0;
-  return dashboard.value.priceCurrencySummary.reduce((sum, currency) => {
-    if (!currency?.totalPaidConverted) return sum;
-    return sum + currency.totalPaidConverted;
-  }, 0);
-}
-function getTotalUnpaid(): number {
-  if (!dashboard.value?.priceCurrencySummary?.length) return 0;
-  return dashboard.value.priceCurrencySummary.reduce((sum, currency) => {
-    if (!currency?.totalUnpaidConverted) return sum;
-    return sum + currency.totalUnpaidConverted;
-  }, 0);
-}
-function getTotalInLak(): number { return getTotalRevenue(); }
-*/
-=======
->>>>>>> c214074dfe4b091661e4b92864f28127721703ab
 </script>
 
 <style scoped>

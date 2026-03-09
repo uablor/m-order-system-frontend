@@ -581,7 +581,15 @@
     "orderDetailProduct": "ສິນຄ້າ",
     "orderDetailVariant": "ຕົວເລືອກ",
     "orderDetailQty": "ຈຳນວນ",
-    "edit": "ແກ້ໄຂ"
+    "edit": "ແກ້ໄຂ",
+    "noValidWhatsAppNumbers": "ບໍ່ພົບເບີໂຣ WhatsApp ທີ່ຖືກຕ້ອງ",
+    "whatsappTabsOpened": "ເປີດ WhatsApp {count} ແທັບສຳເລັດແລ້ວ",
+    "whatsappOpenError": "ເກີດຂໍ້ຜິດພາດໃນການເປີດ WhatsApp",
+    "openingWhatsApp": "ກຳລັງເປີດ WhatsApp",
+    "openingWhatsAppMessages": "ກຳລັງເປີຂໍ້ຄວາມ WhatsApp",
+    "progress": "{current} ຈາກ {total}",
+    "currentlyOpening": "ກຳລັງເປີດໃຫ້",
+    "whatsappProgressNote": "ກະລຸນາລໍສັບຄູ່ຂະນະທີ່ພວກເຮົາເປີດ WhatsApp ສຳລັບແຕ່ລະລູກຄ້າ ບຣາວເຊີອາຈະຂອອະນຸຍາດໃນການເປີດປ໊ອບອັບ"
   },
   "arrivalDetail": {
     "breadcrumbArrivals": "ການມາຮອດ",

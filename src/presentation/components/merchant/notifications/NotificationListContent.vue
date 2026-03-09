@@ -457,7 +457,6 @@ import {
   DownOutlined,
   DeleteOutlined,
   BellOutlined,
-  PlusOutlined,
   WhatsAppOutlined,
   FacebookOutlined,
 } from '@ant-design/icons-vue';
@@ -521,7 +520,6 @@ const {
   customerOrders,
   loadingCustomers,
   loadingCustomerOrders,
-  openCreateModal,
   closeCreateModal,
   canSubmitCreate,
   handleCreateSubmit,

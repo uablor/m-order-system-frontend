@@ -581,7 +581,15 @@
     "orderDetailProduct": "Product",
     "orderDetailVariant": "Variant",
     "orderDetailQty": "Qty",
-    "edit": "Edit"
+    "edit": "Edit",
+    "noValidWhatsAppNumbers": "No valid WhatsApp numbers found",
+    "whatsappTabsOpened": "Successfully opened {count} WhatsApp tab(s)",
+    "whatsappOpenError": "Error opening WhatsApp tabs",
+    "openingWhatsApp": "Opening WhatsApp",
+    "openingWhatsAppMessages": "Opening WhatsApp Messages",
+    "progress": "{current} of {total}",
+    "currentlyOpening": "Currently opening",
+    "whatsappProgressNote": "Please wait while we open WhatsApp tabs for each customer. Your browser may ask for permission to open popups."
   },
   "arrivalDetail": {
     "breadcrumbArrivals": "Arrivals",
