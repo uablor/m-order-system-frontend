@@ -15,25 +15,64 @@
     </div>
   </div>
 
-  <!-- Items breakdown: table layout with column headers -->
+  <!-- Items breakdown: card layout like merchant version -->
   <div v-if="order.customerOrderItems?.length" class="items-section">
     <div class="items-header">
       <ShoppingCartOutlined class="section-icon-sm" />
       <span>{{ $t('customer.detail.itemsTitle') }}</span>
+      <a-tag class="count-tag">{{ order.customerOrderItems?.length || 0 }}</a-tag>
     </div>
-    <div class="items-table-wrap">
-      <div class="items-table-header">
-        <div class="col-product">{{ $t('customer.detail.colProductName') }}</div>
-        <div class="col-variant">{{ $t('customer.detail.colVariant') }}</div>
-        <div class="col-qty">{{ $t('customer.detail.colQuantity') }}</div>
-        <div class="col-price">{{ $t('customer.detail.colTotalPrice') }}</div>
-      </div>
-      <div class="items-table-body">
-        <div v-for="item in order.customerOrderItems" :key="item.id" class="items-table-row">
-          <div class="col-product" :data-label="$t('customer.detail.colProductName')">{{ item.productName }}</div>
-          <div class="col-variant" :data-label="$t('customer.detail.colVariant')">{{ item.variant || '—' }}</div>
-          <div class="col-qty" :data-label="$t('customer.detail.colQuantity')">{{ item.quantity }}</div>
-          <div class="col-price" :data-label="$t('customer.detail.colTotalPrice')">{{ formatItemPrice(item) }}</div>
+    
+    <!-- Cards View -->
+    <div v-if="formattedOrderItems && formattedOrderItems.length > 0" class="items-grid">
+      <div 
+        v-for="(item, idx) in formattedOrderItems" 
+        :key="item.id" 
+        class="item-card"
+        @click="selectOrderItem(item)"
+      >
+        <!-- Image Section -->
+        <div class="item-image-section">
+          <img 
+            v-if="getItemImage(item)" 
+            :src="getItemImage(item)" 
+            :alt="item.productName"
+            class="item-image"
+            @error="handleImageError"
+            @click.stop="openItemImageModal(item)"
+          />
+          <div v-else class="item-image-placeholder">
+            <ShoppingOutlined />
+          </div>
+        </div>
+
+        <!-- Content Section -->
+        <div class="item-content">
+          <div class="item-header">
+            <span class="item-num">#{{ idx + 1 }}</span>
+            <span class="item-name truncated-text">{{ item.productName }}</span>
+            <span v-if="item.variant" class="item-variant">({{ item.variant }})</span>
+          </div>
+
+          <div class="item-info">
+            <div class="info-row">
+              <span class="info-label">{{ $t('customer.detail.colQuantity') }}:</span>
+              <span class="info-value">{{ item.quantity }}</span>
+            </div>
+          </div>
+
+          <!-- Price Info -->
+          <div class="price-info">
+            <div class="price-row">
+              <span class="price-label">{{ $t('customer.detail.colTotalPrice') }}</span>
+              <span class="price-value">{{ item.formattedPrice }}</span>
+            </div>
+          </div>
+
+          <div class="click-hint" v-if="getItemImage(item)">
+            <EyeOutlined />
+            {{ $t('customer.detail.clickToViewImage') }}
+          </div>
         </div>
       </div>
     </div>
@@ -121,9 +160,9 @@
           :src="getPaymentProofUrl()" 
           alt="Payment slip" 
           class="uploaded-slip-img"
-          @click="showImageModal = true"
+          @click="showPaymentImageModal = true"
         />
-        <div class="slip-overlay" @click="showImageModal = true">
+        <div class="slip-overlay" @click="showPaymentImageModal = true">
           <EyeOutlined class="preview-icon" />
           <span class="preview-text">{{ $t('customer.detail.clickToPreview') }}</span>
         </div>
@@ -135,14 +174,14 @@
     </div>
   </div>
 
-  <!-- Image Preview Modal -->
+  <!-- Payment Image Preview Modal -->
   <Teleport to="body">
     <Transition name="modal-fade" appear>
-      <div v-if="showImageModal && paymentProofUrl" class="image-modal-overlay" @click="closeImageModal">
+      <div v-if="showPaymentImageModal && paymentProofUrl" class="image-modal-overlay" @click="closePaymentImageModal">
         <div class="image-modal-container" @click.stop>
           <div class="image-modal-header">
             <div class="modal-title">{{ $t('customer.detail.paymentProofPreview') }}</div>
-            <button class="modal-close-btn" @click="closeImageModal">
+            <button class="modal-close-btn" @click="closePaymentImageModal">
               <CloseOutlined />
             </button>
           </div>
@@ -150,6 +189,39 @@
             <img 
               :src="paymentProofUrl" 
               alt="Payment proof preview" 
+              class="modal-image"
+              @load="imageLoaded = true"
+              @error="imageError = true"
+            />
+            <div v-if="!imageLoaded && !imageError" class="image-loading">
+              <LoadingOutlined class="loading-icon" />
+              <span>{{ $t('customer.detail.loadingImage') }}</span>
+            </div>
+            <div v-if="imageError" class="image-error">
+              <ExclamationCircleOutlined class="error-icon" />
+              <span>{{ $t('customer.detail.imageLoadError') }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <!-- Item Image Preview Modal -->
+  <Teleport to="body">
+    <Transition name="modal-fade" appear>
+      <div v-if="showItemImageModal && selectedItemImage" class="image-modal-overlay" @click="closeItemImageModal">
+        <div class="image-modal-container" @click.stop>
+          <div class="image-modal-header">
+            <div class="modal-title">{{ selectedImageTitle }}</div>
+            <button class="modal-close-btn" @click="closeItemImageModal">
+              <CloseOutlined />
+            </button>
+          </div>
+          <div class="image-modal-content">
+            <img 
+              :src="selectedItemImage" 
+              alt="Product image preview" 
               class="modal-image"
               @load="imageLoaded = true"
               @error="imageError = true"
@@ -207,6 +279,8 @@ import { formatDate } from '@/shared/utils/date.utils';
 import type { CustomerOrder } from '@/infrastructure/repositories/customer-order.repository';
 import { paymentRepository } from '@/infrastructure/repositories/payment.repository';
 import type { PaymentItem } from '@/infrastructure/repositories/payment.repository';
+import { orderItemRepository } from '@/infrastructure/repositories/order-item.repository';
+import type { OrderItem } from '@/domain/entities/user.entity';
 
 const props = defineProps<{
   order: CustomerOrder;
@@ -219,13 +293,50 @@ const props = defineProps<{
   isMobile: boolean;
 }>();
 
+// Cache to preserve currency information per order when exchange rate data is lost
+const orderCurrencyCache = ref<Map<number, string>>(new Map());
+
 const currencySymbol = (code: string | null) => {
   if (!code) return '₭';
-  const map: Record<string, string> = { LAK: '₭', THB: '฿', USD: '$', USDT: 'USDT' };
+  const map: Record<string, string> = { 
+    LAK: '₭', 
+    THB: '฿', 
+    USD: '$', 
+    USDT: 'USDT',
+    CNY: '¥',
+    RMB: '¥'
+  };
   return map[code] ?? code;
 };
 
+// Computed properties for formatted prices to ensure reactivity
+const formattedOrderItems = computed(() => {
+  console.log('=== RECOMPUTING FORMATTED ITEMS ===');
+  console.log('Current order ID:', props.order.id);
+  console.log('Order customerOrderItems:', props.order.customerOrderItems);
+  
+  const formatted = props.order.customerOrderItems?.map((item, index) => {
+    console.log(`Item ${index}:`, {
+      id: item.id,
+      orderItemId: item.id,
+      productName: item.productName,
+      exchangeRateSell: item.exchangeRateSell,
+      baseCurrency: item.exchangeRateSell?.baseCurrency,
+      targetCurrencySellingTotal: item.targetCurrencySellingTotal
+    });
+    
+    return {
+      ...item,
+      formattedPrice: formatItemPrice(item)
+    };
+  }) || [];
+  
+  console.log('Formatted items:', formatted);
+  return formatted;
+});
+
 const formatItemPrice = (item: { 
+  productName: string;
   sellingTotal: string; 
   targetCurrencySellingTotal: string | null; 
   exchangeRateSell?: { baseCurrency: string } | null;
@@ -233,8 +344,42 @@ const formatItemPrice = (item: {
   const amount = item.targetCurrencySellingTotal != null
     ? parseFloat(item.targetCurrencySellingTotal)
     : parseFloat(item.sellingTotal);
-  // Use exchangeRateSell.baseCurrency for currency symbol
-  const sym = currencySymbol(item.exchangeRateSell?.baseCurrency ?? null);
+  
+  // Use exchangeRateSell.baseCurrency if available, otherwise check if targetCurrencySellingTotal exists
+  // If targetCurrencySellingTotal exists, it means the price is converted, so use LAK as fallback
+  // If no conversion, try to get currency from exchange rate, fallback to LAK
+  let currencyCode: string | null = null;
+  
+  console.log(`formatItemPrice for "${item.productName}":`, {
+    sellingTotal: item.sellingTotal,
+    targetCurrencySellingTotal: item.targetCurrencySellingTotal,
+    exchangeRateSell: item.exchangeRateSell,
+    baseCurrency: item.exchangeRateSell?.baseCurrency
+  });
+  
+  if (item.exchangeRateSell?.baseCurrency) {
+    currencyCode = item.exchangeRateSell.baseCurrency;
+    // Cache the currency for this order
+    orderCurrencyCache.value.set(props.order.id, currencyCode);
+    console.log(`Using exchange rate currency: ${currencyCode}`);
+  } else if (item.targetCurrencySellingTotal != null) {
+    // Check if we have a cached currency for this order
+    const cachedCurrency = orderCurrencyCache.value.get(props.order.id);
+    if (cachedCurrency) {
+      currencyCode = cachedCurrency;
+      console.log(`Using cached currency: ${currencyCode}`);
+    } else {
+      // If there's a converted amount but no exchange rate, assume it's converted to LAK
+      currencyCode = 'LAK';
+      console.log('Using LAK fallback (has converted amount)');
+    }
+  } else {
+    console.log('Using default fallback (no exchange rate, no conversion)');
+  }
+  
+  const sym = currencySymbol(currencyCode);
+  console.log(`Final currency symbol: ${sym} for currency: ${currencyCode}`);
+  
   return `${formatAmount(amount)} ${sym}`;
 };
 
@@ -251,7 +396,14 @@ const formatTotalDue = (o: CustomerOrder & {
   
   // Use exchangeRateSell.baseCurrency from first item for currency symbol
   const firstItem = o.customerOrderItems?.[0];
-  const sym = currencySymbol(firstItem?.exchangeRateSell?.baseCurrency ?? null);
+  let currencyCode = firstItem?.exchangeRateSell?.baseCurrency ?? null;
+  
+  // If no exchange rate data, try to use cached currency
+  if (!currencyCode) {
+    currencyCode = orderCurrencyCache.value.get(o.id) ?? null;
+  }
+  
+  const sym = currencySymbol(currencyCode);
   
   return `${formatAmount(totalAmount)} ${sym}`;
 };
@@ -280,38 +432,106 @@ const paymentData = ref<PaymentItem | null>(null);
 const paymentLoading = ref(false);
 
 // Modal state
-const showImageModal = ref(false);
+const showPaymentImageModal = ref(false);
+const showItemImageModal = ref(false);
 const imageLoaded = ref(false);
 const imageError = ref(false);
+const selectedItemImage = ref<string | null>(null);
+const selectedImageTitle = ref<string>('');
+
+// Order item images cache
+const orderItemImages = ref<Map<number, OrderItem>>(new Map());
 
 // Computed property for payment proof URL
 const paymentProofUrl = computed(() => {
   return paymentData.value?.paymentProofUrl || '';
 });
 
-// Watch for order changes to reset payment data
-watch(() => props.order.id, () => {
+// Methods for image handling
+const selectOrderItem = (item: any) => {
+  // For now just log, can be extended for detail view
+  console.log('Selected order item:', item);
+};
+
+const getItemImage = (customerOrderItem: any): string | undefined => {
+  // Check if we have cached the order item with image
+  if (customerOrderItem.id && orderItemImages.value.has(customerOrderItem.id)) {
+    const orderItem = orderItemImages.value.get(customerOrderItem.id);
+    return orderItem?.image?.publicUrl || undefined;
+  }
+  
+  // Fetch the order item details if not cached
+  if (customerOrderItem.id) {
+    fetchOrderItemImage(customerOrderItem.id);
+  }
+  
+  return undefined;
+};
+
+const fetchOrderItemImage = async (orderItemId: number) => {
+  if (orderItemImages.value.has(orderItemId)) {
+    return; // Already cached
+  }
+  
+  try {
+    const orderItem = await orderItemRepository.getById(orderItemId);
+    orderItemImages.value.set(orderItemId, orderItem);
+  } catch (error) {
+    console.error('Error fetching order item image:', error);
+  }
+};
+
+const handleImageError = (event: Event) => {
+  const img = event.target as HTMLImageElement;
+  img.style.display = 'none';
+};
+
+const openItemImageModal = (customerOrderItem: any) => {
+  const imageUrl = getItemImage(customerOrderItem);
+  if (imageUrl) {
+    selectedItemImage.value = imageUrl;
+    selectedImageTitle.value = customerOrderItem.productName || 'Product Image';
+    showItemImageModal.value = true;
+  }
+};
+
+const closePaymentImageModal = () => {
+  showPaymentImageModal.value = false;
+};
+
+const closeItemImageModal = () => {
+  showItemImageModal.value = false;
+  selectedItemImage.value = null;
+  selectedImageTitle.value = '';
+};
+
+// Watch for order changes to reset payment data and clear cache
+watch(() => props.order.id, (newOrderId, oldOrderId) => {
+  console.log(`Order changed from ${oldOrderId} to ${newOrderId}, clearing cache`);
   paymentData.value = null;
+  // Clear the order item images cache when switching orders
+  orderItemImages.value.clear();
+  console.log('Cache cleared, current cache size:', orderItemImages.value.size);
   fetchPaymentData();
 });
 
 // Watch for modal open/close to reset image states
-watch(showImageModal, (newValue) => {
-  if (newValue) {
+watch([showPaymentImageModal, showItemImageModal], (newValue) => {
+  if (newValue.some(val => val)) {
     imageLoaded.value = false;
     imageError.value = false;
   }
 });
 
-// Modal control functions
-const closeImageModal = () => {
-  showImageModal.value = false;
-};
-
-// Handle ESC key to close modal
+// Handle ESC key to close modals
 const handleEscKey = (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && showImageModal.value) {
-    closeImageModal();
+  if (event.key === 'Escape') {
+    if (showPaymentImageModal.value) {
+      closePaymentImageModal();
+    }
+    if (showItemImageModal.value) {
+      closeItemImageModal();
+    }
   }
 };
 
@@ -426,83 +646,188 @@ const statusClass = (status: string) => {
 }
 .section-icon-sm { font-size: 15px; color: #475569; }
 
-/* Items table layout */
-.items-table-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-}
-.items-table-header {
+/* Items card layout styles */
+.items-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 80px 1fr;
-  gap: 12px;
-  padding: 12px 16px;
-  background: #f8fafc;
-  font-size: 12px;
-  font-weight: 700;
-  color: #475569;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
 }
-.items-table-body {
-  display: flex;
-  flex-direction: column;
-}
-.items-table-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 80px 1fr;
-  gap: 12px;
-  padding: 12px 16px;
-  font-size: 13px;
-  color: #334155;
-  border-top: 1px dashed #e2e8f0;
-  align-items: center;
-}
-.items-table-row .col-product { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.items-table-row .col-variant { color: #64748b; font-size: 12px; }
-.items-table-row .col-qty { color: #64748b; text-align: left; }
-.items-table-row .col-price { font-weight: 700; color: #1d4ed8; text-align: left; }
 
-/* Mobile: card layout พร้อม label ในแต่ละ cell */
-@media (max-width: 576px) {
-  .items-table-header {
-    display: none;
-  }
-  .items-table-row {
-    display: grid;
+.item-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.item-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  transform: translateY(-2px);
+}
+
+.item-image-section {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.item-card:hover .item-image {
+  transform: scale(1.05);
+}
+
+.item-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  color: #94a3b8;
+  font-size: 48px;
+}
+
+.item-content {
+  padding: 16px;
+}
+
+.item-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.item-num {
+  background: #3b82f6;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.item-variant {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.item-info {
+  margin-bottom: 12px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.info-label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.info-value {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.price-info {
+  margin-bottom: 12px;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.price-label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.price-value {
+  color: #059669;
+  font-weight: 700;
+}
+
+.click-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #3b82f6;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.item-card:hover .click-hint {
+  opacity: 1;
+}
+
+.count-tag {
+  background: #eff6ff;
+  color: #3b82f6;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .items-grid {
     grid-template-columns: 1fr;
-    gap: 8px;
-    padding: 14px 16px;
-    border-top: 1px solid #e2e8f0;
-    align-items: stretch;
+    gap: 12px;
   }
-  .items-table-row .col-product,
-  .items-table-row .col-variant,
-  .items-table-row .col-qty,
-  .items-table-row .col-price {
-    display: flex;
+  
+  .item-image-section {
+    height: 160px;
+  }
+  
+  .item-content {
+    padding: 12px;
+  }
+  
+  .item-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 2px;
-    text-align: left;
+    gap: 4px;
   }
-  .items-table-row .col-product::before,
-  .items-table-row .col-variant::before,
-  .items-table-row .col-qty::before,
-  .items-table-row .col-price::before {
-    content: attr(data-label);
-    font-size: 11px;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
+  
+  .item-num {
+    align-self: flex-start;
   }
-  .items-table-row .col-product { font-weight: 600; white-space: normal; }
-  .items-table-row .col-variant,
-  .items-table-row .col-qty { color: #64748b; font-size: 12px; }
-  .items-table-row .col-price { font-weight: 700; color: #1d4ed8; }
 }
 
 .payment-status-message {

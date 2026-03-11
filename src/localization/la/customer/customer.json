@@ -59,7 +59,8 @@
     "paymentSubmitted": "ສົ່ງການຊຳລະເງິນສຳເລັດ",
     "waitingForVerification": "ລໍຖ້າການກວດສອບຈາກຮ້ານຄ້າ",
     "clickToPreview": "ກົດເພື່ອດູຮູບ",
-    "paymentProofPreview":"ຫຼັກຖານການຊຳລະເງີນ",
+    "clickToViewImage": "ກົດເພື່ອດູຮູບພາບ",
+    "paymentProofPreview":"ຫຼັກຖານການຊຳລະເງິນ",
     "submitBtn": "ສົ່ງການຊຳລະເງິນ",
     "removeSlip": "ລຶບ"
   },

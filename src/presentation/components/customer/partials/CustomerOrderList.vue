@@ -384,7 +384,8 @@ const statusClass = (status: string | undefined) => {
   return 'status-pending';
 };
 
-const getStatusText = (status: string) => {
+const getStatusText = (status: string | undefined) => {
+  if (!status) return t('customer.paymentStatus.UNPAID');
   return t(`customer.paymentStatus.${status}`);
 };
 </script>

@@ -37,7 +37,11 @@
     "title": "Order Details",
     "arrived": "Arrived",
     "totalDue": "Amount Due",
-    "paymentStatus": "Payment Status",
+    "paymentStatus": {
+      "PAID": "Paid",
+      "PARTIAL": "Partial", 
+      "PENDING_VERIFICATION": "Pending Verification"
+    },
     "paymentPending": "Pending verification. Please wait for the store to confirm your payment.",
     "paymentComplete": "Payment complete. Thank you!",
     "itemsTitle": "Order Items",
@@ -59,7 +63,8 @@
     "paymentSubmitted": "Payment submitted successfully",
     "waitingForVerification": "Waiting for store verification",
     "clickToPreview": "Click to preview",
-     "paymentProofPreview": "Payment Proof Preview",
+    "clickToViewImage": "Click to view image",
+    "paymentProofPreview": "Payment Proof Preview",
     "submitBtn": "Submit Payment",
     "removeSlip": "Remove"
   },
