@@ -15,6 +15,7 @@ export interface CreateFullOrderItemDto {
   discountType?: 'percent' | 'cash';
   discountValue?: number;
   sellingPriceForeign: number;
+  imageId?: number;
 }
 
 export interface CreateFullCustomerOrderItemDto {

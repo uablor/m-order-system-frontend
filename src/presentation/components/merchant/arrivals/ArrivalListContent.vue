@@ -14,7 +14,8 @@
       >
         <FilterOutlined />
       </a-button>
-      <a-button type="primary" class="add-btn" @click="goToCreateMultiple">
+      <!-- Show Record Arrival button only when NOT embedded in Notification page -->
+      <a-button v-if="!embedded" type="primary" class="add-btn" @click="goToCreateMultiple">
         <template #icon><PlusOutlined /></template>
         {{ $t('merchant.arrivals.recordArrival') }}
       </a-button>
@@ -33,29 +34,34 @@
     </div>
 
     <!-- Filter: แถวเดียว — Date, Sort, Customer, Search -->
-    <div class="filter-wrapper mb-4" :class="{ 'mt-0': embedded }">
+    <!-- Show filters only when NOT embedded in Notification page OR when controlsInParent is false -->
+    <div v-if="!embedded || !controlsInParent" class="filter-wrapper mb-4" :class="{ 'mt-0': embedded }">
       <Transition name="filter-panel">
         <a-card
-          v-if="!isMobile || showFilters"
+          v-if="(!isMobile || showFilters) && (!embedded || !controlsInParent)"
           :bordered="false"
           class="filter-card filter-card--single"
         >
           <div class="filter-bar filter-bar--single">
-            <a-date-picker
+            <!-- Commented out filters - keeping only customer name select filter -->
+            <!-- Start Date -->
+            <!-- <a-date-picker
               v-model:value="startDate"
               class="filter-date-single"
               :placeholder="$t('merchant.arrivals.startDate')"
               :popup-class-name="'blue-picker-popup'"
               @change="onFilterChange"
-            />
-            <a-date-picker
+            /> -->
+            <!-- End Date -->
+            <!-- <a-date-picker
               v-model:value="endDate"
               class="filter-date-single"
               :placeholder="$t('merchant.arrivals.endDate')"
               :popup-class-name="'blue-picker-popup'"
               @change="onFilterChange"
-            />
-            <a-select
+            /> -->
+            <!-- Sort -->
+            <!-- <a-select
               v-model:value="filters.sort"
               allow-clear
               class="filter-select filter-select--sort"
@@ -64,7 +70,9 @@
             >
               <a-select-option value="DESC">{{ $t('merchant.arrivals.sortDesc') }}</a-select-option>
               <a-select-option value="ASC">{{ $t('merchant.arrivals.sortAsc') }}</a-select-option>
-            </a-select>
+            </a-select> -->
+            
+            <!-- Keep: Customer Name Select Filter -->
             <a-select
               v-model:value="filters.customerId"
               allow-clear
@@ -84,7 +92,20 @@
                 {{ customer.name }}
               </a-select-option>
             </a-select>
-            <a-input
+            
+            <!-- Create Notification Button -->
+            <a-button 
+              v-if="selectedArrivalIds.size > 0" 
+              type="primary" 
+              :loading="createNotiSubmitting"
+              @click="openCreateNotiConfirm"
+              class="create-noti-btn"
+            >
+              {{ $t('merchant.arrivals.createNoti') }} ({{ selectedArrivalIds.size }})
+            </a-button>
+            
+            <!-- Commented out search input -->
+            <!-- <a-input
               v-model:value="filters.search"
               allow-clear
               class="filter-input filter-input--search"
@@ -92,7 +113,7 @@
               @pressEnter="triggerSearch"
             >
               <template #prefix><SearchOutlined /></template>
-            </a-input>
+            </a-input> -->
             <!-- <a-input
               v-model:value="filters.customerName"
               allow-clear
@@ -106,14 +127,6 @@
           </div>
         </a-card>
       </Transition>
-    </div>
-
-    <!-- Create Noti button (embedded mode, arrivals without notification, ไม่ใช้เมื่อ controlsInParent) -->
-    <div v-if="showCreateNotiBar && !controlsInParent" class="create-noti-bar">
-      <span class="create-noti-count">{{ $t('merchant.notifications.createNotiSelectedCount', { count: selectedArrivalIds.size }) }}</span>
-      <a-button type="primary" :loading="createNotiSubmitting" @click="openCreateNotiConfirm">
-        {{ $t('merchant.notifications.createNoti') }}
-      </a-button>
     </div>
 
     <!-- Desktop: table inside card -->
@@ -289,7 +302,6 @@ import { useRouter } from 'vue-router';
 import type { Dayjs } from 'dayjs';
 import type { TableColumnsType, TablePaginationConfig } from 'ant-design-vue';
 import {
-  SearchOutlined,
   EyeOutlined,
   PlusOutlined,
   FilterOutlined,
@@ -346,7 +358,7 @@ const orderOptions = ref<Order[]>([]);
 const orderOptionsForFilter = ref<Order[]>([]);
 const loadingOrders = ref(false);
 
-// Customer filter variables
+// Customer filter variables (restored for customer select filter)
 const customerOptions = ref<{ id: number; name: string }[]>([]);
 const loadingCustomers = ref(false);
 const selectedArrivalIds = ref<Set<number>>(new Set());
@@ -365,10 +377,6 @@ const columns = computed<TableColumnsType>(() => [
 ]);
 
 const columnsWithCheckbox = computed<TableColumnsType>(() => columns.value);
-
-const showCreateNotiBar = computed(
-  () => props.embedded && props.notificationFilter === false && selectedArrivalIds.value.size > 0,
-);
 
 const rowSelection = computed(() => {
   if (!props.embedded || props.notificationFilter !== false) return undefined;
@@ -411,20 +419,6 @@ const onFilterChange = () => {
   currentPage.value = 1;
   fetchArrivals();
 };
-
-let searchTimer: ReturnType<typeof setTimeout> | undefined;
-const triggerSearch = () => {
-  clearTimeout(searchTimer);
-  currentPage.value = 1;
-  fetchArrivals();
-};
-watch(() => filters.search, () => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => {
-    currentPage.value = 1;
-    fetchArrivals();
-  }, 450);
-});
 
 /* ใช้เมื่อ uncomment customer name filter input
 let customerNameTimer: ReturnType<typeof setTimeout> | undefined;
@@ -722,11 +716,21 @@ watch(showFilters, (visible) => {
   height: 44px;
   display: flex;
   align-items: center;
- 
+
 }
 .filter-select :deep(.ant-select-selector) { border-radius: 10px !important; height: 44px !important; line-height: 42px !important; }
 .filter-select--sort { min-width: 180px; width: 180px; }
 .filter-select--customer { min-width: 200px; width: 200px; }
+
+/* Create Notification Button in Filter Bar */
+.create-noti-btn {
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  font-weight: 500;
+  min-width: fit-content;
+  padding: 0 16px;
+}
 
 /* Search และ Customer — ความกว้างเท่ากัน แก้ white padding ที่บัง border */
 .filter-input {
@@ -792,6 +796,7 @@ watch(showFilters, (visible) => {
   .filter-date-single,
   .filter-select,
   .filter-select--customer { min-width: 100%; width: 100%; }
+  .create-noti-btn { width: 100%; margin-top: 8px; }
   .filter-input--search,
   .filter-input--customer { min-width: 100%; flex: 1 1 100%; }
 }
@@ -802,6 +807,7 @@ watch(showFilters, (visible) => {
   .filter-date-single,
   .filter-select,
   .filter-select--customer { min-width: 140px; flex: 1 1 140px; }
+  .create-noti-btn { min-width: 140px; flex: 1 1 140px; }
   .filter-input--search,
   .filter-input--customer { min-width: 120px; flex: 1 1 160px; }
   .page-header { flex-wrap: wrap; gap: 8px; }
@@ -813,23 +819,6 @@ watch(showFilters, (visible) => {
 .filter-slide-leave-active { transition: all 0.25s ease; }
 .filter-slide-enter-from,
 .filter-slide-leave-to { opacity: 0; transform: translateY(-8px); }
-
-/* ===== Create Noti bar ===== */
-.create-noti-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 12px;
-}
-.create-noti-count {
-  font-weight: 600;
-  color: #1d4ed8;
-}
 
 /* ===== Create Noti Modal ===== */
 .create-noti-modal-content {

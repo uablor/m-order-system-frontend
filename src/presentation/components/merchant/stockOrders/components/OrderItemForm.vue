@@ -6,10 +6,10 @@
       <a-button type="text" danger size="small" @click="$emit('remove', item.uid)"><DeleteOutlined /></a-button>
     </div>
     <a-form layout="vertical" class="item-form">
-      <!-- Basic Info: productName + variant (no qty) -->
+      <!-- Top Section: Product Name + Upload Image -->
       <template v-if="!isMobile">
         <a-row :gutter="[16, 0]">
-          <a-col :sm="24" :md="14">
+          <a-col :sm="24" :md="16">
             <a-form-item
               :label="$t('merchant.orders.items.productName')"
               :validate-status="errors.productName ? 'error' : ''"
@@ -24,9 +24,71 @@
               />
             </a-form-item>
           </a-col>
-          <a-col :sm="24" :md="10">
-            <a-form-item :label="$t('merchant.orders.items.variant')">
-              <a-input v-model:value="item.variant" :placeholder="$t('merchant.orders.items.variantPh')" />
+          <a-col :sm="24" :md="8">
+            <a-form-item :label="$t('merchant.orders.items.productImage')">
+              <div v-if="!variantForCalculation.productImage" class="avatar-upload-container">
+                <div class="avatar-upload-placeholder">
+                  <div class="avatar-upload-icon">
+                    <CameraOutlined />
+                  </div>
+                  <div class="avatar-upload-text">
+                    <div class="avatar-upload-title">{{ $t('merchant.orders.items.uploadProductImage') }}</div>
+                    <div class="avatar-upload-subtitle">{{ $t('common.optional') }}</div>
+                  </div>
+                </div>
+                <a-upload
+                  :before-upload="beforeImageUpload"
+                  :custom-request="handleImageUpload"
+                  :show-upload-list="false"
+                  accept="image/*"
+                  class="avatar-upload-input"
+                >
+                  <div class="avatar-upload-trigger"></div>
+                </a-upload>
+              </div>
+              <div v-else class="uploaded-image-container">
+                <div class="uploaded-image-content">
+                  <div class="uploaded-image-preview">
+                    <img 
+                      :src="variantForCalculation.productImage" 
+                      alt="Product" 
+                      class="uploaded-image-img"
+                    />
+                  </div>
+                  <div class="uploaded-image-text clickable" @click="triggerFileUpload">
+                    {{ getFileName(variantForCalculation.productImage) }}
+                  </div>
+                  <div class="uploaded-image-actions">
+                    <a-button 
+                      type="primary" 
+                      size="small" 
+                      class="uploaded-image-action-btn uploaded-image-view-btn"
+                      @click="previewImage(variantForCalculation.productImage || '')"
+                    >
+                      <template #icon><EyeOutlined /></template>
+                    </a-button>
+                    <a-button 
+                      type="primary" 
+                      danger 
+                      size="small" 
+                      class="uploaded-image-action-btn uploaded-image-delete-btn"
+                      @click="removeImage"
+                    >
+                      <template #icon><DeleteOutlined /></template>
+                    </a-button>
+                  </div>
+                </div>
+                <a-upload
+                  :before-upload="beforeImageUpload"
+                  :custom-request="handleImageUpload"
+                  :show-upload-list="false"
+                  accept="image/*"
+                  class="hidden-upload-input"
+                  ref="fileUploadRef"
+                >
+                  <div class="upload-trigger"></div>
+                </a-upload>
+              </div>
             </a-form-item>
           </a-col>
         </a-row>
@@ -45,293 +107,440 @@
             @input="onFieldChange('productName')"
           />
         </a-form-item>
-        <a-form-item :label="$t('merchant.orders.items.variant')">
-          <a-input v-model:value="item.variant" :placeholder="$t('merchant.orders.items.variantPh')" />
+        <a-form-item :label="$t('merchant.orders.items.productImage')">
+          <div v-if="!variantForCalculation.productImage" class="avatar-upload-container">
+            <div class="avatar-upload-placeholder">
+              <div class="avatar-upload-icon">
+                <CameraOutlined />
+              </div>
+              <div class="avatar-upload-text">
+                <div class="avatar-upload-title">{{ $t('merchant.orders.items.uploadProductImage') }}</div>
+                <div class="avatar-upload-subtitle">{{ $t('common.optional') }}</div>
+              </div>
+            </div>
+            <a-upload
+              :before-upload="beforeImageUpload"
+              :custom-request="handleImageUpload"
+              :show-upload-list="false"
+              accept="image/*"
+              class="avatar-upload-input"
+            >
+              <div class="avatar-upload-trigger"></div>
+            </a-upload>
+          </div>
+          <div v-else class="uploaded-image-container">
+            <div class="uploaded-image-content">
+              <div class="uploaded-image-preview">
+                <img 
+                  :src="variantForCalculation.productImage" 
+                  alt="Product" 
+                  class="uploaded-image-img"
+                />
+              </div>
+              <div class="uploaded-image-text clickable" @click="triggerFileUpload">
+                {{ getFileName(variantForCalculation.productImage) }}
+              </div>
+              <div class="uploaded-image-actions">
+                <a-button 
+                  type="primary" 
+                  size="small" 
+                  class="uploaded-image-action-btn uploaded-image-view-btn"
+                  @click="previewImage(variantForCalculation.productImage || '')"
+                >
+                  <template #icon><EyeOutlined /></template>
+                </a-button>
+                <a-button 
+                  type="primary" 
+                  danger 
+                  size="small" 
+                  class="uploaded-image-action-btn uploaded-image-delete-btn"
+                  @click="removeImage"
+                >
+                  <template #icon><DeleteOutlined /></template>
+                </a-button>
+              </div>
+            </div>
+            <a-upload
+              :before-upload="beforeImageUpload"
+              :custom-request="handleImageUpload"
+              :show-upload-list="false"
+              accept="image/*"
+              class="hidden-upload-input"
+              ref="fileUploadRef"
+            >
+              <div class="upload-trigger"></div>
+            </a-upload>
+          </div>
         </a-form-item>
       </template>
 
-      <!-- Section: Purchase -->
-      <div class="item-section">
-        <div class="item-section-header">
-          <span class="item-section-title purchase">{{ $t('merchant.orders.items.sectionPurchase') }}</span>
-          <span v-if="!isBuySameCurrency" class="exchange-rate-tag buy">1 {{ buyBaseCcy }} = {{ fmtRate(getBuyRate()) }} {{ buyTargetCcy }}</span>
-        </div>
-        <a-row :gutter="gutter">
-          <a-col v-bind="halfCol">
-            <a-form-item
-              :label="`${$t('merchant.orders.items.purchasePrice')} (${buyBaseCcy})`"
-              :validate-status="errors.purchasePrice ? 'error' : ''"
-              :help="errors.purchasePrice || ''"
-            >
-              <a-input-number
-                v-model:value="item.purchasePrice" :min="0"
-                :formatter="numFormatter" :parser="numParser"
-                :status="errors.purchasePrice ? 'error' : undefined"
-                :data-testid="`item-purchase-price-${index}`"
-                class="w-full"
-                @change="onFieldChange('purchasePrice')"
-              />
-            </a-form-item>
-          </a-col>
-          <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.purchaseTotalForeign')} (${buyBaseCcy})`">
-              <a-input :value="fmtNum(calc.calcPurchaseTotalForeign(item))" disabled class="w-full" />
-            </a-form-item>
-          </a-col>
-          <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.shippingPrice')} (${buyBaseCcy})`">
-              <a-input-number v-model:value="item.shippingPrice" :min="0" :formatter="numFormatter" :parser="numParser" class="w-full" />
-            </a-form-item>
-          </a-col>
-          <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.purchaseAndShipForeign')} (${buyBaseCcy})`">
-              <a-input :value="fmtNum(calc.calcPurchaseAndShipForeign(item))" disabled class="w-full" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-        <a-row v-if="!isBuySameCurrency" :gutter="gutter">
-          <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.purchasePriceKip')} (${buyTargetCcy})`">
-              <a-input :value="fmtNum(calc.calcPurchaseUnitLak(item))" disabled class="w-full" />
-            </a-form-item>
-          </a-col>
-          <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.purchaseTotalKip')} (${buyTargetCcy})`">
-              <a-input :value="fmtNum(calc.calcPurchaseTotalLak(item))" disabled class="w-full" />
-            </a-form-item>
-          </a-col>
-          <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.shippingKip')} (${buyTargetCcy})`">
-              <a-input :value="fmtNum(calc.calcShippingLak(item))" disabled class="w-full" />
-            </a-form-item>
-          </a-col>
-          <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.purchaseAndShipKip')} (${buyTargetCcy})`">
-              <a-input :value="fmtNum(calc.calcPurchaseAndShipLak(item))" disabled class="w-full" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-        <a-row :gutter="gutter">
-          <a-col v-bind="halfCol">
-            <a-form-item :label="$t('merchant.orders.items.discountType')">
-              <a-select v-model:value="item.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full">
-                <a-select-option value="percent">%</a-select-option>
-                <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
-              </a-select>
-            </a-form-item>
-          </a-col>
-          <a-col v-if="item.discountType" v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
-              <a-input-number v-model:value="item.discountValue" :min="0" :formatter="numFormatter" :parser="numParser" class="w-full" />
-            </a-form-item>
-          </a-col>
-          <a-col v-if="item.discountType && !isBuySameCurrency" v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
-              <a-input :value="fmtNum(calc.calcDiscountLak(item))" disabled class="w-full" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-        <a-row :gutter="gutter">
-          <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.netCostForeign')} (${buyBaseCcy})`">
-              <a-input :value="fmtNum(calc.calcNetCostForeign(item))" disabled class="w-full computed-highlight" />
-            </a-form-item>
-          </a-col>
-          <a-col v-if="!isBuySameCurrency" v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.netCostKip')} (${buyTargetCcy})`">
-              <a-input :value="fmtNum(calc.calcNetCostLak(item))" disabled class="w-full computed-highlight" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-      </div>
-
-      <!-- Section: Selling -->
-      <div class="item-section">
-        <div class="item-section-header">
-          <span class="item-section-title selling">{{ $t('merchant.orders.items.sectionSelling') }}</span>
-          <span v-if="!isSellSameCurrency" class="exchange-rate-tag sell">1 {{ sellBaseCcy }} = {{ fmtRate(getSellRate()) }} {{ sellTargetCcy }}</span>
-        </div>
-        <a-row :gutter="gutter">
-          <a-col v-bind="halfCol">
-            <a-form-item
-              :label="`${$t('merchant.orders.items.sellingPrice')} (${sellBaseCcy})`"
-              :validate-status="errors.sellingPriceForeign ? 'error' : ''"
-              :help="errors.sellingPriceForeign || ''"
-            >
-              <a-input-number
-                v-model:value="item.sellingPriceForeign" :min="0"
-                :formatter="numFormatter" :parser="numParser"
-                :status="errors.sellingPriceForeign ? 'error' : undefined"
-                :data-testid="`item-selling-price-${index}`"
-                class="w-full"
-                @change="onFieldChange('sellingPriceForeign')"
-              />
-            </a-form-item>
-          </a-col>
-          <a-col v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.sellingTotalForeign')} (${sellBaseCcy})`">
-              <a-input :value="fmtNum(calc.calcSellingTotalForeign(item))" disabled class="w-full" />
-            </a-form-item>
-          </a-col>
-          <a-col v-if="!isSellSameCurrency" v-bind="halfCol">
-            <a-form-item :label="`${$t('merchant.orders.items.sellingTotalKip')} (${sellTargetCcy})`">
-              <a-input :value="fmtNum(calc.calcSellingTotalLak(item))" disabled class="w-full" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-      </div>
-
-      <!-- Section: Customers -->
-      <div class="item-section customers-section">
-        <div class="item-section-header">
-          <span class="item-section-title customers-title">{{ $t('merchant.orders.items.customersSection') }}</span>
-          <span class="total-qty-badge">
-            {{ $t('merchant.orders.items.totalQtyLabel') }}: <strong>{{ totalQty }}</strong>
-          </span>
+      <!-- MAIN PRODUCT SECTION (RED BORDER AREA) -->
+      <div class="main-product-section">
+        <!-- Variant Input -->
+        <div class="variant-section">
+          <a-form-item :label="$t('merchant.orders.items.variant')">
+            <a-input v-model:value="currentVariant.variant" :placeholder="$t('merchant.orders.items.variantPh')" />
+          </a-form-item>
         </div>
 
-        <div v-if="errors.customers" class="cust-section-error">{{ errors.customers }}</div>
-
-        <!-- Desktop column headers -->
-        <div v-if="!isMobile && item.customers.length > 0" class="cust-col-labels">
-          <span class="cust-label-customer">{{ $t('merchant.orders.customerOrders.selectCustomer') }}</span>
-          <span class="cust-label-qty">{{ $t('merchant.orders.customerOrders.qtyLabel') }}</span>
-          <span class="cust-label-action"></span>
-        </div>
-
-        <!-- Customer rows -->
-        <div v-for="(cust, cIdx) in item.customers" :key="cust.uid" class="cust-row">
-          <!-- Desktop row -->
-          <template v-if="!isMobile">
-            <div class="cust-row-inner">
-              <div class="cust-col-customer">
-                <a-select
-                  v-model:value="cust.customerId"
-                  show-search
-                  :filter-option="false"
-                  :not-found-content="customerSearching ? undefined : null"
-                  :placeholder="$t('merchant.orders.customerOrders.searchCustomerPh')"
-                  :status="errors[`customers.${cIdx}.customerId`] ? 'error' : undefined"
-                  class="w-full"
-                  @search="$emit('customerSearch', $event)"
-                  @focus="$emit('customerFocus')"
-                >
-                  <template v-if="customerSearching" #notFoundContent><a-spin size="small" /></template>
-                  <a-select-option v-for="c in customerOptions" :key="c.id" :value="c.id">
-                    <div class="customer-opt">
-                      <span class="customer-name">{{ c.customerName }}</span>
-                      <a-tag size="small" :color="c.customerType === 'AGENT' ? 'purple' : 'blue'" class="customer-type-tag">{{ c.customerType }}</a-tag>
-                    </div>
-                  </a-select-option>
-                </a-select>
-                <span v-if="errors[`customers.${cIdx}.customerId`]" class="cust-field-error">{{ errors[`customers.${cIdx}.customerId`] }}</span>
-              </div>
-              <div class="cust-col-qty">
+        <!-- Buy Section -->
+        <div class="buy-section">
+          <div class="section-header">
+            <span class="section-title">{{ $t('merchant.orders.items.sectionPurchase') }}</span>
+            <span v-if="!isBuySameCurrency" class="exchange-rate-tag buy">1 {{ buyBaseCcy }} = {{ fmtRate(getBuyRate()) }} {{ buyTargetCcy }}</span>
+          </div>
+          <a-row :gutter="gutter">
+            <a-col v-bind="halfCol">
+              <a-form-item
+                :label="`${$t('merchant.orders.items.purchasePrice')} (${buyBaseCcy})`"
+                :validate-status="errors.purchasePrice ? 'error' : ''"
+                :help="errors.purchasePrice || ''"
+              >
                 <a-input-number
-                  v-model:value="cust.qty"
-                  :min="1"
-                  :precision="0"
-                  :formatter="numFormatter"
-                  :parser="numParser"
+                  v-model:value="currentVariant.purchasePrice" :min="0"
+                  :formatter="numFormatter" :parser="numParser"
+                  :status="errors.purchasePrice ? 'error' : undefined"
+                  :data-testid="`item-purchase-price-${index}`"
                   class="w-full"
+                  @change="onFieldChange('purchasePrice')"
                 />
+              </a-form-item>
+            </a-col>
+            <a-col v-bind="halfCol">
+              <a-form-item :label="`${$t('merchant.orders.items.purchaseTotalForeign')} (${buyBaseCcy})`">
+                <a-input :value="fmtNum(calc.calcPurchaseTotalForeign(variantForCalculation))" disabled class="w-full" />
+              </a-form-item>
+            </a-col>
+            <a-col v-bind="halfCol">
+              <a-form-item :label="`${$t('merchant.orders.items.shippingPrice')} (${buyBaseCcy})`">
+                <a-input-number v-model:value="currentVariant.shippingPrice" :min="0" :formatter="numFormatter" :parser="numParser" class="w-full" />
+              </a-form-item>
+            </a-col>
+            <a-col v-bind="halfCol">
+              <a-form-item :label="`${$t('merchant.orders.items.purchaseAndShipForeign')} (${buyBaseCcy})`">
+                <a-input :value="fmtNum(calc.calcPurchaseAndShipForeign(variantForCalculation))" disabled class="w-full" />
+              </a-form-item>
+            </a-col>
+          </a-row>
+          <a-row v-if="!isBuySameCurrency" :gutter="gutter">
+            <a-col v-bind="halfCol">
+              <a-form-item :label="`${$t('merchant.orders.items.purchasePriceKip')} (${buyTargetCcy})`">
+                <a-input :value="fmtNum(calc.calcPurchaseUnitLak(variantForCalculation))" disabled class="w-full" />
+              </a-form-item>
+            </a-col>
+            <a-col v-bind="halfCol">
+              <a-form-item :label="`${$t('merchant.orders.items.purchaseTotalKip')} (${buyTargetCcy})`">
+                <a-input :value="fmtNum(calc.calcPurchaseTotalLak(variantForCalculation))" disabled class="w-full" />
+              </a-form-item>
+            </a-col>
+            <a-col v-bind="halfCol">
+              <a-form-item :label="`${$t('merchant.orders.items.shippingKip')} (${buyTargetCcy})`">
+                <a-input :value="fmtNum(calc.calcShippingLak(variantForCalculation))" disabled class="w-full" />
+              </a-form-item>
+            </a-col>
+            <a-col v-bind="halfCol">
+              <a-form-item :label="`${$t('merchant.orders.items.purchaseAndShipKip')} (${buyTargetCcy})`">
+                <a-input :value="fmtNum(calc.calcPurchaseAndShipLak(variantForCalculation))" disabled class="w-full" />
+              </a-form-item>
+            </a-col>
+          </a-row>
+          <a-row :gutter="gutter">
+            <a-col v-bind="halfCol">
+              <a-form-item :label="$t('merchant.orders.items.discountType')">
+                <a-select v-model:value="currentVariant.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full">
+                  <a-select-option value="percent">%</a-select-option>
+                  <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col v-if="currentVariant.discountType" v-bind="halfCol">
+              <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
+                <a-input-number v-model:value="currentVariant.discountValue" :min="0" :formatter="numFormatter" :parser="numParser" class="w-full" />
+              </a-form-item>
+            </a-col>
+            <a-col v-if="currentVariant.discountType && !isBuySameCurrency" v-bind="halfCol">
+              <a-form-item :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
+                <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
+              </a-form-item>
+            </a-col>
+          </a-row>
+          <a-row :gutter="gutter">
+            <a-col v-bind="halfCol">
+              <a-form-item :label="`${$t('merchant.orders.items.netCostForeign')} (${buyBaseCcy})`">
+                <a-input :value="fmtNum(calc.calcNetCostForeign(variantForCalculation))" disabled class="w-full computed-highlight" />
+              </a-form-item>
+            </a-col>
+            <a-col v-if="!isBuySameCurrency" v-bind="halfCol">
+              <a-form-item :label="`${$t('merchant.orders.items.netCostKip')} (${buyTargetCcy})`">
+                <a-input :value="fmtNum(calc.calcNetCostLak(variantForCalculation))" disabled class="w-full computed-highlight" />
+              </a-form-item>
+            </a-col>
+          </a-row>
+        </div>
+
+        <!-- Sell Section -->
+        <div class="sell-section">
+          <div class="section-header">
+            <span class="section-title">{{ $t('merchant.orders.items.sectionSelling') }}</span>
+            <span v-if="!isSellSameCurrency" class="exchange-rate-tag sell">1 {{ sellBaseCcy }} = {{ fmtRate(getSellRate()) }} {{ sellTargetCcy }}</span>
+          </div>
+          <a-row :gutter="gutter">
+            <a-col v-bind="halfCol">
+              <a-form-item
+                :label="`${$t('merchant.orders.items.sellingPriceForeign')} (${sellBaseCcy})`"
+                :validate-status="errors.sellingPriceForeign ? 'error' : ''"
+                :help="errors.sellingPriceForeign || ''"
+              >
+                <a-input-number
+                  v-model:value="currentVariant.sellingPriceForeign" :min="0"
+                  :formatter="numFormatter" :parser="numParser"
+                  :status="errors.sellingPriceForeign ? 'error' : undefined"
+                  :data-testid="`item-selling-price-${index}`"
+                  class="w-full"
+                  @change="onFieldChange('sellingPriceForeign')"
+                />
+              </a-form-item>
+            </a-col>
+            <a-col v-bind="halfCol">
+              <a-form-item :label="`${$t('merchant.orders.items.sellingTotalForeign')} (${sellBaseCcy})`">
+                <a-input :value="fmtNum(calc.calcSellingTotalForeign(variantForCalculation))" disabled class="w-full" />
+              </a-form-item>
+            </a-col>
+          </a-row>
+          <a-row v-if="!isSellSameCurrency" :gutter="gutter">
+            <a-col v-bind="halfCol">
+              <a-form-item :label="`${$t('merchant.orders.items.sellingPriceKip')} (${sellTargetCcy})`">
+                <a-input :value="fmtNum(calc.calcSellingUnitLak(variantForCalculation))" disabled class="w-full" />
+              </a-form-item>
+            </a-col>
+            <a-col v-bind="halfCol">
+              <a-form-item :label="`${$t('merchant.orders.items.sellingTotalKip')} (${sellTargetCcy})`">
+                <a-input :value="fmtNum(calc.calcSellingTotalLak(variantForCalculation))" disabled class="w-full" />
+              </a-form-item>
+            </a-col>
+          </a-row>
+        </div>
+
+        <!-- Customer Section -->
+        <div class="customer-section">
+          <div class="section-header">
+            <span class="section-title customers-title">{{ $t('merchant.orders.customerOrders.title') }}</span>
+          </div>
+          
+          <!-- Customer rows -->
+          <div v-for="(cust, cIdx) in currentVariant.customers" :key="cust.uid" class="cust-row">
+            <!-- Desktop row -->
+            <template v-if="!isMobile">
+              <div class="cust-row-inner">
+                <div class="cust-col-customer">
+                  <a-select
+                    v-model:value="cust.customerId"
+                    show-search
+                    :filter-option="false"
+                    :not-found-content="customerSearching ? undefined : null"
+                    :placeholder="$t('merchant.orders.customerOrders.searchCustomerPh')"
+                    :status="errors[`customers.${cIdx}.customerId`] ? 'error' : undefined"
+                    class="w-full"
+                    @search="$emit('customerSearch', $event)"
+                    @focus="$emit('customerFocus')"
+                  >
+                    <template v-if="customerSearching" #notFoundContent><a-spin size="small" /></template>
+                    <a-select-option v-for="c in customerOptions" :key="c.id" :value="c.id">
+                      <div class="customer-opt">
+                        <span class="customer-name">{{ c.customerName }}</span>
+                        <a-tag size="small" :color="c.customerType === 'AGENT' ? 'purple' : 'blue'" class="customer-type-tag">{{ c.customerType }}</a-tag>
+                      </div>
+                    </a-select-option>
+                  </a-select>
+                  <span v-if="errors[`customers.${cIdx}.customerId`]" class="cust-field-error">{{ errors[`customers.${cIdx}.customerId`] }}</span>
+                </div>
+                <div class="cust-col-qty">
+                  <a-input-number
+                    v-model:value="cust.qty"
+                    :min="1"
+                    :precision="0"
+                    :formatter="numFormatter"
+                    :parser="numParser"
+                    class="w-full"
+                  />
+                </div>
+                <div class="cust-col-actions">
+                  <a-tooltip :title="$t('merchant.orders.customerOrders.createNew')" placement="top">
+                    <a-button type="text" size="small" class="create-cust-btn" @click="$emit('createCustomer', item.uid, cust.uid)">
+                      <UserAddOutlined />
+                    </a-button>
+                  </a-tooltip>
+                  <a-button type="text" danger size="small" @click="removeVariantCustomer(cust.uid)">
+                    <DeleteOutlined />
+                  </a-button>
+                </div>
               </div>
-              <div class="cust-col-actions">
-                <a-tooltip :title="$t('merchant.orders.customerOrders.createNew')" placement="top">
+            </template>
+
+            <!-- Mobile row -->
+            <template v-else>
+              <div class="cust-row-mobile">
+                <div class="cust-mobile-select-row">
+                  <a-select
+                    v-model:value="cust.customerId"
+                    show-search
+                    :filter-option="false"
+                    :not-found-content="customerSearching ? undefined : null"
+                    :placeholder="$t('merchant.orders.customerOrders.searchCustomerPh')"
+                    :status="errors[`customers.${cIdx}.customerId`] ? 'error' : undefined"
+                    class="cust-select-mobile"
+                    @search="$emit('customerSearch', $event)"
+                    @focus="$emit('customerFocus')"
+                  >
+                    <template v-if="customerSearching" #notFoundContent><a-spin size="small" /></template>
+                    <a-select-option v-for="c in customerOptions" :key="c.id" :value="c.id">
+                      {{ c.customerName }}
+                    </a-select-option>
+                  </a-select>
                   <a-button type="text" size="small" class="create-cust-btn" @click="$emit('createCustomer', item.uid, cust.uid)">
                     <UserAddOutlined />
                   </a-button>
-                </a-tooltip>
-                <a-button type="text" danger size="small" @click="removeCustomer(cust.uid)">
-                  <DeleteOutlined />
-                </a-button>
+                </div>
+                <div class="cust-mobile-bottom-row">
+                  <a-input-number
+                    v-model:value="cust.qty"
+                    :min="1"
+                    :precision="0"
+                    :formatter="numFormatter"
+                    :parser="numParser"
+                    class="cust-qty-mobile"
+                  />
+                  <a-button type="text" danger size="small" @click="removeVariantCustomer(cust.uid)">
+                    <DeleteOutlined />
+                  </a-button>
+                </div>
               </div>
-            </div>
-          </template>
+            </template>
+          </div>
 
-          <!-- Mobile row -->
-          <template v-else>
-            <div class="cust-row-mobile">
-              <div class="cust-mobile-select-row">
-                <a-select
-                  v-model:value="cust.customerId"
-                  show-search
-                  :filter-option="false"
-                  :not-found-content="customerSearching ? undefined : null"
-                  :placeholder="$t('merchant.orders.customerOrders.searchCustomerPh')"
-                  :status="errors[`customers.${cIdx}.customerId`] ? 'error' : undefined"
-                  class="cust-select-mobile"
-                  @search="$emit('customerSearch', $event)"
-                  @focus="$emit('customerFocus')"
-                >
-                  <template v-if="customerSearching" #notFoundContent><a-spin size="small" /></template>
-                  <a-select-option v-for="c in customerOptions" :key="c.id" :value="c.id">
-                    {{ c.customerName }}
-                  </a-select-option>
-                </a-select>
-                <a-button type="text" size="small" class="create-cust-btn" @click="$emit('createCustomer', item.uid, cust.uid)">
-                  <UserAddOutlined />
-                </a-button>
-              </div>
-              <div class="cust-mobile-bottom-row">
-                <a-input-number
-                  v-model:value="cust.qty"
-                  :min="1"
-                  :precision="0"
-                  :formatter="numFormatter"
-                  :parser="numParser"
-                  class="cust-qty-mobile"
-                />
-                <a-button type="text" danger size="small" @click="removeCustomer(cust.uid)">
-                  <DeleteOutlined />
-                </a-button>
-              </div>
-            </div>
-          </template>
+          <!-- Add Customer button -->
+          <a-button type="dashed" block class="add-cust-btn" @click="addVariantCustomer">
+            <template #icon><PlusOutlined /></template>
+            {{ $t('merchant.orders.items.addCustomer') }}
+          </a-button>
         </div>
 
-        <!-- Add Customer button -->
-        <a-button type="dashed" block class="add-cust-btn" @click="addCustomer">
-          <template #icon><PlusOutlined /></template>
-          {{ $t('merchant.orders.items.addCustomer') }}
-        </a-button>
+        <!-- Summary Section -->
+        <div v-if="currentVariantQty > 0" class="summary-section">
+          <div class="summary-header">
+            <CalculatorOutlined class="summary-icon" />
+            <span class="summary-title">{{ $t('merchant.orders.items.itemSummary') }}</span>
+            <span class="summary-qty-badge">{{ $t('merchant.orders.items.totalQtyLabel') }}: <strong>{{ currentVariantQty }}</strong></span>
+          </div>
+          <div class="summary-grid">
+            <!-- Net Cost -->
+            <div class="summary-stat">
+              <div class="summary-stat-label">{{ $t('merchant.orders.items.netCostForeign') }} ({{ buyBaseCcy }})</div>
+              <div class="summary-stat-value cost">{{ fmtNum(calc.calcNetCostForeign(variantForCalculation)) }}</div>
+            </div>
+            <div v-if="!isBuySameCurrency" class="summary-stat">
+              <div class="summary-stat-label">{{ $t('merchant.orders.items.netCostKip') }} ({{ buyTargetCcy }})</div>
+              <div class="summary-stat-value cost">{{ fmtNum(calc.calcNetCostLak(variantForCalculation)) }}</div>
+            </div>
+            <!-- Selling Total -->
+            <div class="summary-stat">
+              <div class="summary-stat-label">{{ $t('merchant.orders.items.sellingTotalForeign') }} ({{ sellBaseCcy }})</div>
+              <div class="summary-stat-value selling">{{ fmtNum(calc.calcSellingTotalForeign(variantForCalculation)) }}</div>
+            </div>
+            <div v-if="!isSellSameCurrency" class="summary-stat">
+              <div class="summary-stat-label">{{ $t('merchant.orders.items.sellingTotalKip') }} ({{ sellTargetCcy }})</div>
+              <div class="summary-stat-value selling">{{ fmtNum(calc.calcSellingTotalLak(variantForCalculation)) }}</div>
+            </div>
+            <!-- Profit -->
+            <div class="summary-stat profit-stat">
+              <div class="summary-stat-label">{{ $t('merchant.orders.summary.profitForeign') }} ({{ sellBaseCcy }})</div>
+              <div class="summary-stat-value profit">{{ fmtNum(currentVariantProfitForeign) }}</div>
+            </div>
+            <div v-if="!isSellSameCurrency" class="summary-stat profit-stat">
+              <div class="summary-stat-label">{{ $t('merchant.orders.summary.profitLak') }} ({{ sellTargetCcy }})</div>
+              <div class="summary-stat-value profit">{{ fmtNum(currentVariantProfitLak) }}</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Section: Item Summary (แสดงเมื่อมีลูกค้าและ qty > 0) -->
-      <div v-if="totalQty > 0" class="item-summary-section">
-        <div class="item-summary-header">
-          <CalculatorOutlined class="summary-icon" />
-          <span class="item-summary-title">{{ $t('merchant.orders.items.itemSummary') }}</span>
-          <span class="item-summary-qty-badge">{{ $t('merchant.orders.items.totalQtyLabel') }}: <strong>{{ totalQty }}</strong></span>
+      <!-- VARIANT LIST VISUALIZATION -->
+      <div v-if="item.variants && item.variants.length > 1" class="variant-list-section">
+        <div class="variant-list-header">
+          <h4>{{ $t('merchant.orders.items.productVariants', { count: item.variants.length }) }}</h4>
         </div>
-        <div class="item-summary-grid">
-          <!-- Net Cost -->
-          <div class="summary-stat">
-            <div class="summary-stat-label">{{ $t('merchant.orders.items.netCostForeign') }} ({{ buyBaseCcy }})</div>
-            <div class="summary-stat-value cost">{{ fmtNum(calc.calcNetCostForeign(item)) }}</div>
+        <div class="variant-list">
+          <div 
+            v-for="(variant, vIdx) in item.variants" 
+            :key="variant.uid"
+            class="variant-item"
+            :class="{ 'variant-item-active': vIdx === currentVariantIndex }"
+            :style="{ 
+              borderColor: getVariantColor(vIdx), 
+              backgroundColor: vIdx === currentVariantIndex ? `${getVariantColor(vIdx)}08` : 'transparent'
+            }"
+            @click="switchToVariant(vIdx)"
+          >
+            <div class="variant-item-color-strip" :style="{ background: getVariantColor(vIdx) }" />
+            <div class="variant-item-content">
+              <div class="variant-item-header">
+                <span class="variant-item-number" :style="{ color: getVariantColor(vIdx) }">
+                  {{ $t('merchant.orders.items.variantNumber', { number: vIdx + 1 }) }}
+                </span>
+                <a-button 
+                  type="text" 
+                  danger 
+                  size="small" 
+                  class="variant-delete-btn"
+                  @click.stop="removeVariant(vIdx)"
+                >
+                  <DeleteOutlined />
+                </a-button>
+              </div>
+              <div class="variant-item-details">
+                <div class="variant-item-name">
+                  {{ variant.variant || $t('merchant.orders.items.sizeDefault', { number: vIdx + 1 }) }}
+                </div>
+                <div class="variant-item-prices">
+                  <span class="variant-price">${{ fmtNumber(variant.sellingPriceForeign) }}</span>
+                  <span class="variant-customers">{{ $t('merchant.orders.items.customerCount', { count: variant.customers.length }) }}</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div v-if="!isBuySameCurrency" class="summary-stat">
-            <div class="summary-stat-label">{{ $t('merchant.orders.items.netCostKip') }} ({{ buyTargetCcy }})</div>
-            <div class="summary-stat-value cost">{{ fmtNum(calc.calcNetCostLak(item)) }}</div>
-          </div>
-          <!-- Selling Total -->
-          <div class="summary-stat">
-            <div class="summary-stat-label">{{ $t('merchant.orders.items.sellingTotalForeign') }} ({{ sellBaseCcy }})</div>
-            <div class="summary-stat-value selling">{{ fmtNum(calc.calcSellingTotalForeign(item)) }}</div>
-          </div>
-          <div v-if="!isSellSameCurrency" class="summary-stat">
-            <div class="summary-stat-label">{{ $t('merchant.orders.items.sellingTotalKip') }} ({{ sellTargetCcy }})</div>
-            <div class="summary-stat-value selling">{{ fmtNum(calc.calcSellingTotalLak(item)) }}</div>
-          </div>
-          <!-- Profit -->
-          <div class="summary-stat profit-stat">
-            <div class="summary-stat-label">{{ $t('merchant.orders.summary.profitForeign') }} ({{ sellBaseCcy }})</div>
-            <div class="summary-stat-value profit">{{ fmtNum(itemProfitForeign) }}</div>
-          </div>
-          <div v-if="!isSellSameCurrency" class="summary-stat profit-stat">
-            <div class="summary-stat-label">{{ $t('merchant.orders.summary.profitLak') }} ({{ sellTargetCcy }})</div>
-            <div class="summary-stat-value profit">{{ fmtNum(itemProfitLak) }}</div>
-          </div>
+        </div>
+      </div>
+
+      <!-- ADD VARIANT BUTTON AND NAVIGATION -->
+      <div class="variant-controls">
+        <a-button type="primary" block class="add-variant-btn" @click="addVariant">
+          <template #icon><PlusOutlined /></template>
+          {{ $t('merchant.orders.items.addVariant') }}
+        </a-button>
+        
+        <!-- Variant Navigation -->
+        <div v-if="item.variants && item.variants.length > 1" class="variant-navigation">
+          <a-button 
+            :disabled="currentVariantIndex === 0" 
+            @click="previousVariant"
+            class="nav-btn nav-btn-prev"
+          >
+            <template #icon><CaretLeftOutlined /></template>
+            {{ $t('common.previous') }}
+          </a-button>
+            
+          <span class="variant-nav-label">
+            {{ $t('merchant.orders.items.itemOf', { current: currentVariantIndex + 1, total: item.variants.length }) }}
+          </span>
+            
+          <a-button 
+            :disabled="currentVariantIndex === (item.variants?.length || 0) - 1" 
+            @click="nextVariant"
+            class="nav-btn nav-btn-next"
+          >
+            {{ $t('common.next') }}
+            <template #icon><CaretRightOutlined /></template>
+          </a-button>
         </div>
       </div>
     </a-form>
@@ -339,12 +548,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { DeleteOutlined, PlusOutlined, UserAddOutlined, CalculatorOutlined } from '@ant-design/icons-vue';
+import { computed, ref, watch } from 'vue';
+import { DeleteOutlined, PlusOutlined, UserAddOutlined, CalculatorOutlined, CaretLeftOutlined, CaretRightOutlined, EyeOutlined, CameraOutlined } from '@ant-design/icons-vue';
+import { message } from 'ant-design-vue';
 import { fmtNumber, numFormatter, numParser } from '@/shared/utils/format';
 import { useItemCalculations } from '../composables/useItemCalculations';
 import type { Customer } from '@/domain/entities/user.entity';
 import type { ItemForm } from '../types';
+import { uploadFilesForMerchant } from '@/infrastructure/repositories/upload.repository';
 
 const props = defineProps<{
   item: ItemForm;
@@ -383,22 +594,276 @@ const halfCol = computed(() => props.isMobile ? { span: 12 } : { sm: 12, md: 6 }
 const isBuySameCurrency = computed(() => props.buyBaseCcy === props.buyTargetCcy);
 const isSellSameCurrency = computed(() => props.sellBaseCcy === props.sellTargetCcy);
 
-const totalQty = computed(() => props.item.customers.reduce((sum, c) => sum + (c.qty || 0), 0));
-
-const itemProfitLak = computed(() => calc.calcSellingTotalLak(props.item) - calc.calcNetCostLak(props.item));
-const itemProfitForeign = computed(() => {
-  const rate = props.getSellRate();
-  return rate === 0 ? 0 : itemProfitLak.value / rate;
-});
-
+// Helper function to generate unique IDs
 const uid = () => String(Date.now()) + Math.random().toString(36).slice(2, 6);
 
-const addCustomer = () => {
-  props.item.customers.push({ uid: uid(), customerId: undefined, qty: 1 });
+// Variant management
+const currentVariantIndex = ref(0);
+
+// Image upload state
+const imageUploading = ref(false);
+
+// File upload ref
+const fileUploadRef = ref();
+
+// Initialize variants if they don't exist
+if (!props.item.variants) {
+  props.item.variants = [{
+    uid: uid(),
+    variant: '',
+    purchasePrice: 0,
+    sellingPriceForeign: 0,
+    shippingPrice: 0,
+    discountType: undefined,
+    discountValue: 0,
+    customers: []
+  }];
+}
+
+// Get current variant
+const currentVariant = computed(() => {
+  return props.item.variants?.[currentVariantIndex.value] || props.item.variants?.[0] || {
+    uid: uid(),
+    variant: '',
+    purchasePrice: 0,
+    sellingPriceForeign: 0,
+    shippingPrice: 0,
+    discountType: undefined,
+    discountValue: 0,
+    customers: []
+  };
+});
+
+// Create hybrid object for calculations (combines variant data with required ItemForm properties)
+const variantForCalculation = computed(() => {
+  const variant = currentVariant.value;
+  return {
+    uid: variant.uid,
+    productName: props.item.productName,
+    variant: variant.variant,
+    purchasePrice: variant.purchasePrice,
+    shippingPrice: variant.shippingPrice,
+    discountType: variant.discountType || undefined as 'percent' | 'cash' | undefined,
+    discountValue: variant.discountValue || 0,
+    sellingPriceForeign: variant.sellingPriceForeign,
+    customers: variant.customers,
+    quantity: variant.customers.reduce((sum, c) => sum + (c.qty || 0), 0),
+    productImage: props.item.productImage,
+    imageId: props.item.imageId,
+    variants: props.item.variants
+  };
+});
+
+// Current variant calculations
+const currentVariantQty = computed(() => {
+  return currentVariant.value.customers.reduce((sum, c) => sum + (c.qty || 0), 0);
+});
+
+const currentVariantProfitLak = computed(() => calc.calcSellingTotalLak(variantForCalculation.value) - calc.calcNetCostLak(variantForCalculation.value));
+const currentVariantProfitForeign = computed(() => {
+  const rate = props.getSellRate();
+  return rate === 0 ? 0 : currentVariantProfitLak.value / rate;
+});
+
+// Variant management functions
+const addVariant = () => {
+  if (!props.item.variants) {
+    props.item.variants = [];
+  }
+  props.item.variants.push({
+    uid: uid(),
+    variant: '',
+    purchasePrice: 0,
+    sellingPriceForeign: 0,
+    shippingPrice: 0,
+    discountType: undefined,
+    discountValue: 0,
+    customers: []
+  });
+  currentVariantIndex.value = props.item.variants.length - 1;
+  triggerVariantAnimation('new');
 };
 
-const removeCustomer = (customerUid: string) => {
-  props.item.customers = props.item.customers.filter(c => c.uid !== customerUid);
+const previousVariant = () => {
+  if (currentVariantIndex.value > 0) {
+    currentVariantIndex.value--;
+    triggerVariantAnimation('previous');
+  }
+};
+
+const nextVariant = () => {
+  if (currentVariantIndex.value < (props.item.variants?.length || 0) - 1) {
+    currentVariantIndex.value++;
+    triggerVariantAnimation('next');
+  }
+};
+
+// Generate color for each variant
+const getVariantColor = (variantIndex: number) => {
+  const VARIANT_COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#DDA0DD', '#98D8C8'];
+  return VARIANT_COLORS[variantIndex % VARIANT_COLORS.length];
+};
+
+// Switch to specific variant
+const switchToVariant = (variantIndex: number) => {
+  if (variantIndex >= 0 && variantIndex < (props.item.variants?.length || 0)) {
+    currentVariantIndex.value = variantIndex;
+    triggerVariantAnimation('next');
+  }
+};
+
+// Remove variant
+const removeVariant = (variantIndex: number) => {
+  if (props.item.variants && props.item.variants.length > 1) {
+    props.item.variants.splice(variantIndex, 1);
+    
+    // Adjust current index if necessary
+    if (currentVariantIndex.value >= props.item.variants.length) {
+      currentVariantIndex.value = props.item.variants.length - 1;
+    }
+    
+    message.success('Variant removed successfully');
+  }
+};
+
+// Trigger animation when switching variants
+const triggerVariantAnimation = (direction: 'next' | 'previous' | 'new') => {
+  const mainSection = document.querySelector('.main-product-section') as HTMLElement;
+  if (mainSection) {
+    // Remove all animation classes
+    mainSection.classList.remove('switching-next', 'switching-previous', 'slide-in-new');
+    
+    // Force reflow to restart animation
+    void mainSection.offsetWidth;
+    
+    // Add the appropriate animation class
+    let animationClass: string;
+    let duration: number;
+    
+    switch (direction) {
+      case 'next':
+        animationClass = 'switching-next';
+        duration = 400;
+        break;
+      case 'previous':
+        animationClass = 'switching-previous';
+        duration = 400;
+        break;
+      case 'new':
+        animationClass = 'slide-in-new';
+        duration = 500;
+        break;
+    }
+    
+    mainSection.classList.add(animationClass);
+    
+    console.log(`Animation triggered: ${animationClass} (${direction})`); // Debug log
+    
+    // Remove animation class after animation completes
+    setTimeout(() => {
+      mainSection.classList.remove(animationClass);
+      console.log(`Animation removed: ${animationClass}`); // Debug log
+    }, duration);
+  }
+};
+
+// Image upload functions
+const beforeImageUpload = (file: File) => {
+  const isImage = file.type.startsWith('image/');
+  if (!isImage) {
+    message.error('You can only upload image files!');
+    return false;
+  }
+  const isLt2M = file.size / 1024 / 1024 < 2;
+  if (!isLt2M) {
+    message.error('Image must smaller than 2MB!');
+    return false;
+  }
+  return true;
+};
+
+const handleImageUpload = async (options: any) => {
+  const { file } = options;
+  imageUploading.value = true;
+  
+  try {
+    // Upload image to server and get real imageId
+    const uploadedImages = await uploadFilesForMerchant([file]);
+    const imageId = uploadedImages[0]?.id;
+    
+    // Create a preview URL for the image
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      props.item.productImage = e.target?.result as string;
+      props.item.imageId = imageId; // Use real imageId from server
+      console.log('Uploaded image with ID:', imageId);
+      message.success('Image uploaded successfully!');
+    };
+    reader.readAsDataURL(file);
+  } catch (error) {
+    console.error('Image upload error:', error);
+    message.error('Failed to upload image');
+  } finally {
+    imageUploading.value = false;
+  }
+};
+
+const removeImage = () => {
+  props.item.productImage = '';
+  props.item.imageId = undefined;
+  message.info('Image removed');
+};
+
+const triggerFileUpload = () => {
+  // Trigger the hidden file input
+  const uploadElement = fileUploadRef.value?.$el?.querySelector('input[type="file"]');
+  uploadElement?.click();
+};
+
+const previewImage = (imageUrl: string) => {
+  // Create modal to preview image
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    cursor: pointer;
+  `;
+  
+  const img = document.createElement('img');
+  img.src = imageUrl;
+  img.style.cssText = `
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  `;
+  
+  modal.appendChild(img);
+  modal.onclick = () => document.body.removeChild(modal);
+  document.body.appendChild(modal);
+};
+
+const getFileName = (imageUrl: string | undefined) => {
+  if (!imageUrl) return 'No file';
+  const parts = imageUrl.split('/');
+  return parts[parts.length - 1] || 'Unknown';
+};
+
+// Customer management for variants
+const addVariantCustomer = () => {
+  currentVariant.value.customers.push({ uid: uid(), customerId: undefined, qty: 1 });
+};
+
+const removeVariantCustomer = (customerUid: string) => {
+  currentVariant.value.customers = currentVariant.value.customers.filter(c => c.uid !== customerUid);
 };
 
 const onFieldChange = (field: string) => {
@@ -406,6 +871,53 @@ const onFieldChange = (field: string) => {
     emit('clearError', field);
   }
 };
+
+// Sync current variant data back to main item for validation
+watch(currentVariant, (newVariant) => {
+  if (newVariant && props.item.variants) {
+    // Update the variant in the variants array
+    const variantIndex = props.item.variants.findIndex(v => v.uid === newVariant.uid);
+    if (variantIndex !== -1 && props.item.variants[variantIndex] !== newVariant) {
+      props.item.variants[variantIndex] = { ...newVariant };
+    }
+    
+    // Also sync to main item for parent validation (backward compatibility)
+    // Only update if values are different to avoid recursion
+    if (props.item.purchasePrice !== (newVariant.purchasePrice || 0)) {
+      props.item.purchasePrice = newVariant.purchasePrice || 0;
+    }
+    if (props.item.sellingPriceForeign !== (newVariant.sellingPriceForeign || 0)) {
+      props.item.sellingPriceForeign = newVariant.sellingPriceForeign || 0;
+    }
+    if (props.item.shippingPrice !== (newVariant.shippingPrice || 0)) {
+      props.item.shippingPrice = newVariant.shippingPrice || 0;
+    }
+    if (props.item.discountType !== newVariant.discountType) {
+      props.item.discountType = newVariant.discountType;
+    }
+    if (props.item.discountValue !== (newVariant.discountValue || 0)) {
+      props.item.discountValue = newVariant.discountValue || 0;
+    }
+    
+    // Sync customers data for validation
+    const currentCustomers = newVariant.customers || [];
+    
+    // Update main item customers array for parent validation
+    if (JSON.stringify(props.item.customers) !== JSON.stringify(currentCustomers)) {
+      props.item.customers = [...currentCustomers];
+    }
+  }
+}, { deep: true });
+
+// Initial sync when component mounts
+if (currentVariant.value) {
+  props.item.purchasePrice = currentVariant.value.purchasePrice || 0;
+  props.item.sellingPriceForeign = currentVariant.value.sellingPriceForeign || 0;
+  props.item.shippingPrice = currentVariant.value.shippingPrice || 0;
+  props.item.discountType = currentVariant.value.discountType;
+  props.item.discountValue = currentVariant.value.discountValue || 0;
+  props.item.customers = [...(currentVariant.value.customers || [])];
+}
 </script>
 
 <style scoped>
@@ -434,138 +946,876 @@ const onFieldChange = (field: string) => {
 .item-form :deep(.ant-input-number), .item-form :deep(.ant-input), .item-form :deep(.ant-select) { width: 100% !important; }
 :deep(.ant-input[disabled]) { color: #0f172a !important; font-weight: 600; background: #f1f5f9; font-size: 13px; }
 
-.item-section {
-  margin-bottom: 8px; padding: 12px 16px 4px;
-  background: #fff; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.15);
-}
-.item-section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-.item-section-title { font-size: 13px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; }
-.item-section-title.purchase { color: #1d4ed8; }
-.item-section-title.selling { color: #059669; }
-.customers-title { color: #7c3aed; }
-.exchange-rate-tag { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
-.exchange-rate-tag.buy { background: #ecfdf5; color: #059669; }
-.exchange-rate-tag.sell { background: #fff7ed; color: #d97706; }
-.computed-highlight:deep(input) { color: #1d4ed8 !important; font-weight: 700; background: #eff6ff !important; }
+/* Avatar Upload Styles */
+.avatar-upload-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  /* border: #059669 solid; */
+  border: 2px dashed #d1d5db;
 
-/* Total qty badge */
-.total-qty-badge {
-  font-size: 12px; font-weight: 700; color: #7c3aed;
-  background: #f5f3ff; padding: 2px 10px; border-radius: 999px;
-  border: 1px solid rgba(124, 58, 237, 0.2);
+
+
 }
 
-/* Customers section */
-.customers-section { padding-bottom: 12px; }
-.cust-section-error { font-size: 12px; color: #ff4d4f; font-weight: 600; margin-bottom: 8px; }
-
-/* Desktop column labels */
-.cust-col-labels {
-  display: flex; align-items: center; gap: 8px;
-  margin-bottom: 6px; padding: 0 2px;
+.avatar-upload-placeholder {
+  /* width: 120px;
+  height: 120px; */
+  /* border: 2px dashed #d1d5db; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 0 auto;
 }
-.cust-label-customer { flex: 1; min-width: 150px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; }
-.cust-label-qty { width: 280px; flex-shrink: 0; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; }
-.cust-label-action { width: 72px; flex-shrink: 0; }
 
-/* Customer row — desktop */
+.avatar-upload-placeholder:hover {
+  border-color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.avatar-upload-icon {
+  font-size: 32px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.avatar-upload-text {
+  text-align: center;
+}
+
+.avatar-upload-title {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.avatar-upload-subtitle {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.avatar-upload-input {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+}
+
+.avatar-upload-trigger {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+}
+
+.avatar-preview-container {
+  position: relative;
+  display: inline-block;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #e5e7eb;
+  margin: 0 auto;
+}
+
+.uploaded-image-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 60px;
+  border: 2px solid #d1d5db;
+  border-radius: 12px;
+  background: #ffffff;
+  margin: 0 auto;
+  transition: all 0.2s ease;
+}
+
+.uploaded-image-container:hover {
+  border-color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.uploaded-image-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 16px;
+  gap: 12px;
+}
+
+.uploaded-image-icon {
+  font-size: 32px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.uploaded-image-text {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.uploaded-image-text.clickable {
+  cursor: pointer;
+  color: #1d4ed8;
+}
+
+.uploaded-image-text.clickable:hover {
+  text-decoration: underline;
+}
+
+.uploaded-image-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 4px;
+}
+
+.uploaded-image-action-btn {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.uploaded-image-view-btn {
+  color: #6b7280;
+  border: none;
+  background: transparent;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uploaded-image-view-btn:hover {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.uploaded-image-delete-btn {
+  color: #6b7280;
+  border: none;
+  background: transparent;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uploaded-image-delete-btn:hover {
+  background: #fef2f2;
+  color: #ffffff;
+}
+
+.uploaded-image-container:hover .uploaded-image-action-btn {
+  opacity: 1;
+}
+
+.uploaded-image-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+}
+
+.uploaded-image-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.hidden-upload-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.upload-trigger {
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.avatar-preview-image {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.avatar-preview-image:hover {
+  transform: scale(1.05);
+}
+
+.avatar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.avatar-preview-container:hover .avatar-overlay {
+  opacity: 1;
+}
+
+.avatar-info {
+  text-align: center;
+  padding: 8px;
+}
+
+.avatar-filename {
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  word-break: break-all;
+}
+
+.avatar-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.avatar-action-btn {
+  border-radius: 6px;
+  font-size: 12px;
+  height: 32px;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-view-btn {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: white;
+}
+
+.avatar-delete-btn {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.avatar-action-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Image Upload Styles */
+.image-upload-container {
+  width: 100%;
+}
+
+.product-image-upload {
+  width: 100%;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  background: #f9fafb;
+  cursor: pointer;
+  padding: 20px;
+  background: #fff5f5;
+  border: 2px solid v-bind('itemBorderColor');
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.variant-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+.variant-section {
+  margin-bottom: 20px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ffccc7;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.exchange-rate-tag {
+  font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; white-space: nowrap;
+}
+.exchange-rate-tag.buy { background: #e3f2fd; color: #1976d2; }
+.exchange-rate-tag.sell { background: #e8f5e8; color: #2e7d32; }
+
+.buy-section, .sell-section {
+  margin-bottom: 20px;
+}
+
+.buy-section .section-title { color: #1d4ed8; }
+.sell-section .section-title { color: #059669; }
+
+.customer-section {
+  margin-bottom: 20px;
+}
+
+/* Customer rows */
 .cust-row {
-  margin-bottom: 8px; background: #f8fafc;
-  border-radius: 10px; padding: 8px 10px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  margin-bottom: 12px;
 }
-.cust-row-inner { display: flex; align-items: center; gap: 8px; }
-.cust-col-customer { flex: 1; min-width: 150px; }
-.cust-col-qty { width: 280px; flex-shrink: 0; }
-.cust-col-actions { width: 72px; flex-shrink: 0; display: flex; gap: 2px; justify-content: flex-end; }
-.create-cust-btn { border-radius: 8px; color: #7c3aed; }
-.create-cust-btn:hover { background: #f5f3ff !important; }
-.cust-field-error { font-size: 11px; color: #ff4d4f; display: block; margin-top: 2px; }
 
-/* Customer row — mobile */
-.cust-row-mobile { display: flex; flex-direction: column; gap: 6px; }
-.cust-mobile-select-row { display: flex; gap: 6px; align-items: center; }
-.cust-select-mobile { flex: 1; min-width: 0; }
-.cust-mobile-bottom-row { display: flex; align-items: center; gap: 8px; }
-.cust-qty-mobile { width: 120px; }
+.cust-row-inner {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
 
-/* Add customer button */
-.add-cust-btn { border-radius: 10px; margin-top: 6px; border-color: #a78bfa; color: #7c3aed; }
-.add-cust-btn:hover { border-color: #7c3aed !important; background: #faf5ff !important; color: #7c3aed !important; }
+.cust-col-customer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 
-/* Item Summary Section */
-.item-summary-section {
-  margin-top: 12px;
-  padding: 14px 16px 10px;
-  background: linear-gradient(135deg, #f0fdf4 0%, #f8fafc 60%, #eff6ff 100%);
-  border-radius: 14px;
-  border: 1.5px solid rgba(34, 197, 94, 0.2);
+.cust-col-qty {
+  width: 100px;
+  flex-shrink: 0;
 }
-.item-summary-header {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
+
+.cust-col-actions {
+  display: flex;
+  gap: 4px;
+  align-items: stretch;
+  width: 60px;
+  flex-shrink: 0;
 }
-.summary-icon { color: #16a34a; font-size: 16px; }
-.item-summary-title {
-  font-size: 13px; font-weight: 800; color: #16a34a;
-  text-transform: uppercase; letter-spacing: 0.3px;
+
+.create-cust-btn,
+.cust-col-actions .ant-btn {
+  height: 32px;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: white;
+  transition: all 0.2s ease;
 }
-.item-summary-qty-badge {
-  font-size: 11px; font-weight: 700; color: #7c3aed;
-  background: #f5f3ff; padding: 2px 8px; border-radius: 999px;
-  border: 1px solid rgba(124, 58, 237, 0.2);
-  margin-left: auto;
+
+.create-cust-btn:hover,
+.cust-col-actions .ant-btn:hover {
+  background: #f8fafc;
+  border-color: #9ca3af;
+  transform: scale(1.05);
 }
-.item-summary-grid {
-  display: flex; flex-wrap: wrap; gap: 8px;
+
+.cust-col-actions .ant-btn-danger:hover {
+  background: #fef2f2;
+  border-color: #f87171;
+  color: #ffffff;
+}
+
+.cust-field-error {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.cust-select-mobile { flex: 1; }
+.cust-mobile-bottom-row { display: flex; gap: 8px; align-items: center; }
+.cust-qty-mobile { flex: 1; }
+
+.create-cust-btn {
+  border: 1px solid #7c3aed; color: #7c3aed; transition: all 0.15s ease;
+}
+.create-cust-btn:hover { background: #f3f4f6; border-color: #7c3aed; }
+
+.cust-field-error {
+  color: #ff4d4f; font-size: 12px; margin-top: 4px; display: block;
+}
+
+.add-cust-btn {
+  margin-top: 12px; border-radius: 8px; font-weight: 600;
+  border-color: #7c3aed; color: #7c3aed; height: 36px;
+}
+.add-cust-btn:hover {
+  background: #f9fafb !important; border-color: #7c3aed !important; color: #7c3aed !important;
+}
+
+/* Summary Section */
+.summary-section {
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.summary-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.summary-icon { color: #059669; font-size: 16px; }
+.summary-title { font-weight: 700; font-size: 14px; color: #374151; }
+.summary-qty-badge {
+  margin-left: auto; font-size: 12px; padding: 2px 8px; background: #e5e7eb;
+  border-radius: 12px; font-weight: 600; color: #374151;
+}
+
+.summary-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;
 }
 .summary-stat {
-  flex: 1 1 140px; min-width: 120px;
-  background: #fff; border-radius: 10px;
-  padding: 8px 12px;
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-}
-.profit-stat {
-  background: #f0fdf4;
-  border-color: rgba(34, 197, 94, 0.2);
+  padding: 12px; background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; text-align: center;
 }
 .summary-stat-label {
-  font-size: 10px; font-weight: 700; color: #94a3b8;
-  text-transform: uppercase; letter-spacing: 0.4px;
-  margin-bottom: 4px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 4px; text-transform: uppercase;
 }
 .summary-stat-value {
-  font-size: 15px; font-weight: 800; color: #0f172a;
-  font-variant-numeric: tabular-nums;
+  font-size: 14px; font-weight: 800; font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 }
-.summary-stat-value.cost { color: #1d4ed8; }
-.summary-stat-value.selling { color: #d97706; }
-.summary-stat-value.profit { color: #16a34a; }
+.summary-stat-value.cost { color: #dc2626; }
+.summary-stat-value.selling { color: #059669; }
+.profit-stat { border-left: 3px solid #10b981; }
+.summary-stat-value.profit { color: #059669; }
 
-@media (max-width: 767px) {
-  .item-block {
-    background: #f8fafc;
-    border-radius: 14px;
-    overflow: hidden;
-    margin-bottom: 20px;
-    padding-bottom: 4px;
+.computed-highlight {
+  background: #fef3c7 !important; border-color: #f59e0b !important; font-weight: 700 !important;
+}
+
+/* Variant Controls */
+.variant-controls {
+  margin-top: 16px;
+}
+
+.add-variant-btn {
+  height: 40px; border-radius: 8px; font-weight: 700;
+  border-color: #1d4ed8; color: #1d4ed8; background: #eff6ff;
+}
+.add-variant-btn:hover {
+  background: #dbeafe !important; border-color: #1d4ed8 !important; color: #1d4ed8 !important;
+}
+
+.variant-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.variant-nav-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  padding: 4px 12px;
+  background: #f1f5f9;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Variant List Visualization */
+.variant-list-section {
+  margin-top: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.variant-list-header {
+  margin-bottom: 12px;
+}
+
+.variant-list-header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.variant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.variant-item {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 2px solid;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.variant-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.variant-item-active {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  transform: scale(1.02);
+}
+
+.variant-item-color-strip {
+  width: 4px;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 2px 0 0 2px;
+}
+
+.variant-item-content {
+  flex: 1;
+  margin-left: 8px;
+}
+
+.variant-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.variant-item-number {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.variant-delete-btn {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  padding: 2px;
+  min-width: 24px;
+  height: 24px;
+}
+
+.variant-item:hover .variant-delete-btn {
+  opacity: 1;
+}
+
+.variant-item-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.variant-item-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.variant-item-prices {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 11px;
+}
+
+.variant-price {
+  font-weight: 600;
+  color: #059669;
+}
+
+.variant-customers {
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Navigation button styles */
+.nav-btn {
+  font-weight: 700;
+  color: #1d4ed8;
+  min-width: 100px;
+  text-align: center;
+  transition: all 0.3s ease;
+  padding: 6px 12px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.nav-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+}
+
+.nav-btn:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.nav-btn-prev:hover:not(:disabled) {
+  background: #059669;
+  border-color: #059669;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.nav-btn-next:hover:not(:disabled) {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+}
+
+/* Mobile responsive navigation */
+@media (max-width: 768px) {
+  .variant-navigation {
+    gap: 8px;
+    padding: 12px 8px;
+    margin-top: 16px;
   }
-  .item-header { padding: 8px 12px 0; }
-  .item-form { padding: 0 12px; }
-  .item-section {
-    padding: 0;
-    background: transparent;
-    border: none;
-    border-radius: 0;
+  
+  .variant-nav-label {
+    font-size: 11px;
+    min-width: 70px;
+    padding: 4px 8px;
+  }
+  
+  .nav-btn {
+    height: 40px;
+    padding: 0 12px;
+    font-size: 12px;
+    min-width: 44px;
+  }
+  
+  .nav-btn .anticon {
+    font-size: 14px;
+  }
+  
+  .nav-btn span {
+    display: none;
+  }
+  
+  .nav-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+  }
+}
+
+/* Animation for variant switching */
+.main-product-section {
+  transition: all 0.3s ease-in-out;
+}
+
+.main-product-section.switching-next {
+  animation: variantSwitchNext 0.4s ease-in-out;
+}
+
+.main-product-section.switching-previous {
+  animation: variantSwitchPrevious 0.4s ease-in-out;
+}
+
+.main-product-section.slide-in-new {
+  animation: slideInNewVariant 0.5s ease-out;
+}
+
+@keyframes variantSwitchNext {
+  0% { 
+    opacity: 1; 
+    transform: translateX(0);
+  }
+  50% { 
+    opacity: 0.2; 
+    transform: translateX(-30px);
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateX(0);
+  }
+}
+
+@keyframes variantSwitchPrevious {
+  0% { 
+    opacity: 1; 
+    transform: translateX(0);
+  }
+  50% { 
+    opacity: 0.2; 
+    transform: translateX(30px);
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInNewVariant {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Button hover effects */
+.variant-navigation button {
+  transition: all 0.2s ease;
+}
+
+.variant-navigation button:hover:not(:disabled) {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.3);
+}
+
+.variant-navigation button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.customer-opt {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.customer-name {
+  flex: 1;
+}
+
+.customer-type-tag {
+  margin-left: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .half-col { flex: 0 0 calc(50% - 12px); max-width: calc(50% - 12px); }
+}
+
+@media (max-width: 768px) {
+  .half-col { flex: 0 0 100%; max-width: 100%; }
+  .main-product-section { padding: 16px; }
+  .summary-grid { grid-template-columns: 1fr; }
+  
+  /* Form items responsive */
+  .ant-form-item {
     margin-bottom: 16px;
   }
-  .item-section-title { font-size: 12px; }
-  .exchange-rate-tag { font-size: 10px; }
-  .customers-section { padding: 10px 12px; background: #f5f3ff; border-radius: 12px; border: 1px solid rgba(124, 58, 237, 0.15); }
-  .cust-row { padding: 8px; }
-  .item-summary-section { padding: 10px 12px 8px; }
-  .summary-stat { flex: 1 1 100px; min-width: 90px; padding: 6px 10px; }
-  .summary-stat-value { font-size: 13px; }
+  
+  .ant-form-item-label {
+    padding-bottom: 4px;
+  }
+  
+  .ant-form-item-label > label {
+    height: auto;
+    line-height: 1.4;
+    white-space: normal;
+    word-wrap: break-word;
+  }
+}
+
+/* Galaxy Tab S7 and similar tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .half-col { 
+    flex: 0 0 calc(50% - 8px); 
+    max-width: calc(50% - 8px); 
+  }
+  
+  .main-product-section {
+    padding: 18px;
+  }
+  
+  .ant-form-item {
+    margin-bottom: 14px;
+  }
 }
 </style>

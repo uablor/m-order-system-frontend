@@ -195,20 +195,96 @@
             <ShoppingOutlined class="icon-blue" />
             <span>{{ $t('merchant.orderDetail.orderItems') }}</span>
             <a-tag class="count-tag">{{ order.orderItems?.length || 0 }}</a-tag>
+            <a-button 
+              v-if="selectedOrderItemId" 
+              type="text" 
+              size="small" 
+              @click="backToOrderItems"
+              class="back-to-items-btn"
+            >
+              <ArrowLeftOutlined />
+              {{ $t('common.back') }}
+            </a-button>
           </div>
 
           <a-empty v-if="!order.orderItems || order.orderItems.length === 0" :description="$t('merchant.orderDetail.noItems')" />
 
-          <div v-if="order.orderItems && order.orderItems.length > 0" class="items-cards">
-            <div v-for="(item, idx) in order.orderItems" :key="item.id" class="oi-card">
+          <!-- Cards View -->
+          <div v-if="!selectedOrderItemId && order.orderItems && order.orderItems.length > 0" class="items-grid">
+            <div 
+              v-for="(item, idx) in order.orderItems" 
+              :key="item.id" 
+              class="item-card clickable-card"
+              @click="selectOrderItem(item.id)"
+            >
+              <!-- Image Section -->
+              <div class="item-image-section">
+                <img 
+                  v-if="item.image?.publicUrl" 
+                  :src="item.image.publicUrl" 
+                  :alt="item.productName"
+                  class="item-image"
+                  @error="handleImageError"
+                />
+                <div v-else class="item-image-placeholder">
+                  <ShoppingOutlined />
+                </div>
+              </div>
+
+              <!-- Content Section -->
+              <div class="item-content">
+                <div class="item-header">
+                  <span class="item-num">#{{ idx + 1 }}</span>
+                  <span class="item-name">{{ item.productName }}</span>
+                  <span v-if="item.variant" class="item-variant">({{ item.variant }})</span>
+                </div>
+
+                <div class="item-info">
+                  <div class="info-row">
+                    <span class="info-label">{{ $t('merchant.orderDetail.quantity') }}:</span>
+                    <span class="info-value">{{ item.quantity }}</span>
+                  </div>
+                </div>
+
+                <!-- Price Info -->
+                <div class="price-info">
+                  <div class="price-row">
+                    <span class="price-label">{{ $t('merchant.orderDetail.purchasePrice') }}</span>
+                    <span class="price-value">{{ formatNumber(item.purchasePrice) }} {{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span>
+                  </div>
+                  <div class="price-row">
+                    <span class="price-label">{{ $t('merchant.orderDetail.sellingPrice') }}</span>
+                    <span class="price-value">{{ formatNumber(item.sellingPriceForeign) }} {{ item.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || '' }}</span>
+                  </div>
+                </div>
+
+                <!-- Profit -->
+                <div class="profit-section">
+                  <span class="profit-label">{{ $t('merchant.orderDetail.profitLak') }}</span>
+                  <span class="profit-value" :class="{ 'profit-positive': Number(item.targetCurrencyProfit) >= 0, 'profit-negative': Number(item.targetCurrencyProfit) < 0 }">
+                    {{ formatNumber(item.targetCurrencyProfit) }} LAK
+                  </span>
+                </div>
+
+                <div class="click-hint">
+                  <EyeOutlined />
+                  {{ $t('merchant.orderDetail.viewDetails') }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detail View -->
+          <div v-if="selectedOrderItemId && selectedOrderItem" class="item-detail-view">
+            <div class="oi-card">
               <div class="oi-card-header">
-                <span class="item-num">#{{ idx + 1 }}</span>
-                <span class="item-name">{{ item.productName }}</span>
-                <span v-if="item.variant" class="item-variant">({{ item.variant }})</span>
+                <span class="item-num">#{{ selectedItemIndex }}</span>
+                <span class="item-name">{{ selectedOrderItem.productName }}</span>
+                <span v-if="selectedOrderItem.variant" class="item-variant">({{ selectedOrderItem.variant }})</span>
               </div>
 
               <div class="oi-info-row">
-                <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.quantity') }}</span><span class="oi-val">{{ item.quantity }}</span></div>
+                <div class="oi-info-item"><span class="oi-label">{{ $t('merchant.orderDetail.quantity') }}</span><span class="oi-val">{{ selectedOrderItem.quantity }}</span></div>
               </div>
 
               <!-- Purchase Section -->
@@ -216,56 +292,51 @@
                 <div class="oi-section-title purchase">{{ $t('merchant.orderDetail.sectionPurchase') }}</div>
                 <div class="oi-info-row">
                   <div class="oi-info-item">
-                    <span class="oi-label">{{ $t('merchant.orderDetail.purchasePrice') }} ({{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '-' }})</span>
-                    <span class="oi-val">{{ formatNumber(item.purchasePrice) }} <span class="oi-currency">{{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
-                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencyPurchasePrice) }}</span>
+                    <span class="oi-label">{{ $t('merchant.orderDetail.purchasePrice') }} ({{ selectedOrderItem.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '-' }})</span>
+                    <span class="oi-val">{{ formatNumber(selectedOrderItem.purchasePrice) }} <span class="oi-currency">{{ selectedOrderItem.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(selectedOrderItem.targetCurrencyPurchasePrice) }}</span>
                   </div>
                   <div class="oi-info-item">
                     <span class="oi-label">{{ $t('merchant.orderDetail.purchaseExchangeRate') }}</span>
-                    <span class="oi-val">{{ formatNumber(item.exchangeRateBuyValue || order.exchangeRateBuyValue || '0') }}</span>
+                    <span class="oi-val">{{ formatNumber(selectedOrderItem.exchangeRateBuyValue || order.exchangeRateBuyValue || '0') }}</span>
                   </div>
                   <div class="oi-info-item">
                     <span class="oi-label">{{ $t('merchant.orderDetail.purchaseTotalLak') }}</span>
-                    <span class="oi-val">{{ formatNumber(item.purchaseTotal) }} <span class="oi-currency">{{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
-                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencyPurchaseTotal) }}</span>
+                    <span class="oi-val">{{ formatNumber(selectedOrderItem.purchaseTotal) }} <span class="oi-currency">{{ selectedOrderItem.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(selectedOrderItem.targetCurrencyPurchaseTotal) }}</span>
                   </div>
                 </div>
                 <div class="oi-info-row">
                   <div class="oi-info-item">
-                    <span class="oi-label">{{ $t('merchant.orderDetail.shippingPrice') }} ({{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '-' }})</span>
-                    <span class="oi-val">{{ formatNumber(item.shippingPrice ?? '0') }} <span class="oi-currency">{{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
-                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencyShippingPrice) }}</span>
+                    <span class="oi-label">{{ $t('merchant.orderDetail.shippingPrice') }} ({{ selectedOrderItem.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '-' }})</span>
+                    <span class="oi-val">{{ formatNumber(selectedOrderItem.shippingPrice ?? '0') }} <span class="oi-currency">{{ selectedOrderItem.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(selectedOrderItem.targetCurrencyShippingPrice) }}</span>
                   </div>
                   <div class="oi-info-item">
                     <span class="oi-label">{{ $t('merchant.orderDetail.costBeforeDiscount') }}</span>
-                    <span class="oi-val">{{ formatNumber(item.totalCostBeforeDiscount) }} <span class="oi-currency">{{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
-                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencyTotalCostBeforeDiscount) }}</span>
+                    <span class="oi-val">{{ formatNumber(selectedOrderItem.totalCostBeforeDiscount) }} <span class="oi-currency">{{ selectedOrderItem.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(selectedOrderItem.targetCurrencyTotalCostBeforeDiscount) }}</span>
                   </div>
                 </div>
               </div>
 
               <!-- Discount Section -->
-              <div v-if="item.discountType" class="oi-section">
+              <div v-if="selectedOrderItem.discountType" class="oi-section">
                 <div class="oi-section-title discount">{{ $t('merchant.orderDetail.sectionDiscount') }}</div>
                 <div class="oi-info-row">
                   <div class="oi-info-item">
                     <span class="oi-label">{{ $t('merchant.orderDetail.discountType') }}</span>
                     <span class="oi-val">
-                      <span v-if="item.discountType === 'FIX'" class="discount-type-badge discount-fix">💵 {{ $t('merchant.orderDetail.discountFix') }}</span>
-                      <span v-else-if="item.discountType === 'PERCENT'" class="discount-type-badge discount-percent">% {{ $t('merchant.orderDetail.discountPercent') }}</span>
-                      <span v-else>{{ item.discountType }}</span>
+                      <span v-if="selectedOrderItem.discountType === 'FIX'" class="discount-type-badge discount-fix">💵 {{ $t('merchant.orderDetail.discountFix') }}</span>
+                      <span v-else-if="selectedOrderItem.discountType === 'PERCENT'" class="discount-type-badge discount-percent">% {{ $t('merchant.orderDetail.discountPercent') }}</span>
+                      <span v-else>{{ selectedOrderItem.discountType }}</span>
                     </span>
                   </div>
                   <div class="oi-info-item">
                     <span class="oi-label">{{ $t('merchant.orderDetail.discountValue') }}</span>
-                    <span class="oi-val">{{ formatNumber(item.discountValue ?? '0') }} <span class="oi-currency">{{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
-                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencyDiscountValue ?? '0') }}</span>
+                    <span class="oi-val">{{ formatNumber(selectedOrderItem.discountValue ?? '0') }} <span class="oi-currency">{{ selectedOrderItem.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(selectedOrderItem.targetCurrencyDiscountValue ?? '0') }}</span>
                   </div>
-                  <!-- <div class="oi-info-item">
-                    <span class="oi-label">{{ $t('merchant.orderDetail.discountAmount') }}</span>
-                    <span class="oi-val">-{{ formatNumber(item.discountAmount) }} <span class="oi-currency">{{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
-                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} -{{ formatNumber(item.targetCurrencyDiscountAmount) }}</span>
-                  </div> -->
                 </div>
               </div>
 
@@ -273,8 +344,8 @@
               <div class="oi-info-row highlight-row">
                 <div class="oi-info-item">
                   <span class="oi-label">{{ $t('merchant.orderDetail.finalCostLak') }}</span>
-                  <span class="oi-val highlight-val">{{ formatNumber(item.finalCost) }} <span class="oi-currency oi-currency-highlight">{{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
-                  <span class="oi-lak-sub highlight-lak">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencyFinalCost) }}</span>
+                  <span class="oi-val highlight-val">{{ formatNumber(selectedOrderItem.finalCost) }} <span class="oi-currency oi-currency-highlight">{{ selectedOrderItem.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span></span>
+                  <span class="oi-lak-sub highlight-lak">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(selectedOrderItem.targetCurrencyFinalCost) }}</span>
                 </div>
               </div>
 
@@ -283,34 +354,33 @@
                 <div class="oi-section-title selling">{{ $t('merchant.orderDetail.sectionSelling') }}</div>
                 <div class="oi-info-row">
                   <div class="oi-info-item">
-                    <span class="oi-label">{{ $t('merchant.orderDetail.sellingPrice') }} ({{ item.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || '-' }})</span>
-                    <span class="oi-val">{{ formatNumber(item.sellingPriceForeign) }} <span class="oi-currency">{{ item.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || '' }}</span></span>
-                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencySellingPriceForeign) }}</span>
+                    <span class="oi-label">{{ $t('merchant.orderDetail.sellingPrice') }} ({{ selectedOrderItem.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || '-' }})</span>
+                    <span class="oi-val">{{ formatNumber(selectedOrderItem.sellingPriceForeign) }} <span class="oi-currency">{{ selectedOrderItem.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(selectedOrderItem.targetCurrencySellingPriceForeign) }}</span>
                   </div>
                   <div class="oi-info-item"> 
                     <div class=" !text-blue-500 !ml-3"><SwapOutlined /></div>
                     <span class="oi-label">{{ $t('merchant.orderDetail.sellingRate') }}</span>
-                    <span class="oi-val">{{ formatNumber(item.exchangeRateSellValue || order.exchangeRateSellValue || '0') }}</span>
+                    <span class="oi-val">{{ formatNumber(selectedOrderItem.exchangeRateSellValue || order.exchangeRateSellValue || '0') }}</span>
                   </div>
                   <div class="oi-info-item">
                     <span class="oi-label">{{ $t('merchant.orderDetail.sellingTotal') }}</span>
-                    <span class="oi-val">{{ formatNumber(item.sellingTotal) }} <span class="oi-currency">{{ item.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || '' }}</span></span>
-                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(item.targetCurrencySellingTotal) }}</span>
+                    <span class="oi-val">{{ formatNumber(selectedOrderItem.sellingTotal) }} <span class="oi-currency">{{ selectedOrderItem.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || '' }}</span></span>
+                    <span class="oi-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(selectedOrderItem.targetCurrencySellingTotal) }}</span>
                   </div>
                 </div>
               </div>
 
               <!-- Profit -->
-              <div class="oi-info-row" :class="{ 'profit-pos-row': Number(item.targetCurrencyProfit) >= 0, 'profit-neg-row': Number(item.targetCurrencyProfit) < 0 }">
+              <div class="oi-info-row" :class="{ 'profit-pos-row': Number(selectedOrderItem.targetCurrencyProfit) >= 0, 'profit-neg-row': Number(selectedOrderItem.targetCurrencyProfit) < 0 }">
                 <div class="oi-info-item">
                   <span class="oi-label">{{ $t('merchant.orderDetail.profitLak') }}</span>
-                  <span class="oi-val profit-val">{{ formatNumber(item.targetCurrencyProfit) }} <span class="oi-currency">LAK</span></span>
+                  <span class="oi-val profit-val">{{ formatNumber(selectedOrderItem.targetCurrencyProfit) }} <span class="oi-currency">LAK</span></span>
                 </div>
                 <div class="oi-info-item">
                   <span class="oi-label">{{ $t('merchant.orderDetail.profitLak') }}</span>
                   <span class="oi-val profit-val">{{ truncNum(order.totalProfit) }}  <span class="oi-currency">{{ sellCurrency }}</span></span>
                 </div>
-                <!-- <span class="finance-value num-truncate">{{ truncNum(order.totalProfit) }} <span class="fin-currency">{{ sellCurrency }}</span></span>d -->
               </div>
             </div>
           </div>
@@ -415,14 +485,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import {
-  ArrowLeftOutlined,
-  FileTextOutlined,
-  DollarOutlined,
-  ShoppingOutlined,
-  TeamOutlined,
-  SwapOutlined,
-} from '@ant-design/icons-vue';
+import { ArrowLeftOutlined, FileTextOutlined, ShoppingOutlined, TeamOutlined, EyeOutlined, SwapOutlined } from '@ant-design/icons-vue';
 import { orderRepository } from '@/infrastructure/repositories/order.repository';
 import type { Order, PaymentStatusEnum } from '@/domain/entities/user.entity';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
@@ -435,6 +498,7 @@ const { isMobile } = useIsMobile();
 
 const loading = ref(false);
 const order = ref<Order | null>(null);
+const selectedOrderItemId = ref<number | null>(null);
 
 const computedTotalPaid = computed(() =>
   (order.value?.customerOrders ?? []).reduce((sum, co) => sum + Number(co.paidAmount || 0), 0).toString()
@@ -508,6 +572,33 @@ const getCoItemProductName = (coItem: any) => {
 const goBack = () => {
   router.push('/merchant/orders');
 };
+
+const selectOrderItem = (itemId: number) => {
+  selectedOrderItemId.value = itemId;
+};
+
+const backToOrderItems = () => {
+  selectedOrderItemId.value = null;
+};
+
+const handleImageError = (event: any) => {
+  // Hide the image and show placeholder on error
+  event.target.style.display = 'none';
+  const placeholder = event.target.nextElementSibling;
+  if (placeholder && placeholder.classList.contains('item-image-placeholder')) {
+    placeholder.style.display = 'flex';
+  }
+};
+
+const selectedOrderItem = computed(() => {
+  if (!selectedOrderItemId.value || !order.value?.orderItems) return null;
+  return order.value.orderItems.find(item => item.id === selectedOrderItemId.value);
+});
+
+const selectedItemIndex = computed(() => {
+  if (!selectedOrderItem.value || !order.value?.orderItems) return 1;
+  return order.value.orderItems.findIndex((item: any) => item.id === selectedOrderItem.value?.id) + 1;
+});
 
 const fetchOrder = async () => {
   const id = Number(route.params.id);
@@ -692,13 +783,244 @@ onMounted(() => {
 .item-variant { color: #64748b; font-size: 13px; margin-left: 4px; }
 .item-num { font-weight: 800; color: #1d4ed8; font-size: 13px; }
 
+.clickable-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.clickable-card:hover {
+  border-color: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.back-to-items-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.click-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #64748b;
+  font-size: 12px;
+  margin-top: 8px;
+  justify-content: center;
+}
+
+.oi-summary-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.oi-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profit-positive {
+  color: #059669;
+}
+
+.profit-negative {
+  color: #dc2626;
+}
+
 .items-cards { display: flex; flex-direction: column; gap: 14px; }
+
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 4px;
+}
+
+.item-card {
+  background: #f8fafc;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  transition: all 0.2s ease;
+  overflow: hidden;
+  cursor: pointer;
+}
+
 .oi-card {
   background: #f8fafc;
   border-radius: 16px;
   padding: 18px 20px 12px;
   border: 1px solid rgba(148, 163, 184, 0.18);
   transition: box-shadow 0.15s ease;
+}
+
+.item-image-section {
+  width: 100%;
+  height: 200px;
+  background: #f1f5f9;
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px 12px 0 0;
+}
+
+.item-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 40px;
+  background: #f1f5f9;
+}
+
+.item-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #ffffff;
+  border-radius: 0 0 12px 12px;
+}
+
+.item-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  padding: 8px 0;
+}
+
+.info-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.info-value {
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.price-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.price-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.price-value {
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.profit-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.profit-label {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.profit-value {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .items-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  
+  .item-image-section {
+    height: 140px;
+  }
+  
+  .item-content {
+    padding: 12px;
+  }
+  
+  .info-row,
+  .price-row {
+    font-size: 12px;
+  }
+  
+  .profit-label,
+  .price-label {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .items-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .item-image-section {
+    height: 120px;
+  }
+  
+  .item-content {
+    padding: 10px;
+    gap: 8px;
+  }
 }
 .oi-card:hover { box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06); }
 .oi-card-header {

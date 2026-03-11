@@ -290,7 +290,7 @@
     <a-modal
       v-model:open="whatsappProgressVisible"
       :title="$t('merchant.arrivals.openingWhatsApp')"
-      :width="400"
+      :width="450"
       :footer="null"
       :closable="false"
       :mask-closable="false"
@@ -300,21 +300,36 @@
           <WhatsAppOutlined />
         </div>
         <div class="progress-text">
-          <div class="progress-title">{{ $t('merchant.arrivals.openingWhatsAppMessages') }}</div>
-          <div class="progress-status">
-            {{ whatsappTotal > 0 ? $t('merchant.arrivals.progress', { current: whatsappProgress + 1, total: whatsappTotal }) : $t('merchant.arrivals.progress', { current: 0, total: 0 }) }}
+          <div class="progress-title">
+            {{ whatsappTotal > 0 ? $t('merchant.arrivals.customerProgress', { current: currentCustomerIndex + 1, total: whatsappTotal }) : $t('merchant.arrivals.progress', { current: 0, total: 0 }) }}
           </div>
           <div v-if="whatsappCurrentName" class="progress-current">
-            {{ $t('merchant.arrivals.currentlyOpening') }}: {{ whatsappCurrentName }}
+            {{ $t('merchant.arrivals.openingFor', { name: whatsappCurrentName }) }}
           </div>
         </div>
         <a-progress 
-          :percent="whatsappTotal > 0 ? Math.round(((whatsappProgress + 1) / whatsappTotal) * 100) : 0" 
+          :percent="whatsappTotal > 0 ? Math.round(((currentCustomerIndex + 1) / whatsappTotal) * 100) : 0" 
           :show-info="false"
           stroke-color="#25D366"
         />
-        <div class="progress-note">
-          {{ $t('merchant.arrivals.whatsappProgressNote') }}
+        
+        <!-- Action Buttons -->
+        <div class="progress-actions" v-if="currentCustomerIndex < validNotifications.length - 1">
+          <a-button type="primary" size="large" @click="goToNextCustomer" block>
+            {{ $t('merchant.arrivals.nextCustomer') }}
+          </a-button>
+        </div>
+        
+        <div class="progress-actions" v-else-if="currentCustomerIndex === validNotifications.length - 1">
+          <a-button type="primary" size="large" @click="completeWhatsAppProcess" block>
+            {{ $t('merchant.arrivals.completedAll') }}
+          </a-button>
+        </div>
+        
+        <div class="progress-cancel">
+          <a-button type="text" @click="cancelWhatsAppProcess">
+            {{ $t('common.cancel') }}
+          </a-button>
         </div>
       </div>
     </a-modal>
@@ -326,7 +341,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { message } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
 import {
   ArrowLeftOutlined,
   PlusOutlined,
@@ -490,6 +505,97 @@ const whatsappProgressVisible = ref(false);
 const whatsappProgress = ref(0);
 const whatsappTotal = ref(0);
 const whatsappCurrentName = ref('');
+const pendingNotifications = ref<NotificationForWhatsApp[]>([]);
+const currentCustomerIndex = ref(0);
+const validNotifications = ref<(Required<Pick<NotificationForWhatsApp, 'recipientContact'>> & NotificationForWhatsApp)[]>([]);
+
+// Sequential WhatsApp opening functions
+const openWhatsAppTabsWithUserInteraction = async () => {
+  const valid = pendingNotifications.value.filter(
+    (n): n is Required<Pick<NotificationForWhatsApp, 'recipientContact'>> & NotificationForWhatsApp => 
+      !!n.recipientContact && isValidWhatsAppPhone(formatPhoneForWhatsApp(n.recipientContact)),
+  );
+
+  if (valid.length === 0) {
+    message.warning(t('merchant.arrivals.noValidWhatsAppNumbers'));
+    return;
+  }
+
+  // Initialize sequential state
+  validNotifications.value = valid;
+  currentCustomerIndex.value = 0;
+  whatsappProgress.value = 0;
+  whatsappTotal.value = valid.length;
+  whatsappProgressVisible.value = true;
+  
+  // Open WhatsApp for first customer
+  openCurrentCustomerWhatsApp();
+};
+
+const openCurrentCustomerWhatsApp = () => {
+  const currentNotification = validNotifications.value[currentCustomerIndex.value];
+  if (!currentNotification) return;
+  
+  const raw = currentNotification.language ?? 'en';
+  const lang: 'en' | 'th' | 'la' = raw === 'th' || raw === 'la' ? raw : 'en';
+  const customerName = currentNotification.customer?.customerName ?? (lang === 'en' ? 'Customer' : lang === 'th' ? 'ลูกค้า' : 'ລູກຄ້າ');
+  
+  whatsappCurrentName.value = customerName;
+  whatsappProgress.value = currentCustomerIndex.value;
+  
+  console.log(`Opening WhatsApp for ${customerName} (${currentNotification.recipientContact})`);
+  
+  const success = openWhatsAppChat({
+    phone: currentNotification.recipientContact!,
+    template: {
+      customerName,
+      orderNumbers: currentNotification.relatedOrders ?? undefined,
+    },
+    notificationLink: currentNotification.notificationLink ?? undefined,
+    lang,
+  });
+
+  if (!success) {
+    console.warn(`Failed to open WhatsApp for ${customerName}`);
+    message.error(t('merchant.arrivals.whatsappError'));
+  } else {
+    console.log(`Successfully opened WhatsApp for ${customerName}`);
+  }
+};
+
+const goToNextCustomer = () => {
+  currentCustomerIndex.value++;
+  
+  if (currentCustomerIndex.value < validNotifications.value.length) {
+    // Open next customer's WhatsApp
+    openCurrentCustomerWhatsApp();
+  } else {
+    // All customers processed
+    completeWhatsAppProcess();
+  }
+};
+
+const completeWhatsAppProcess = () => {
+  whatsappProgress.value = validNotifications.value.length;
+  whatsappCurrentName.value = '';
+  
+  setTimeout(() => {
+    whatsappProgressVisible.value = false;
+    message.success(t('merchant.arrivals.whatsappTabsOpened', { count: validNotifications.value.length }));
+    // Reset state
+    pendingNotifications.value = [];
+    validNotifications.value = [];
+    currentCustomerIndex.value = 0;
+  }, 1500);
+};
+
+const cancelWhatsAppProcess = () => {
+  whatsappProgressVisible.value = false;
+  pendingNotifications.value = [];
+  validNotifications.value = [];
+  currentCustomerIndex.value = 0;
+  message.info(t('merchant.arrivals.whatsappProcessCancelled'));
+};
 
 const openWhatsAppTabsForNotifications = async (notifications: NotificationForWhatsApp[]) => {
   const valid = notifications.filter(
@@ -520,62 +626,16 @@ const openWhatsAppTabsForNotifications = async (notifications: NotificationForWh
     return;
   }
 
-  // Multiple notifications - show progress modal and open sequentially
-  whatsappProgressVisible.value = true;
-  whatsappProgress.value = 0;
-  whatsappTotal.value = valid.length;
-  whatsappCurrentName.value = '';
-
-  try {
-    for (let i = 0; i < valid.length; i++) {
-      const n = valid[i];
-      if (!n) continue; // Skip if undefined
-      
-      whatsappProgress.value = i;
-      whatsappCurrentName.value = n.customer?.customerName || 'Customer';
-      
-      // Update progress
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Open WhatsApp with user interaction trigger
-      const raw = n.language ?? 'en';
-      const lang: 'en' | 'th' | 'la' = raw === 'th' || raw === 'la' ? raw : 'en';
-      const customerName = n.customer?.customerName ?? (lang === 'en' ? 'Customer' : lang === 'th' ? 'ลูกค้า' : 'ລູກຄ້າ');
-      
-      const success = openWhatsAppChat({
-        phone: n.recipientContact!,
-        template: {
-          customerName,
-          orderNumbers: n.relatedOrders ?? undefined,
-        },
-        notificationLink: n.notificationLink ?? undefined,
-        lang,
-      });
-
-      if (!success) {
-        console.warn(`Failed to open WhatsApp for ${customerName}`);
-      }
-
-      // Longer delay between openings to avoid browser blocking
-      if (i < valid.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-      }
-    }
-
-    whatsappProgress.value = valid.length;
-    whatsappCurrentName.value = '';
-    
-    // Show completion message
-    setTimeout(() => {
-      whatsappProgressVisible.value = false;
-      message.success(t('merchant.arrivals.whatsappTabsOpened', { count: valid.length }));
-    }, 1000);
-
-  } catch (error) {
-    console.error('Error opening WhatsApp tabs:', error);
-    whatsappProgressVisible.value = false;
-    message.error(t('merchant.arrivals.whatsappOpenError'));
-  }
+  // Multiple notifications - show confirmation modal
+  pendingNotifications.value = notifications;
+  
+  Modal.confirm({
+    title: t('merchant.arrivals.openMultipleWhatsApp'),
+    content: t('merchant.arrivals.openMultipleWhatsAppConfirm', { count: valid.length }),
+    okText: t('common.yes'),
+    cancelText: t('common.no'),
+    onOk: openWhatsAppTabsWithUserInteraction,
+  });
 };
 
 const buildNotisFromSelectedGroups = (): CreateNotificationDto[] => {
@@ -1248,6 +1308,24 @@ onMounted(async () => {
   margin-top: 16px;
   line-height: 1.4;
   max-width: 300px;
+}
+
+.progress-actions {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.progress-cancel {
+  margin-top: 12px;
+}
+
+.progress-cancel .ant-btn {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.progress-cancel .ant-btn:hover {
+  color: #374151;
 }
 
 @keyframes whatsappPulse {

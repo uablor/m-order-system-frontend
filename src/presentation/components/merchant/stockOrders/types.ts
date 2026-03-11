@@ -27,6 +27,22 @@ export interface ItemForm {
   sellingPriceForeign: number;
   customers: CustomerInItemForm[];
   quantity: number; // Add missing quantity property
+  productImage?: string; // Product image URL
+  imageId?: number; // Database image ID
+  variants?: ProductVariant[]; // Array of product variants
+}
+
+// Product variant interface
+export interface ProductVariant {
+  uid: string;
+  variant: string;
+  purchasePrice: number;
+  sellingPriceForeign: number;
+  shippingPrice: number;
+  discountType?: 'percent' | 'cash';
+  discountValue?: number;
+  customers: CustomerInItemForm[];
+  productImage?: string; // Product image URL for this variant
 }
 
 export interface DraftData {

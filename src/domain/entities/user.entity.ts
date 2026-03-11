@@ -331,6 +331,13 @@ export interface OrderItem {
   productName: string;
   variant: string | null;
   quantity: number;
+  imageId?: number | null;
+  image?: {
+    id: number;
+    publicUrl: string | null;
+    fileName: string;
+    originalName: string;
+  } | null;
   exchangeRateBuy: ExchangeRateSnapshot | null;
   exchangeRateSell: ExchangeRateSnapshot | null;
   exchangeRateBuyValue: string | null;

@@ -19,12 +19,13 @@
           >
             <FilterOutlined />
           </a-button>
-          <div v-if="arrivalListShowCreateNotiBar" class="create-noti-bar-inline">
+          <!-- Commented out header Create Notification button to avoid duplication with filter bar button -->
+          <!-- <div v-if="arrivalListShowCreateNotiBar" class="create-noti-bar-inline">
             <span class="create-noti-count">{{ $t('merchant.notifications.createNotiSelectedCount', { count: arrivalListSelectedCount }) }}</span>
             <a-button type="primary" :loading="arrivalListCreateNotiSubmitting" @click="arrivalListOpenCreateNotiConfirm">
               {{ $t('merchant.notifications.createNoti') }}
             </a-button>
-          </div>
+          </div> -->
         </template>
         <!-- History tab -->
         <!-- <template v-else>
@@ -470,15 +471,10 @@ const { isMobile, isTablet } = useIsMobile();
 
 const arrivalListShowFilterToggle = computed(() => isMobile.value);
 const arrivalListShowFilters = computed(() => arrivalListRef.value?.showFilters ?? false);
-const arrivalListShowCreateNotiBar = computed(() => (arrivalListRef.value?.selectedArrivalIds?.size ?? 0) > 0);
-const arrivalListSelectedCount = computed(() => arrivalListRef.value?.selectedArrivalIds?.size ?? 0);
-const arrivalListCreateNotiSubmitting = computed(() => arrivalListRef.value?.createNotiSubmitting ?? false);
+// Removed unused computed properties for commented header Create Notification button
 
 const toggleArrivalListFilters = () => {
   arrivalListRef.value?.toggleShowFilters?.();
-};
-const arrivalListOpenCreateNotiConfirm = () => {
-  arrivalListRef.value?.openCreateNotiConfirm?.();
 };
 
 const {
@@ -596,19 +592,7 @@ watch(
 .filter-toggle-btn.active {
   background: #1677ff; color: #fff; border-color: #1677ff;
 }
-.create-noti-bar-inline {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 14px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 10px;
-}
-.create-noti-bar-inline .create-noti-count {
-  font-weight: 600;
-  color: #1d4ed8;
-}
+/* Removed CSS for commented header Create Notification button */
 @media (max-width: 1023px) {
   .page-header { flex-wrap: wrap; }
   .header-actions { order: 3; width: 100%; justify-content: flex-start; }

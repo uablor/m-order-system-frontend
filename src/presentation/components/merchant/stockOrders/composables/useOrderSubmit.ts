@@ -113,31 +113,83 @@ export function useOrderSubmit(
     try {
       // Transform nested structure → backend format
       const customerMap = new Map<number, { orderItemIndex: number; quantity: number; sellingPriceForeign: number }[]>();
-      items.value.forEach((item, idx) => {
-        item.customers.forEach(c => {
-          if (!c.customerId) return;
-          if (!customerMap.has(c.customerId)) customerMap.set(c.customerId, []);
-          customerMap.get(c.customerId)!.push({
-            orderItemIndex: idx,
-            quantity: c.qty,
-            sellingPriceForeign: item.sellingPriceForeign,
+      let orderItemIndex = 0;
+      
+      // Expand each item with variants into separate order items
+      const expandedItems: Array<{
+        Index: number;
+        productName: string;
+        variant?: string;
+        quantity: number;
+        purchasePrice: number;
+        shippingPrice?: number;
+        discountType?: 'percent' | 'cash';
+        discountValue?: number;
+        sellingPriceForeign: number;
+        imageId?: number;
+      }> = [];
+      
+      items.value.forEach((item) => {
+        if (item.variants && item.variants.length > 0) {
+          // Create separate order items for each variant
+          item.variants.forEach((variant) => {
+            const variantTotalQty = variant.customers.reduce((sum, c) => sum + (c.qty || 0), 0);
+            
+            expandedItems.push({
+              Index: orderItemIndex++,
+              productName: item.productName.trim(),
+              variant: variant.variant.trim() || undefined,
+              quantity: variantTotalQty,
+              purchasePrice: variant.purchasePrice,
+              shippingPrice: variant.shippingPrice || undefined,
+              discountType: variant.discountType || undefined,
+              discountValue: variant.discountType ? variant.discountValue : undefined,
+              sellingPriceForeign: variant.sellingPriceForeign,
+              ...(item.imageId && { imageId: item.imageId }), // Only include imageId if it exists
+            });
+            
+            // Map customers for this variant
+            variant.customers.forEach(c => {
+              if (!c.customerId) return;
+              if (!customerMap.has(c.customerId)) customerMap.set(c.customerId, []);
+              customerMap.get(c.customerId)!.push({
+                orderItemIndex: expandedItems.length - 1, // Use the actual index in expandedItems
+                quantity: c.qty,
+                sellingPriceForeign: variant.sellingPriceForeign,
+              });
+            });
           });
-        });
+        } else {
+          // No variants - create single order item as before
+          expandedItems.push({
+            Index: orderItemIndex++,
+            productName: item.productName.trim(),
+            variant: item.variant.trim() || undefined,
+            quantity: item.customers.reduce((sum, c) => sum + (c.qty || 0), 0),
+            purchasePrice: item.purchasePrice,
+            shippingPrice: item.shippingPrice || undefined,
+            discountType: item.discountType || undefined,
+            discountValue: item.discountType ? item.discountValue : undefined,
+            sellingPriceForeign: item.sellingPriceForeign,
+            ...(item.imageId && { imageId: item.imageId }), // Only include imageId if it exists
+          });
+          
+          // Map customers for this item
+          item.customers.forEach(c => {
+            if (!c.customerId) return;
+            if (!customerMap.has(c.customerId)) customerMap.set(c.customerId, []);
+            customerMap.get(c.customerId)!.push({
+              orderItemIndex: expandedItems.length - 1,
+              quantity: c.qty,
+              sellingPriceForeign: item.sellingPriceForeign,
+            });
+          });
+        }
       });
 
       const payload: CreateFullOrderDto = {
         orderCode: orderCode.value.trim(),
-        items: items.value.map((item, idx) => ({
-          Index: idx,
-          productName: item.productName.trim(),
-          variant: item.variant.trim() || undefined,
-          quantity: item.customers.reduce((sum, c) => sum + (c.qty || 0), 0),
-          purchasePrice: item.purchasePrice,
-          shippingPrice: item.shippingPrice || undefined,
-          discountType: item.discountType || undefined,
-          discountValue: item.discountType ? item.discountValue : undefined,
-          sellingPriceForeign: item.sellingPriceForeign,
-        })),
+        items: expandedItems,
         customerOrders: Array.from(customerMap.entries()).map(([customerId, custItems]) => ({
           customerId,
           items: custItems,

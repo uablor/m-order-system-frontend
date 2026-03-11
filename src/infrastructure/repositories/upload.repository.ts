@@ -41,3 +41,30 @@ export async function uploadFilesForCustomer(
   if (Array.isArray(data)) return data;
   return [];
 }
+
+/**
+ * Upload files for merchant (requires authentication)
+ */
+export async function uploadFilesForMerchant(
+  files: File[],
+): Promise<ImageUploadResponse[]> {
+  const formData = new FormData();
+  for (const file of files) {
+    formData.append('files', file);
+  }
+
+  const response = await api.post<ImageUploadResponse[] | { results?: ImageUploadResponse[] }>(
+    API_ENDPOINTS.UPLOAD.FILES_V2,
+    formData,
+    {
+      headers: {
+        'Content-Type': undefined as unknown as string,
+      },
+    },
+  );
+
+  const data = response.data as any;
+  if (Array.isArray(data?.results)) return data.results;
+  if (Array.isArray(data)) return data;
+  return [];
+}
