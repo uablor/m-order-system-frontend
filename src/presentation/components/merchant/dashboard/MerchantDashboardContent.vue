@@ -167,18 +167,6 @@
                 </a-tooltip>
                 <span v-else class="c-val text-red">{{ fmtCurrency(0) }}</span>
               </div>
-<<<<<<< HEAD
-              <!-- <div class="currency-divider" />
-              <div class="currency-row">
-                <span class="c-label">{{ $t('merchant.dashboard.totalInLak') }}</span>
-                <a-tooltip v-if="displayLakCurrency" :overlay-class-name="'blue-tooltip'">
-                  <template #title>{{ fmtCurrency(parseCurrencyString(displayLakCurrency.totalAllConverted)) }}</template>
-                  <span class="c-val text-blue num-truncate">{{ fmtCompact(parseCurrencyString(displayLakCurrency.totalAllConverted)) }}</span>
-                </a-tooltip>
-                <span v-else class="c-val text-blue">{{ fmtCurrency(0) }}</span>
-              </div> -->
-=======
->>>>>>> c214074dfe4b091661e4b92864f28127721703ab
             </div>
           </a-card>
         </a-col>

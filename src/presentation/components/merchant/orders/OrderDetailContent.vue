@@ -235,36 +235,46 @@
               <div class="item-content">
                 <div class="item-header">
                   <span class="item-num">#{{ idx + 1 }}</span>
-                  <span class="item-name">{{ item.productName }}</span>
+                  <a-tooltip :title="item.productName" placement="top">
+                    <span class="item-name truncated-text">{{ item.productName }}</span>
+                  </a-tooltip>
                   <span v-if="item.variant" class="item-variant">({{ item.variant }})</span>
                 </div>
 
                 <div class="item-info">
-                  <div class="info-row">
-                    <span class="info-label">{{ $t('merchant.orderDetail.quantity') }}:</span>
-                    <span class="info-value">{{ item.quantity }}</span>
-                  </div>
+                <div class="info-row">
+                  <span class="info-label">{{ $t('merchant.orderDetail.quantity') }}:</span>
+                  <a-tooltip :title="item.quantity.toString()" placement="top">
+                    <span class="info-value truncated-text">{{ item.quantity }}</span>
+                  </a-tooltip>
                 </div>
+              </div>
 
-                <!-- Price Info -->
-                <div class="price-info">
-                  <div class="price-row">
-                    <span class="price-label">{{ $t('merchant.orderDetail.purchasePrice') }}</span>
-                    <span class="price-value">{{ formatNumber(item.purchasePrice) }} {{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span>
-                  </div>
-                  <div class="price-row">
-                    <span class="price-label">{{ $t('merchant.orderDetail.sellingPrice') }}</span>
-                    <span class="price-value">{{ formatNumber(item.sellingPriceForeign) }} {{ item.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || '' }}</span>
-                  </div>
+              <!-- Price Info -->
+              <div class="price-info">
+                <div class="price-row">
+                  <span class="price-label">{{ $t('merchant.orderDetail.purchasePrice') }}</span>
+                  <a-tooltip :title="`${formatNumber(item.purchasePrice)} ${item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || ''}`" placement="top">
+                    <span class="price-value truncated-text">{{ formatNumber(item.purchasePrice) }} {{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span>
+                  </a-tooltip>
                 </div>
+                <div class="price-row">
+                  <span class="price-label">{{ $t('merchant.orderDetail.sellingPrice') }}</span>
+                  <a-tooltip :title="`${formatNumber(item.sellingPriceForeign)} ${item.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || ''}`" placement="top">
+                    <span class="price-value truncated-text">{{ formatNumber(item.sellingPriceForeign) }} {{ item.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || '' }}</span>
+                  </a-tooltip>
+                </div>
+              </div>
 
-                <!-- Profit -->
-                <div class="profit-section">
-                  <span class="profit-label">{{ $t('merchant.orderDetail.profitLak') }}</span>
-                  <span class="profit-value" :class="{ 'profit-positive': Number(item.targetCurrencyProfit) >= 0, 'profit-negative': Number(item.targetCurrencyProfit) < 0 }">
+              <!-- Profit -->
+              <div class="profit-section">
+                <span class="profit-label">{{ $t('merchant.orderDetail.profitLak') }}</span>
+                <a-tooltip :title="`${formatNumber(item.targetCurrencyProfit)} LAK`" placement="top">
+                  <span class="profit-value truncated-text" :class="{ 'profit-positive': Number(item.targetCurrencyProfit) >= 0, 'profit-negative': Number(item.targetCurrencyProfit) < 0 }">
                     {{ formatNumber(item.targetCurrencyProfit) }} LAK
                   </span>
-                </div>
+                </a-tooltip>
+              </div>
 
                 <div class="click-hint">
                   <EyeOutlined />
@@ -779,7 +789,15 @@ onMounted(() => {
 }
 
 /* Order Items */
-.item-name { font-weight: 700; color: #0f172a; }
+.item-name {
+  font-weight: 700;
+  color: #0f172a;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
 .item-variant { color: #64748b; font-size: 13px; margin-left: 4px; }
 .item-num { font-weight: 800; color: #1d4ed8; font-size: 13px; }
 
@@ -832,50 +850,275 @@ onMounted(() => {
   color: #dc2626;
 }
 
+/* Text truncation */
+.truncated-text {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+/* Tooltip styling */
+:deep(.ant-tooltip-inner) {
+  background-color: #1d4ed8 !important;
+  color: #ffffff !important;
+  border: 1px solid #1d4ed8 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+}
+
+:deep(.ant-tooltip-arrow-content) {
+  background-color: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+
 .items-cards { display: flex; flex-direction: column; gap: 14px; }
 
 .items-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   padding: 4px;
 }
 
-.item-card {
-  background: #f8fafc;
-  border-radius: 16px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  transition: all 0.2s ease;
-  overflow: hidden;
-  cursor: pointer;
+/* Galaxy Tab S7 and Tablets (768px - 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .items-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  
+  .item-card {
+    height: 150px;
+  }
+  
+  .item-image-section {
+    width: 150px;
+  }
+  
+  .item-content {
+    padding: 18px;
+  }
 }
 
-.oi-card {
-  background: #f8fafc;
+/* Mobile Landscape and Small Tablets (480px - 768px) */
+@media (max-width: 768px) {
+  .items-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .item-card {
+    height: 140px;
+  }
+  
+  .item-image-section {
+    width: 140px;
+  }
+  
+  .item-content {
+    padding: 16px;
+    gap: 10px;
+  }
+  
+  .info-row,
+  .price-row {
+    font-size: 12px;
+  }
+  
+  .info-value,
+  .price-value {
+    font-size: 13px;
+  }
+  
+  .profit-label,
+  .price-label {
+    font-size: 11px;
+  }
+}
+
+/* Mobile Portrait (max-width: 480px) */
+@media (max-width: 480px) {
+  .items-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .item-card {
+    height: auto;
+    min-height: 120px;
+    flex-direction: column;
+  }
+  
+  .item-image-section {
+    width: 100%;
+    height: 120px;
+  }
+  
+  .item-content {
+    padding: 12px;
+    gap: 8px;
+  }
+  
+  .item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .item-info {
+    width: 100%;
+  }
+  
+  .price-info {
+    width: 100%;
+  }
+  
+  .profit-section {
+    width: 100%;
+  }
+  
+  .click-hint {
+    margin-top: 8px;
+    font-size: 11px;
+  }
+}
+
+/* Ultra Small Mobile (max-width: 360px) */
+@media (max-width: 360px) {
+  .items-grid {
+    gap: 10px;
+  }
+  
+  .item-card {
+    min-height: 100px;
+  }
+  
+  .item-image-section {
+    height: 100px;
+  }
+  
+  .item-content {
+    padding: 10px;
+    gap: 6px;
+  }
+  
+  .item-name,
+  .info-value,
+  .price-value {
+    font-size: 12px;
+  }
+  
+  .info-label,
+  .price-label,
+  .profit-label {
+    font-size: 10px;
+  }
+}
+
+/* Panel Title Responsive */
+@media (max-width: 768px) {
+  .panel-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .back-to-items-btn {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel-title {
+    padding: 12px 16px;
+  }
+  
+  .count-tag {
+    font-size: 11px;
+    padding: 2px 6px;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  .item-card {
+    transition: none;
+  }
+  
+  .item-card:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .click-hint {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0.7;
+  }
+}
+
+/* Galaxy Tab S7 specific optimizations */
+@media (max-width: 1024px) and (min-width: 769px) and (orientation: landscape) {
+  .items-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  
+  .item-card {
+    height: 140px;
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) and (orientation: portrait) {
+  .items-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .item-card {
+    height: 160px;
+  }
+}
+
+.item-card {
+  background: #ffffff;
   border-radius: 16px;
-  padding: 18px 20px 12px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  transition: box-shadow 0.15s ease;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: row;
+  height: 160px;
+}
+
+.item-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: #1d4ed8;
 }
 
 .item-image-section {
-  width: 100%;
-  height: 200px;
+  width: 160px;
+  height: 100%;
   background: #f1f5f9;
-  border-radius: 12px 12px 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   position: relative;
-  border-bottom: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  flex-shrink: 0;
 }
 
 .item-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 12px 12px 0 0;
 }
 
 .item-image-placeholder {
@@ -885,7 +1128,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   color: #64748b;
-  font-size: 40px;
+  font-size: 32px;
   background: #f1f5f9;
 }
 
@@ -893,51 +1136,52 @@ onMounted(() => {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   background: #ffffff;
-  border-radius: 0 0 12px 12px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .item-header {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
   border-bottom: 1px solid #e2e8f0;
 }
 
 .item-info {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 8px;
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
-  padding: 8px 0;
+  font-size: 13px;
 }
 
 .info-label {
   color: #64748b;
   font-weight: 500;
+  font-size: 12px;
 }
 
 .info-value {
   color: #0f172a;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .price-info {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px 0;
+  gap: 6px;
+  padding: 8px 0;
   border-top: 1px solid #e2e8f0;
   border-bottom: 1px solid #e2e8f0;
 }
@@ -946,28 +1190,29 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .price-label {
   color: #64748b;
   font-weight: 500;
+  font-size: 11px;
 }
 
 .price-value {
   color: #0f172a;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .profit-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
+  padding: 8px 0;
   background: #f8fafc;
-  border-radius: 8px;
-  margin-top: 8px;
+  border-radius: 6px;
+  margin-top: 4px;
 }
 
 .profit-label {
@@ -981,47 +1226,6 @@ onMounted(() => {
   font-weight: 700;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .items-grid {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-  }
-  
-  .item-image-section {
-    height: 140px;
-  }
-  
-  .item-content {
-    padding: 12px;
-  }
-  
-  .info-row,
-  .price-row {
-    font-size: 12px;
-  }
-  
-  .profit-label,
-  .price-label {
-    font-size: 11px;
-  }
-}
-
-@media (max-width: 480px) {
-  .items-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  
-  .item-image-section {
-    height: 120px;
-  }
-  
-  .item-content {
-    padding: 10px;
-    gap: 8px;
-  }
-}
 .oi-card:hover { box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06); }
 .oi-card-header {
   display: flex;

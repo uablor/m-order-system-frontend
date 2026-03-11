@@ -155,6 +155,7 @@
       "addItem": "เพิ่มรายการ",
       "noItems": "ยังไม่มีรายการสินค้า กดปุ่ม \"เพิ่มรายการ\" เพื่อเริ่มต้น",
       "indicator": "รายการที่ {current} จาก {total}",
+      "orderItemNumber": "รายการสินค้าที่ {number}",
       "productName": "ชื่อสินค้า",
       "productNamePh": "เช่น เสื้อยืดโมเดิร์น",
       "productImage": "รูปภาพสินค้า",
@@ -303,6 +304,7 @@
       "rateRequired": "กรุณาระบุอัตราแลกเปลี่ยน"
     },
     "table": {
+      "pair": "คู่สกุลเงิน",
       "baseCurrency": "ต้นทาง",
       "targetCurrency": "ปลายทาง",
       "rateType": "ประเภท",
@@ -510,11 +512,11 @@
     "summaryInactive": "ไม่ใช้งาน"
   },
   "arrivals": {
-    "breadcrumb": "การมาถึง",
-    "title": "การมาถึง",
+    "breadcrumb": "เคื่องมาถึง",
+    "title": "เคื่องมาถึง",
     "subtitle": "ติดตามและจัดการการมาถึงของสินค้า",
     "recordArrival": "บันทึกการมาถึง",
-    "searchPlaceholder": "ค้นหา...",
+    "searchPlaceholder": "ค้นหารหัสออเดอร์...",
     "startDate": "วันเริ่มต้น",
     "endDate": "วันสิ้นสุด",
     "orderItemFilter": "รายการสินค้า",
@@ -611,7 +613,7 @@
     "whatsappProgressNote": "กรุณารอสักครู่ขณะที่เราเปิด WhatsApp สำหรับแต่ละลูกค้า เบราว์เซอร์อาจขออนุญาตในการเปิดป็อบอัป"
   },
   "arrivalDetail": {
-    "breadcrumbArrivals": "การมาถึง",
+    "breadcrumbArrivals": "เคื่องมาถึง",
     "breadcrumbDetail": "รายละเอียดการมาถึง",
     "back": "กลับไปยังการมาถึง",
     "notFound": "ไม่พบการมาถึง",
@@ -694,7 +696,7 @@
     "endDate": "วันสิ้นสุด",
     "typeFilter": "ทุกประเภท",
     "statusFilter": "ทุกสถานะ",
-    "typeArrival": "การมาถึง",
+    "typeArrival": "เคื่องมาถึง",
     "typePayment": "การชำระเงิน",
     "typeReminder": "การแจ้งเตือน",
     "statusSent": "ส่งแล้ว",

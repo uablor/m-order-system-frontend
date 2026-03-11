@@ -611,10 +611,17 @@ watch(
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 10px 25px rgba(15, 23, 42, 0.04);
 }
 .filter-bar {
-  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 5px 0px 5px;
 }
 .filter-bar .search-input {
-  height: 40px; border-radius: 10px; min-width: 180px; flex: 1 1 200px;
+  height: 40px;
+  border-radius: 10px;
+  min-width: 180px;
+  flex: 1 1 200px;
 }
 /* ลบ padding สีขาวด้านล่างที่บัง border */
 .filter-bar .search-input :deep(.ant-input-affix-wrapper) {
@@ -623,8 +630,6 @@ watch(
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   height: 40px !important;
-  display: flex !important;
-  align-items: center !important;
   box-sizing: border-box !important;
   border-radius: 10px;
 }
@@ -632,15 +637,33 @@ watch(
   padding: 0 !important;
   height: 40px !important;
   line-height: 40px !important;
-  font-size: 14px;
-  border: none !important;
-  box-shadow: none !important;
-  background: transparent !important;
 }
-.filter-date-single { border-radius: 10px; min-width: 160px; }
-.filter-date-single :deep(.ant-picker) { border-radius: 10px !important; }
-.filter-select { min-width: 160px; }
-.filter-select :deep(.ant-select-selector) { border-radius: 10px !important; }
+.filter-date-single { 
+  height: 40px; 
+  border-radius: 10px; 
+  min-width: 160px; 
+}
+.filter-date-single :deep(.ant-picker) { 
+  height: 40px !important;
+  border-radius: 10px !important; 
+}
+.filter-select { 
+  height: 40px;
+  min-width: 160px; 
+}
+.filter-select :deep(.ant-select-selector) { 
+  height: 40px !important;
+  border-radius: 10px !important;
+  min-height: 40px !important;
+}
+.filter-select :deep(.ant-select-selection-placeholder) {
+  line-height: 40px !important;
+  height: 40px !important;
+}
+.filter-select :deep(.ant-select-selection-item) {
+  line-height: 40px !important;
+  height: 40px !important;
+}
 
 /* Mobile — search ขนาดพอดี ไม่ใหญ่เกิน */
 @media (max-width: 767px) {

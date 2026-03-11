@@ -268,6 +268,7 @@ import {
   SearchOutlined,
   FilterOutlined,
   EyeOutlined,
+  DeleteOutlined,
   OrderedListOutlined,
   DollarOutlined,
   CheckCircleOutlined,
@@ -321,8 +322,8 @@ const columns = computed<TableColumnsType>(() => [
   { title: t('merchant.orderList.colArrivalStatus'), key: 'arrivalStatus', dataIndex: 'arrivalStatus', width: 140, align: 'center' as const },
   { title: t('merchant.orderList.colPaymentStatus'), key: 'paymentStatus', dataIndex: 'paymentStatus', width: 140, align: 'center' as const },
   { title: t('merchant.orderList.colOrderItems'), key: 'orderItemsCount', width: 100, align: 'center' as const },
-  { title: t('merchant.orderList.colTotalCost'), key: 'totalFinalCost', dataIndex: 'totalFinalCost', width: 140, align: 'right' as const },
-  { title: t('merchant.orderList.colProfit'), key: 'profit', width: 130, align: 'right' as const },
+  // { title: t('merchant.orderList.colTotalCost'), key: 'totalFinalCost', dataIndex: 'totalFinalCost', width: 140, align: 'right' as const },
+  // { title: t('merchant.orderList.colProfit'), key: 'profit', width: 130, align: 'right' as const },
   { title: t('merchant.orderList.colActions'), key: 'actions', fixed: 'right' as const, width: 100, align: 'right' as const },
 ]);
 
@@ -650,6 +651,14 @@ onMounted(() => {
 .pill-tag { border-radius: 999px; padding: 2px 10px; font-weight: 800; font-size: 12px; }
 .icon-action { border-radius: 10px; }
 .icon-action:hover { background: rgba(29, 78, 216, 0.08) !important; color: #1d4ed8; }
+.icon-action.ant-btn-danger { 
+  color: #ff4d4f !important; 
+  border-color: #ff4d4f !important;
+}
+.icon-action.ant-btn-danger:hover { 
+  background: rgba(255, 77, 79, 0.1) !important; 
+  color: #ff4d4f !important;
+}
 .profit-positive { color: #16a34a; font-weight: 700; }
 .profit-negative { color: #dc2626; font-weight: 700; }
 

@@ -1,5 +1,12 @@
 <template>
+  
+  <!-- Order Item Label Outside Border -->
+  <div class="item-label-outside">
+    {{ $t('merchant.orders.items.orderItemNumber', { number: index + 1 }) }}
+  </div>
+  
   <div class="item-block" :style="{ borderColor: itemBorderColor, boxShadow: `0 2px 12px ${itemBorderColor}22` }">
+    
     <div class="item-color-strip" :style="{ background: itemBorderColor }" />
     <div class="item-header">
       <span class="item-num" :style="{ color: itemBorderColor, borderColor: `${itemBorderColor}44`, background: `${itemBorderColor}12` }">#{{ index + 1 }}</span>
@@ -922,6 +929,15 @@ if (currentVariant.value) {
 
 <style scoped>
 .w-full { width: 100%; }
+
+.item-label-outside {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 8px;
+  padding: 4px 0;
+}
+
 .item-block {
   background: #f8fafc; border-radius: 16px; padding: 0 0 4px; margin-bottom: 14px;
   border: 1.5px solid rgba(148, 163, 184, 0.18); transition: box-shadow 0.2s ease;

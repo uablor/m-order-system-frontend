@@ -19,31 +19,41 @@
       </div>
     </div>
      -->
-    <!-- Row: Price by Currency — 3-grid layout like dashboard -->
-    <a-row :gutter="[16, 16]" class="stats-row !mt-3">
-      <a-col :xs="24" :sm="12" :md="8" :lg="6" v-for="(currency, i) in displayCurrencies" :key="currency ? (currency.baseCurrency || currency.targetCurrency || 'unknown') : `placeholder-${i}`">
-        <a-card :bordered="false" class="panel-card currency-card" :class="currency ? `currency-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'currency-placeholder'">
-          <div class="currency-header">
-            <span>{{ $t('merchant.dashboard.currency') }}</span>
-            <span class="currency-badge" :class="currency ? `badge-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'badge-placeholder'">{{ currency ? (currency.baseCurrency || currency.targetCurrency || 'Unknown') : '—' }}</span>
+    <!-- Row: Price by Currency — CSS Grid layout -->
+    <div class="currency-grid !mt-3">
+      <a-card 
+        v-for="(currency, i) in displayCurrencies" 
+        :key="currency ? (currency.baseCurrency || currency.targetCurrency || 'unknown') : `placeholder-${i}`"
+        :bordered="false" 
+        class="panel-card currency-card" 
+        :class="currency ? `currency-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'currency-placeholder'"
+      >
+        <div class="currency-header">
+          <span>{{ $t('merchant.dashboard.currency') }}</span>
+          <span class="currency-badge" :class="currency ? `badge-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'badge-placeholder'">{{ currency ? (currency.baseCurrency || currency.targetCurrency || 'Unknown') : '—' }}</span>
+        </div>
+        <div class="currency-rows">
+          <div class="currency-row">
+            <span class="c-label">{{ $t('merchant.dashboard.totalPrice') }}</span>
+            <a-tooltip :title="currency ? fmtCurrency(parseCurrencyString(currency.totalAll)) : fmtCurrency(0)" placement="top" overlay-class-name="blue-tooltip">
+              <span class="c-val truncated-text">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalAll)) : fmtCurrency(0) }}</span>
+            </a-tooltip>
           </div>
-          <div class="currency-rows">
-            <div class="currency-row">
-              <span class="c-label">{{ $t('merchant.dashboard.totalPrice') }}</span>
-              <span class="c-val">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalAll)) : fmtCurrency(0) }}</span>
-            </div>
-            <div class="currency-row">
-              <span class="c-label">{{ $t('merchant.dashboard.pricePaid') }}</span>
-              <span class="c-val text-green">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalPaid)) : fmtCurrency(0) }}</span>
-            </div>
-            <div class="currency-row">
-              <span class="c-label">{{ $t('merchant.dashboard.priceUnpaid') }}</span>
-              <span class="c-val text-red">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalUnpaid)) : fmtCurrency(0) }}</span>
-            </div>
+          <div class="currency-row">
+            <span class="c-label">{{ $t('merchant.dashboard.pricePaid') }}</span>
+            <a-tooltip :title="currency ? fmtCurrency(parseCurrencyString(currency.totalPaid)) : fmtCurrency(0)" placement="top" overlay-class-name="blue-tooltip">
+              <span class="c-val text-green truncated-text">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalPaid)) : fmtCurrency(0) }}</span>
+            </a-tooltip>
           </div>
-        </a-card>
-      </a-col>
-    </a-row>
+          <div class="currency-row">
+            <span class="c-label">{{ $t('merchant.dashboard.priceUnpaid') }}</span>
+            <a-tooltip :title="currency ? fmtCurrency(parseCurrencyString(currency.totalUnpaid)) : fmtCurrency(0)" placement="top" overlay-class-name="blue-tooltip">
+              <span class="c-val text-red truncated-text">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalUnpaid)) : fmtCurrency(0) }}</span>
+            </a-tooltip>
+          </div>
+        </div>
+      </a-card>
+    </div>
     <!-- <div class="search-filter-container">
       <a-input
         v-model:value="filters.search"
@@ -346,8 +356,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 import { message } from 'ant-design-vue';
 import type { TablePaginationConfig, TableColumnsType } from 'ant-design-vue';
 import {
@@ -368,6 +379,7 @@ import { handleApiError } from '@/shared/utils/error';
 import { useMerchantDashboard } from '../../../composables/merchant/useMerchantDashboard';
 
 const { t } = useI18n();
+const route = useRoute();
 const { isMobile } = useIsMobile();
 const { dashboard, fetchDashboard } = useMerchantDashboard();
 
@@ -542,6 +554,21 @@ const resetFilters = () => {
   fetchPayments();
 };
 
+// Watch for route query changes to apply filters
+watch(
+  () => route.query,
+  (query: Record<string, any>) => {
+    if (query.status && typeof query.status === 'string') {
+      filters.status = query.status;
+      showFilters.value = true; // Show filters when status is applied
+      // Trigger data fetching with new filter
+      currentPage.value = 1;
+      fetchPayments();
+    }
+  },
+  { immediate: true }
+);
+
 const onPageChange = (page: number, size: number) => {
   currentPage.value = page; pageSize.value = size; fetchPayments();
 };
@@ -688,6 +715,23 @@ onUnmounted(() => {
 <style scoped>
 .mb-4 { margin-bottom: 16px; }
 
+/* ===== Currency Grid Layout ===== */
+.currency-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+/* ===== Text Truncation ===== */
+.truncated-text {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
+
 /* ===== Search & Filter Container ===== */
 .search-filter-container {
   display: flex;
@@ -696,18 +740,22 @@ onUnmounted(() => {
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
-
-.search-input {
-  flex: 1;
+.search-input { 
+  height: 40px; 
+  border-radius: 12px; 
   min-width: 200px;
-  max-width: 400px;
+  max-width: 350px;
+  flex: 1;
 }
-
 .filter-toggle-btn {
   flex-shrink: 0;
-  min-width: 40px;
+  width: 40px;
   height: 40px;
-  padding: 0 12px;
+  padding: 0 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
 }
 
 /* Mobile responsive */
@@ -720,8 +768,8 @@ onUnmounted(() => {
     max-width: 280px;
   }
   .filter-toggle-btn {
-    min-width: 36px;
-    height: 36px;
+    min-width: 40px;
+    height: 40px;
     padding: 0 10px;
   }
 }
@@ -732,12 +780,12 @@ onUnmounted(() => {
     gap: 10px;
   }
   .search-input {
-    min-width: 220px;
+    min-width: 200px;
     max-width: 350px;
   }
   .filter-toggle-btn {
-    min-width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
     padding: 0 11px;
   }
 }
@@ -750,6 +798,11 @@ onUnmounted(() => {
   .search-input {
     min-width: 180px;
     max-width: 320px;
+  }
+  .filter-toggle-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0 11px;
   }
 }
 .page-title { font-size: 22px; font-weight: 600; color: #0f172a; line-height: 1.25; }
@@ -931,7 +984,7 @@ onUnmounted(() => {
 .currency-card {
   background: #fff;
   border-radius: 14px;
-  padding: 16px 18px;
+  /* padding: 16px  18px; */
   display: flex;
   flex-direction: column;
   gap: 14px;

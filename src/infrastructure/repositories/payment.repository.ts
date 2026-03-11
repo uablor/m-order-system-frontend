@@ -12,6 +12,7 @@ export interface PaymentQueryDto {
   merchantId?: number;
   paymentDateFrom?: string;
   paymentDateTo?: string;
+  readAt?: string | null;
 }
 
 export interface PaymentCustomerOrder {
@@ -48,6 +49,7 @@ export interface PaymentItem {
   rejectedAt: string | null;
   rejectReason: string | null;
   notes: string | null;
+  readAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -125,6 +127,27 @@ export class PaymentRepository {
       console.error('Error fetching payment by customer order ID:', error);
       return null;
     }
+  }
+
+  async getUnreadPaymentsByMerchant(): Promise<PaymentItem[]> {
+    try {
+      const response = await this.apiClient.getParams<any>(
+        API_ENDPOINTS.PAYMENTS.BY_MERCHANT_UNREAD,
+        {},
+      );
+      // Backend returns { success: true, Code, message, results: data }
+      if (response && response.results && Array.isArray(response.results)) {
+        return response.results;
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching unread payments:', error);
+      return [];
+    }
+  }
+
+  async markAsRead(id: number): Promise<void> {
+    await this.apiClient.putOrPatch<void>(API_ENDPOINTS.PAYMENTS.MARK_AS_READ(id), {}, 'PATCH');
   }
 }
 

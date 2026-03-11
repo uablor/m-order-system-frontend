@@ -155,6 +155,7 @@
       "addItem": "Add Item",
       "noItems": "No items added yet. Click \"Add Item\" to start.",
       "indicator": "Item {current} of {total}",
+      "orderItemNumber": "Order Item {number}",
       "productName": "Product Name",
       "productNamePh": "e.g. Modern T-Shirt",
       "productImage": "Product Image",
@@ -303,6 +304,7 @@
       "rateRequired": "Rate is required"
     },
     "table": {
+      "pair": "Pair",
       "baseCurrency": "Base",
       "targetCurrency": "Target",
       "rateType": "Type",
@@ -514,7 +516,7 @@
     "title": "Arrivals",
     "subtitle": "Track and manage item arrivals",
     "recordArrival": "Record Arrival",
-    "searchPlaceholder": "Search...",
+    "searchPlaceholder": "Search order code...",
     "startDate": "Start Date",
     "endDate": "End Date",
     "orderFilter": "All Orders",

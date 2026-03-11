@@ -6,7 +6,7 @@
     "title": "ແຜງຄວບຄຸມ",
     "subtitle": "ຍິນດີຕ້ອນຮັບ. ນີ້ແມ່ນພາບລວມຮ້ານຂອງທ່ານ.",
     "sectionOrderStats": "ສະຫຼຸບການສັ່ງຊື້",
-    "sectionOrderStatsDesc": "ພາບລວມອໍເດີ, ລູກຄ້າ ແລະ ການມາຮອດ",
+    "sectionOrderStatsDesc": "ພາບລວມອໍເດີ, ລູກຄ້າ ແລະ ເຄື່ອງມາຮອດ",
     "sectionPriceByCurrency": "ສະຫຼຸບການເງີນທັງໝົດ",
     "sectionPriceByCurrencyDesc": "ລາຍຮັບແຍກຕາມສະກຸນເງິນ (THB, USDT, LAK)",
     "sectionFinancialOverview": "ສະຫຼຸບການເງິນ",
@@ -155,6 +155,7 @@
       "addItem": "ເພີ່ມລາຍການ",
       "noItems": "ຍັງບໍ່ມີລາຍການ ກົດ \"ເພີ່ມລາຍການ\" ເພື່ອເລີ່ມ",
       "indicator": "ລາຍການທີ {current} ຈາກ {total}",
+      "orderItemNumber": "ລາຍການສິນຄ້າທີ່ {number}",
       "productName": "ຊື່ສິນຄ້າ",
       "productNamePh": "ເຊັ່ນ ເສື້ອທີເຊີດ Modern",
       "productImage": "ຮູບພາບສິນຄ້າ",
@@ -303,6 +304,7 @@
       "rateRequired": "ກະລຸນາລະບຸອັດຕາແລກປ່ຽນ"
     },
     "table": {
+      "pair": "ຄູ່ສະກຸນເງິນ",
       "baseCurrency": "ຕົ້ນທາງ",
       "targetCurrency": "ປາຍທາງ",
       "rateType": "ປະເພດ",
@@ -510,11 +512,11 @@
     "summaryInactive": "ບໍ່ໃຊ້ງານ"
   },
   "arrivals": {
-    "breadcrumb": "ການມາຮອດ",
-    "title": "ການມາຮອດ",
+    "breadcrumb": "ເຄື່ອງມາຮອດ",
+    "title": "ເຄື່ອງມາຮອດ",
     "subtitle": "ຕິດຕາມ ແລະ ຈັດການການມາຮອດຂອງສິນຄ້າ",
     "recordArrival": "ບັນທຶກການມາຮອດ",
-    "searchPlaceholder": "ຄົ້ນຫາ...",
+    "searchPlaceholder": "ຄົ້ນຫາລະຫັດອໍເດີ...",
     "startDate": "ວັນເລີ່ມຕົ້ນ",
     "endDate": "ວັນສິ້ນສຸດ",
     "orderItemFilter": "ລາຍການສິນຄ້າ",
@@ -611,7 +613,7 @@
     "whatsappProgressNote": "ກະລຸນາລໍສັບຄູ່ຂະນະທີ່ພວກເຮົາເປີດ WhatsApp ສຳລັບແຕ່ລະລູກຄ້າ ບຣາວເຊີອາຈະຂອອະນຸຍາດໃນການເປີດປ໊ອບອັບ"
   },
   "arrivalDetail": {
-    "breadcrumbArrivals": "ການມາຮອດ",
+    "breadcrumbArrivals": "ເຄື່ອງມາຮອດ",
     "breadcrumbDetail": "ລາຍລະອຽດການມາຮອດ",
     "back": "ກັບໄປຫາການມາຮອດ",
     "notFound": "ບໍ່ພົບການມາຮອດ",
@@ -696,7 +698,7 @@
     "endDate": "ວັນສິ້ນສຸດ",
     "typeFilter": "ປະເພດທັງໝົດ",
     "statusFilter": "ສະຖານະທັງໝົດ",
-    "typeArrival": "ການມາຮອດ",
+    "typeArrival": "ເຄື່ອງມາຮອດ",
     "typePayment": "ການຊຳລະ",
     "typeReminder": "ການແນ່ນ",
     "statusSent": "ສົ່ງແລ້ວ",

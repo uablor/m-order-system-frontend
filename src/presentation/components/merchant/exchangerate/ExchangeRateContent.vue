@@ -127,7 +127,7 @@
             allow-clear
             style="width:100%"
             :placeholder="$t('merchant.exchangeRates.filter.searchField')"
-            @change="onFilterChange"
+            @change="() => onFilterChange(filters.search?.length > 0)"
           >
             <a-select-option value="baseCurrency">{{ $t('merchant.exchangeRates.filter.sfBase') }}</a-select-option>
             <a-select-option value="targetCurrency">{{ $t('merchant.exchangeRates.filter.sfTarget') }}</a-select-option>
@@ -153,7 +153,7 @@
             style="width:100%"
             :placeholder="$t('merchant.exchangeRates.filter.startDate')"
             popup-class-name="single-panel-picker"
-            @change="onFilterChange"
+            @change="() => onFilterChange(true)"
           />
         </a-col>
         <!-- End Date -->
@@ -163,7 +163,7 @@
             style="width:100%"
             :placeholder="$t('merchant.exchangeRates.filter.endDate')"
             popup-class-name="single-panel-picker"
-            @change="onFilterChange"
+            @change="() => onFilterChange(true)"
           />
         </a-col>
       </a-row>
@@ -177,7 +177,7 @@
             :placeholder="$t('merchant.exchangeRates.filter.baseCurrency')"
             @pressEnter="applyFilters"
             @input="onBaseTargetInput('base')"
-            @change="onFilterChange"
+            @change="() => onFilterChange(true)"
           />
         </a-col>
         <a-col :xs="12" :sm="6" :md="4">
@@ -187,7 +187,7 @@
             :placeholder="$t('merchant.exchangeRates.filter.targetCurrency')"
             @pressEnter="applyFilters"
             @input="onBaseTargetInput('target')"
-            @change="onFilterChange"
+            @change="() => onFilterChange(true)"
           />
         </a-col>
         <a-col :xs="12" :sm="6" :md="4">
@@ -196,7 +196,7 @@
             allow-clear
             style="width:100%"
             :placeholder="$t('merchant.exchangeRates.filter.status')"
-            @change="onFilterChange"
+            @change="() => onFilterChange(true)"
           >
             <a-select-option :value="true">{{ $t('merchant.exchangeRates.active') }}</a-select-option>
             <a-select-option :value="false">{{ $t('merchant.exchangeRates.inactive') }}</a-select-option>
@@ -208,7 +208,7 @@
             allow-clear
             style="width:100%"
             :placeholder="$t('merchant.exchangeRates.filter.sortDirection')"
-            @change="onFilterChange"
+            @change="() => onFilterChange(true)"
           >
             <a-select-option value="DESC">{{ $t('merchant.exchangeRates.filter.sortDesc') }}</a-select-option>
             <a-select-option value="ASC">{{ $t('merchant.exchangeRates.filter.sortAsc') }}</a-select-option>
@@ -224,8 +224,22 @@
 
     <!-- Desktop/Tablet table -->
     <a-card v-if="!useMobileLayout" :bordered="false" class="panel-card">
-      <a-table :columns="columns" :data-source="rates" :pagination="paginationConfig" row-key="id"
-        size="middle" :loading="loading" :scroll="{ x: 800 }" @change="handleTableChange">
+      <a-table 
+        :key="tableKey"
+        :columns="columns" 
+        :data-source="rates" 
+        :pagination="paginationConfig" 
+        row-key="id"
+        :size="debouncedWindowWidth < 768 ? 'small' : 'middle'" 
+        :loading="loading" 
+        :scroll="{ 
+          x: debouncedWindowWidth < 768 ? 400 : debouncedWindowWidth < 1200 ? 600 : 800,
+          y: debouncedWindowWidth < 768 ? 300 : undefined 
+        }" 
+        :bordered="false"
+        :show-header="true"
+        @change="handleTableChange"
+        class="responsive-table">
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'rateType'">
             <a-tag :color="record.rateType === 'BUY' ? 'green' : 'volcano'" class="pill-tag">
@@ -303,7 +317,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h, onMounted, reactive, ref } from 'vue';
+import { computed, h, onMounted, onUnmounted, reactive, ref, watch, nextTick } from 'vue';
 import type { FormInstance, TablePaginationConfig } from 'ant-design-vue';
 import type { Dayjs } from 'dayjs';
 import { PlusOutlined, DownOutlined, SearchOutlined, DeleteOutlined, FilterOutlined } from '@ant-design/icons-vue';
@@ -323,10 +337,141 @@ const { t } = useI18n();
 const { windowWidth } = useIsMobile();
 const { loading, rates, pagination, fetchRates, createRate, deleteRate } = useMerchantExchangeRates();
 
-/* แสดงปุ่ม filter เมื่อ width < 1024 (mobile + tablet รวม Galaxy Tab S7) */
-const showFilterToggle = computed(() => (windowWidth?.value ?? 1280) < 1024);
-/* ใช้ mobile card layout เมื่อ width < 1024 (รองรับ Galaxy Tab S7 portrait ~800px) */
-const useMobileLayout = computed(() => (windowWidth?.value ?? 1280) < 1024);
+// Debounced responsive updates to prevent DOM manipulation errors
+let resizeTimer: ReturnType<typeof setTimeout> | undefined;
+const debouncedWindowWidth = ref(1280);
+const tableKey = ref('table-1280-1');
+const isUpdating = ref(false);
+
+// More aggressive debouncing with update lock to prevent concurrent updates
+watch(() => windowWidth.value, (newWidth) => {
+  clearTimeout(resizeTimer);
+  
+  if (isUpdating.value) {
+    console.warn('Skipping update - already updating');
+    return;
+  }
+  
+  resizeTimer = setTimeout(() => {
+    isUpdating.value = true;
+    
+    // Use nextTick to ensure DOM is stable before updating
+    nextTick(() => {
+      try {
+        debouncedWindowWidth.value = newWidth;
+        tableKey.value = `table-${newWidth}-${currentPage.value}-${Date.now()}`;
+      } finally {
+        // Small delay before allowing next update
+        setTimeout(() => {
+          isUpdating.value = false;
+        }, 50);
+      }
+    });
+  }, 200); // Increased debounce time
+}, { immediate: true });
+
+// Fix for Ant Design Vue and Vue DOM manipulation errors
+const originalRemoveChild = Node.prototype.removeChild;
+const originalInsertBefore = Node.prototype.insertBefore;
+const originalAppendChild = Node.prototype.appendChild;
+const originalReplaceChild = Node.prototype.replaceChild;
+
+// More robust DOM manipulation fixes with additional safety checks
+Node.prototype.removeChild = function<T extends Node>(child: T): T {
+  if (!this || !child) {
+    console.warn('removeChild called with invalid arguments');
+    return child;
+  }
+  if (!this.contains?.(child)) {
+    console.warn('removeChild: child not found in parent');
+    return child;
+  }
+  try {
+    return originalRemoveChild.call(this, child) as T;
+  } catch (error) {
+    if (error instanceof DOMException && (error.name === 'NotFoundError' || error.name === 'TypeError')) {
+      console.warn('removeChild error prevented:', error.message);
+      return child;
+    }
+    throw error;
+  }
+};
+
+Node.prototype.insertBefore = function<T extends Node>(newNode: T, referenceNode: Node | null): T {
+  if (!this || !newNode) {
+    console.warn('insertBefore called with invalid arguments');
+    return newNode;
+  }
+  if (referenceNode && !this.contains?.(referenceNode)) {
+    console.warn('insertBefore: reference node not found in parent, proceeding anyway');
+  }
+  try {
+    return originalInsertBefore.call(this, newNode, referenceNode) as T;
+  } catch (error) {
+    if (error instanceof DOMException && (error.name === 'NotFoundError' || error.name === 'TypeError')) {
+      console.warn('insertBefore error prevented:', error.message);
+      return newNode;
+    }
+    throw error;
+  }
+};
+
+Node.prototype.appendChild = function<T extends Node>(child: T): T {
+  if (!this || !child) {
+    console.warn('appendChild called with invalid arguments');
+    return child;
+  }
+  try {
+    return originalAppendChild.call(this, child) as T;
+  } catch (error) {
+    if (error instanceof DOMException && (error.name === 'NotFoundError' || error.name === 'TypeError')) {
+      console.warn('appendChild error prevented:', error.message);
+      return child;
+    }
+    throw error;
+  }
+};
+
+(Node.prototype as any).replaceChild = function(newChild: Node, oldChild: Node): Node {
+  if (!this || !newChild || !oldChild) {
+    console.warn('replaceChild called with invalid arguments');
+    return newChild;
+  }
+  try {
+    return originalReplaceChild.call(this, newChild, oldChild);
+  } catch (error) {
+    if (error instanceof DOMException && (error.name === 'NotFoundError' || error.name === 'TypeError')) {
+      console.warn('replaceChild error prevented:', error.message);
+      return newChild;
+    }
+    throw error;
+  }
+};
+
+// Additional fix for Vue's internal insert function
+const originalInsert = (Element.prototype as any).insertBefore;
+if (originalInsert) {
+  (Element.prototype as any).insertBefore = function(newNode: Node, referenceNode: Node | null) {
+    if (!this || !newNode) {
+      console.warn('Element.insertBefore called with invalid arguments');
+      return newNode;
+    }
+    try {
+      return originalInsert.call(this, newNode, referenceNode);
+    } catch (error) {
+      if (error instanceof DOMException && (error.name === 'NotFoundError' || error.name === 'TypeError')) {
+        console.warn('Element.insertBefore error prevented:', error.message);
+        return newNode;
+      }
+      throw error;
+    }
+  };
+}
+
+/* แสดงปุ่ม filter เมื่อ width < 1200 (mobile + tablet รวม Galaxy Tab S7) */
+const showFilterToggle = computed(() => (debouncedWindowWidth.value ?? 1280) < 1200);
+/* ใช้ mobile card layout เมื่อ width < 768 (รองรับ Galaxy Tab S7 portrait ~800px ให้ใช้ table) */
+const useMobileLayout = computed(() => (debouncedWindowWidth.value ?? 1280) < 768);
 
 /* ───────── state ───────── */
 const showForm = ref(false);
@@ -381,9 +526,12 @@ const applyFilters = () => {
   fetchRates(buildQuery());
 };
 
-const onFilterChange = () => {
+const onFilterChange = (immediate = false) => {
   currentPage.value = 1;
-  fetchRates(buildQuery());
+  // Prevent unnecessary API calls when filters are empty
+  if (immediate || filters.search || filters.baseCurrency || filters.targetCurrency || filters.isActive !== undefined || filters.sort || startDate.value || endDate.value) {
+    fetchRates(buildQuery());
+  }
 };
 
 const setRateType = (type: 'BUY' | 'SELL' | '') => {
@@ -429,14 +577,39 @@ const resetFilters = () => {
 const expandCollapseIcon = ({ isActive }: { isActive: boolean }) =>
   h(DownOutlined, { class: 'expand-icon', style: { transform: isActive ? 'rotate(180deg)' : 'rotate(0deg)' } });
 
-const columns = computed(() => [
-  { title: `${t('merchant.exchangeRates.table.baseCurrency')} → ${t('merchant.exchangeRates.table.targetCurrency')}`, key: 'pair', width: 160 },
-  { title: t('merchant.exchangeRates.table.rateType'), key: 'rateType', width: 100, align: 'center' as const },
-  { title: t('merchant.exchangeRates.table.rate'), key: 'rate', width: 140, align: 'right' as const },
-  { title: t('merchant.exchangeRates.table.rateDate'), dataIndex: 'rateDate', key: 'rateDate', width: 120 },
-  { title: t('merchant.exchangeRates.table.isActive'), key: 'isActive', width: 100, align: 'center' as const },
-  { title: t('merchant.exchangeRates.table.actions'), key: 'actions', width: 80, align: 'center' as const, fixed: 'right' as const },
-]);
+const columns = computed(() => {
+  const width = debouncedWindowWidth.value ?? 1280;
+  
+  // Mobile layout: minimal columns
+  if (width < 768) {
+    return [
+      { title: t('merchant.exchangeRates.table.pair'), key: 'pair', width: 120 },
+      { title: t('merchant.exchangeRates.table.rate'), key: 'rate', width: 100, align: 'right' as const },
+      { title: t('merchant.exchangeRates.table.actions'), key: 'actions', width: 60, align: 'center' as const, fixed: 'right' as const },
+    ];
+  }
+  
+  // Tablet layout (Galaxy Tab S7): optimized columns
+  if (width < 1200) {
+    return [
+      { title: t('merchant.exchangeRates.table.pair'), key: 'pair', width: 140 },
+      { title: t('merchant.exchangeRates.table.rateType'), key: 'rateType', width: 80, align: 'center' as const },
+      { title: t('merchant.exchangeRates.table.rate'), key: 'rate', width: 120, align: 'right' as const },
+      { title: t('merchant.exchangeRates.table.isActive'), key: 'isActive', width: 80, align: 'center' as const },
+      { title: t('merchant.exchangeRates.table.actions'), key: 'actions', width: 60, align: 'center' as const, fixed: 'right' as const },
+    ];
+  }
+  
+  // Desktop layout: full columns
+  return [
+    { title: `${t('merchant.exchangeRates.table.baseCurrency')} → ${t('merchant.exchangeRates.table.targetCurrency')}`, key: 'pair', width: 160 },
+    { title: t('merchant.exchangeRates.table.rateType'), key: 'rateType', width: 100, align: 'center' as const },
+    { title: t('merchant.exchangeRates.table.rate'), key: 'rate', width: 140, align: 'right' as const },
+    { title: t('merchant.exchangeRates.table.rateDate'), dataIndex: 'rateDate', key: 'rateDate', width: 120 },
+    { title: t('merchant.exchangeRates.table.isActive'), key: 'isActive', width: 100, align: 'center' as const },
+    { title: t('merchant.exchangeRates.table.actions'), key: 'actions', width: 80, align: 'center' as const, fixed: 'right' as const },
+  ];
+});
 
 /* paginationConfig uses local page/size so navigation is always in sync */
 const paginationConfig = computed(() => ({
@@ -486,7 +659,26 @@ const resetForm = () => {
   showForm.value = false;
 };
 
-onMounted(() => fetchRates(buildQuery()));
+onMounted(() => {
+  fetchRates(buildQuery());
+});
+
+onUnmounted(() => {
+  // Clear resize timer
+  if (resizeTimer) {
+    clearTimeout(resizeTimer);
+  }
+  // Restore original DOM methods to prevent affecting other components
+  Node.prototype.removeChild = originalRemoveChild;
+  Node.prototype.insertBefore = originalInsertBefore;
+  Node.prototype.appendChild = originalAppendChild;
+  Node.prototype.replaceChild = originalReplaceChild;
+  
+  // Restore Element.prototype method if it was patched
+  if (originalInsert) {
+    (Element.prototype as any).insertBefore = originalInsert;
+  }
+});
 </script>
 
 <style scoped>
@@ -663,6 +855,98 @@ onMounted(() => fetchRates(buildQuery()));
 .action-row { justify-content: flex-end; margin-top: 4px; }
 .type-tag { border-radius: 999px; }
 .mobile-pagination { display: flex; justify-content: center; margin-top: 12px; }
+
+/* Responsive Table Styles */
+.responsive-table {
+  overflow: hidden;
+  position: relative;
+}
+
+.responsive-table :deep(.ant-table) {
+  overflow: hidden;
+  position: relative;
+}
+
+.responsive-table :deep(.ant-table-container) {
+  overflow-x: auto;
+  position: relative;
+}
+
+.responsive-table :deep(.ant-table-body) {
+  overflow-x: auto;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Fix scrollbar detection issues */
+.responsive-table :deep(.ant-table-content) {
+  overflow: visible !important;
+}
+
+.responsive-table :deep(.ant-table-scroll) {
+  overflow: visible !important;
+}
+
+/* Prevent scrollbar size calculation errors */
+.responsive-table :deep(.ant-table-body-inner) {
+  width: 100% !important;
+  overflow-x: auto;
+}
+
+/* Hide scrollbars during transitions to prevent detection errors */
+.responsive-table :deep(.ant-table-wrapper) {
+  transition: none !important;
+}
+
+.responsive-table :deep(.ant-table-spin) {
+  transition: none !important;
+}
+
+/* Galaxy Tab S7 Optimizations */
+@media (max-width: 1199px) and (min-width: 768px) {
+  .responsive-table :deep(.ant-table-thead > tr > th) {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .responsive-table :deep(.ant-table-tbody > tr > td) {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .responsive-table :deep(.ant-table-pagination) {
+    margin: 16px 0 0 0;
+  }
+  
+  .responsive-table :deep(.ant-pagination-options) {
+    display: none;
+  }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 767px) {
+  .responsive-table :deep(.ant-table-thead > tr > th) {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  
+  .responsive-table :deep(.ant-table-tbody > tr > td) {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  
+  .responsive-table :deep(.ant-table-pagination) {
+    margin: 12px 0 0 0;
+  }
+  
+  .responsive-table :deep(.ant-pagination) {
+    justify-content: center;
+  }
+  
+  .responsive-table :deep(.ant-pagination-total-text) {
+    display: none;
+  }
+}
 </style>
 
 <style>
@@ -673,4 +957,65 @@ onMounted(() => fetchRates(buildQuery()));
   visibility: visible !important;
 }
 .single-panel-picker .ant-picker-panel-container { min-width: unset !important; }
+
+/* Fix Ant Design Vue scrollbar detection issues globally */
+.ant-table-scroll {
+  overflow: visible !important;
+}
+
+.ant-table-content {
+  overflow: visible !important;
+}
+
+.ant-table-body-inner {
+  overflow-x: auto !important;
+}
+
+/* Prevent scrollbar size calculation errors during responsive transitions */
+.ant-table-wrapper {
+  transition: none !important;
+}
+
+.ant-table-spin-container {
+  transition: none !important;
+}
+
+/* Fix for dynamic table resizing */
+.ant-table {
+  table-layout: fixed !important;
+}
+
+/* Hide scrollbar measurement elements */
+.ant-table-scrollbar-measure {
+  display: none !important;
+}
+
+/* Fix detectFlexGapSupported error - prevent DOM manipulation during feature detection */
+.responsive-table .ant-layout,
+.responsive-table .ant-layout * {
+  contain: layout style !important;
+}
+
+/* Prevent flex gap detection from removing nodes */
+.responsive-table .ant-flex,
+.responsive-table .ant-flex * {
+  contain: layout style !important;
+}
+
+/* Global fix for Ant Design Vue feature detection - limited to tables */
+.responsive-table .ant-pro-grid,
+.responsive-table .ant-pro-grid * {
+  contain: layout style !important;
+}
+
+/* Fix for any flex container feature detection - limited to tables */
+.responsive-table [class*="ant-"] {
+  contain: layout style !important;
+}
+
+/* Prevent DOM removal during feature detection - limited to tables */
+.responsive-table .ant-float-ant-affix-wrapper,
+.responsive-table .ant-float-ant-affix-wrapper * {
+  contain: layout style !important;
+}
 </style>

@@ -50,10 +50,63 @@
 
         <!-- Notifications -->
         <div v-if="showNotifications" class="notification-wrap">
-          <a-badge :count="5" :offset="[-2, 6]">
-            <a-button type="text" class="header-interactive-btn icon-btn">
-              <BellOutlined />
-            </a-button>
+          <a-badge :count="notificationCount" :offset="[-2, 6]">
+            <a-dropdown placement="bottomRight" :trigger="['click']">
+              <a-button type="text" class="header-interactive-btn icon-btn">
+                <BellOutlined />
+              </a-button>
+              <template #overlay>
+                <div class="notification-dropdown">
+                  <div class="notification-header">
+                    <span class="notification-title">Payment Notifications</span>
+                    <a-button 
+                      v-if="notificationCount > 0" 
+                      type="text" 
+                      size="small" 
+                      @click="refreshNotifications"
+                      :loading="isNotificationsLoading"
+                    >
+                      <ReloadOutlined />
+                    </a-button>
+                  </div>
+                  <div class="notification-list">
+                    <div 
+                      v-if="(unreadPayments || []).length === 0 && !isNotificationsLoading" 
+                      class="notification-empty"
+                    >
+                      <span>No new notifications</span>
+                    </div>
+                    <div 
+                      v-for="payment in (unreadPayments || []).slice(0, 5)" 
+                      :key="payment.id"
+                      class="notification-item"
+                      @click="handleNotificationClick(payment)"
+                    >
+                      <div class="notification-content">
+                        <div class="notification-order-code">
+                          {{ payment.customerOrder?.order?.orderCode }}
+                        </div>
+                        <div class="notification-amount">
+                          {{ formatCurrency(payment.paymentAmount) }}
+                        </div>
+                        <div class="notification-date">
+                          {{ formatDate(payment.createdAt) }}
+                        </div>
+                      </div>
+                      <div class="notification-status pending">PENDING</div>
+                    </div>
+                    <div v-if="isNotificationsLoading" class="notification-loading">
+                      <a-spin size="small" />
+                    </div>
+                  </div>
+                  <div v-if="(unreadPayments || []).length > 5" class="notification-footer">
+                    <a-button type="link" size="small" @click="navigateToPayments">
+                      View all ({{ (unreadPayments || []).length }})
+                    </a-button>
+                  </div>
+                </div>
+              </template>
+            </a-dropdown>
           </a-badge>
         </div>
 
@@ -112,11 +165,12 @@ import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
   MenuFoldOutlined, MenuUnfoldOutlined, GlobalOutlined, BellOutlined,
-  UserOutlined, LogoutOutlined,
+  UserOutlined, LogoutOutlined, ReloadOutlined,
 } from '@ant-design/icons-vue';
 import { useAuthStore } from '../../../store/auth.store';
 import { message } from 'ant-design-vue';
 import { useAuth } from '@/shared/composables/useAuth';
+import { usePaymentNotifications } from '@/shared/composables/usePaymentNotifications';
 import ProfileModal from './ProfileModal.vue';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import { getMenuItems } from '@/components/layouts/superAdmin-layouts/menuItem';
@@ -134,6 +188,15 @@ const { locale } = useI18n();
 const authStore = useAuthStore();
 useAuth();
 const { isMobile } = useIsMobile();
+
+// Payment notifications setup
+const {
+  unreadPayments,
+  isLoading: isNotificationsLoading,
+  notificationCount,
+  fetchUnreadPayments: refreshNotifications,
+  handleNotificationClick: handlePaymentNotificationClick,
+} = usePaymentNotifications();
 
 const currentLocale = computed(() => locale.value);
 const username = computed(() => authStore.user?.fullName || authStore.user?.email || 'Admin');
@@ -161,6 +224,30 @@ const handleSuperAdminDrawerClick = async (info: any) => {
   if (!item) return;
   await router.push(item.path);
   closeSuperAdminDrawer();
+};
+
+// Notification functions
+const handleNotificationClick = async (payment: any) => {
+  await handlePaymentNotificationClick(payment);
+};
+
+const navigateToPayments = () => {
+  router.push({
+    path: '/merchant/payment',
+    query: { status: 'PENDING' }
+  });
+};
+
+const formatCurrency = (amount: string) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }).format(parseFloat(amount));
+};
+
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString();
 };
 
 const showTriggerButton = computed(() => {
@@ -221,6 +308,105 @@ const showUserDropdown = computed(() => {
 .user-btn { display: flex; align-items: center; gap: 8px; }
 .username { font-size: 14px; font-weight: 500; color: #262626; }
 .sa-nav-wrap { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+/* Notification Dropdown Styles */
+.notification-dropdown {
+  width: 320px;
+  max-height: 400px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.notification-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #262626;
+}
+
+.notification-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.notification-empty {
+  padding: 20px;
+  text-align: center;
+  color: #8c8c8c;
+  font-size: 14px;
+}
+
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+  background-color: #f5f5f5;
+}
+
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-order-code {
+  font-weight: 600;
+  font-size: 13px;
+  color: #262626;
+  margin-bottom: 4px;
+}
+
+.notification-amount {
+  font-size: 12px;
+  color: #1890ff;
+  margin-bottom: 2px;
+}
+
+.notification-date {
+  font-size: 11px;
+  color: #8c8c8c;
+}
+
+.notification-status {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.notification-status.pending {
+  background-color: #fff7e6;
+  color: #fa8c16;
+  border: 1px solid #ffd591;
+}
+
+.notification-loading {
+  padding: 20px;
+  text-align: center;
+}
+
+.notification-footer {
+  padding: 8px 16px;
+  border-top: 1px solid #f0f0f0;
+  text-align: center;
+}
 .sa-nav-btn {
   height: 40px;
   border-radius: 12px;

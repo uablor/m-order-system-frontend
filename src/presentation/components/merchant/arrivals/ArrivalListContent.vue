@@ -33,35 +33,73 @@
       </a-button>
     </div>
 
-    <!-- Filter: แถวเดียว — Date, Sort, Customer, Search -->
-    <!-- Show filters only when NOT embedded in Notification page OR when controlsInParent is false -->
-    <div v-if="!embedded || !controlsInParent" class="filter-wrapper mb-4" :class="{ 'mt-0': embedded }">
+    <!-- Filter: Different behavior for Notifications vs Arrivals page -->
+    <!-- Notifications page (embedded): Show only customer filter + create button -->
+    <div v-if="embedded" class="filter-wrapper mb-4" :class="{ 'mt-0': embedded }">
+      <a-card :bordered="false" class="filter-card filter-card--single">
+        <div class="filter-bar filter-bar--single">
+          <!-- Customer Name Filter -->
+          <a-select
+            v-model:value="filters.customerId"
+            allow-clear
+            show-search
+            option-filter-prop="label"
+            class="filter-select filter-select--customer"
+            :placeholder="$t('merchant.arrivals.customerNameFilterShort')"
+            :loading="loadingCustomers"
+            @change="onFilterChange"
+          >
+            <a-select-option
+              v-for="customer in customerOptions"
+              :key="customer.id"
+              :value="customer.id"
+              :label="customer.name"
+            >
+              {{ customer.name }}
+            </a-select-option>
+          </a-select>
+          
+          <!-- Create Notification Button (always visible, disabled when no selection) -->
+          <a-button 
+            type="primary" 
+            :disabled="selectedArrivalIds.size === 0"
+            :loading="createNotiSubmitting"
+            @click="openCreateNotiConfirm"
+            class="create-noti-btn"
+          >
+            {{ $t('merchant.arrivals.createNoti') }} ({{ selectedArrivalIds.size }})
+          </a-button>
+        </div>
+      </a-card>
+    </div>
+
+    <!-- Arrivals page (not embedded): Show full filters -->
+    <div v-if="!embedded" class="filter-wrapper mb-4">
       <Transition name="filter-panel">
         <a-card
-          v-if="(!isMobile || showFilters) && (!embedded || !controlsInParent)"
+          v-if="!isMobile || showFilters"
           :bordered="false"
           class="filter-card filter-card--single"
         >
           <div class="filter-bar filter-bar--single">
-            <!-- Commented out filters - keeping only customer name select filter -->
             <!-- Start Date -->
-            <!-- <a-date-picker
+            <a-date-picker
               v-model:value="startDate"
               class="filter-date-single"
               :placeholder="$t('merchant.arrivals.startDate')"
               :popup-class-name="'blue-picker-popup'"
               @change="onFilterChange"
-            /> -->
+            />
             <!-- End Date -->
-            <!-- <a-date-picker
+            <a-date-picker
               v-model:value="endDate"
               class="filter-date-single"
               :placeholder="$t('merchant.arrivals.endDate')"
               :popup-class-name="'blue-picker-popup'"
               @change="onFilterChange"
-            /> -->
+            />
             <!-- Sort -->
-            <!-- <a-select
+            <a-select
               v-model:value="filters.sort"
               allow-clear
               class="filter-select filter-select--sort"
@@ -70,9 +108,9 @@
             >
               <a-select-option value="DESC">{{ $t('merchant.arrivals.sortDesc') }}</a-select-option>
               <a-select-option value="ASC">{{ $t('merchant.arrivals.sortAsc') }}</a-select-option>
-            </a-select> -->
+            </a-select>
             
-            <!-- Keep: Customer Name Select Filter -->
+            <!-- Customer Name Filter -->
             <a-select
               v-model:value="filters.customerId"
               allow-clear
@@ -93,37 +131,16 @@
               </a-select-option>
             </a-select>
             
-            <!-- Create Notification Button -->
-            <a-button 
-              v-if="selectedArrivalIds.size > 0" 
-              type="primary" 
-              :loading="createNotiSubmitting"
-              @click="openCreateNotiConfirm"
-              class="create-noti-btn"
-            >
-              {{ $t('merchant.arrivals.createNoti') }} ({{ selectedArrivalIds.size }})
-            </a-button>
-            
-            <!-- Commented out search input -->
-            <!-- <a-input
+            <!-- Search Input -->
+            <a-input
               v-model:value="filters.search"
               allow-clear
               class="filter-input filter-input--search"
               :placeholder="$t('merchant.arrivals.searchPlaceholder')"
-              @pressEnter="triggerSearch"
+              @change="onFilterChange"
             >
               <template #prefix><SearchOutlined /></template>
-            </a-input> -->
-            <!-- <a-input
-              v-model:value="filters.customerName"
-              allow-clear
-              class="filter-input filter-input--customer"
-              :placeholder="$t('merchant.arrivals.customerNameFilterShort')"
-              @pressEnter="onFilterChange"
-              @change="onCustomerNameChange"
-            >
-              <template #prefix><UserOutlined /></template>
-            </a-input> -->
+            </a-input>
           </div>
         </a-card>
       </Transition>
