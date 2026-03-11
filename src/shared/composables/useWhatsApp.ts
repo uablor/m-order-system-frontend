@@ -88,7 +88,14 @@ function buildCustomerNotificationLink(notificationLink: string | null | undefin
   }
   const queryIdx = notificationLink.indexOf('?');
   const query = notificationLink.substring(queryIdx);
-  return `${base}${path}${query}`;
+  const fullUrl = `${base}${path}${query}`;
+  
+  // Ensure URL has proper https:// protocol for WhatsApp recognition
+  if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://')) {
+    return `https://${fullUrl}`;
+  }
+  
+  return fullUrl;
 }
 
 /**
@@ -101,17 +108,17 @@ export function useWhatsApp(options: UseWhatsAppOptions = {}) {
   const MESSAGE_TEMPLATES: Record<WhatsAppMessageLang, { base: string; withLink: string; noLink: string }> = {
     en: {
       base: 'Hello {customerName},\n\nGood news! Your order has arrived and is ready for you.',
-      withLink: '\n\nYou can review your order details and complete the payment here: {link}\n\nThank you for choosing our service!',
+      withLink: '\n\nYou can review your order details and complete the payment here:\n{link}\n\nThank you for choosing our service!',
       noLink: '\n\nPlease let us know if you have any questions. Thank you!',
     },
     th: {
       base: 'สวัสดีค่ะ คุณลูกค้าของเรา {customerName}\n\nออเดอร์ของคุณ ถึงแล้ว พร้อมรับได้เลยค่ะ',
-      withLink: '\n\nคุณสามารถดูรายละเอียดออเดอร์และชำระเงินได้ที่: {link}\n\nขอบคุณที่ใช้บริการของเราค่ะ!',
+      withLink: '\n\nคุณสามารถดูรายละเอียดออเดอร์และชำระเงินได้ที่:\n{link}\n\nขอบคุณที่ใช้บริการของเราค่ะ!',
       noLink: '\n\nหากมีคำถามสามารถติดต่อเราได้เลยนะค่ะ ขอบคุณค่ะ!',
     },
     la: {
       base: 'ສະບາຍດີ ລູກຄ້າຂອງພວກເຮົາ {customerName}\n\nອໍເດີຂອງທ່ານ ມາຮອດແລ້ວ ພ້ອມຮັບໄດ້ແລ້ວເດີເຈົ້າ',
-      withLink: '\n\nທ່ານສາມາດເບິ່ງລາຍລະອຽດອໍເດີແລະຊຳລະເງິນໄດ້ທີ່: {link}\n\nຂອບໃຈທີ່ໃຊ້ບໍລິການ!',
+      withLink: '\n\nທ່ານສາມາດເບິ່ງລາຍລະອຽດອໍເດີແລະຊຳລະເງິນໄດ້ທີ່:\n{link}\n\nຂອບໃຈທີ່ໃຊ້ບໍລິການ!',
       noLink: '\n\nຖ້າມີຄຳຖາມສາມາດຕິດຕໍ່ພວກເຮົາໄດ້ ຂອບໃຈ!',
     },
   };
@@ -141,9 +148,15 @@ export function useWhatsApp(options: UseWhatsAppOptions = {}) {
         : (lang === 'en' ? 'your order' : lang === 'th' ? 'ออเดอร์ของคุณ' : 'ອໍເດີຂອງທ່ານ');
 
     const baseMsg = tpl.base.replace('{customerName}', customerName).replace('{orderPart}', orderPart);
-    return customerLink
-      ? baseMsg + tpl.withLink.replace('{link}', customerLink)
-      : baseMsg + tpl.noLink;
+    
+    if (customerLink) {
+      // Format the link to be more recognizable as a clickable URL
+      const formattedLink = `${customerLink}`;
+      const linkMessage = tpl.withLink.replace('{link}', formattedLink);
+      return baseMsg + linkMessage;
+    } else {
+      return baseMsg + tpl.noLink;
+    }
   };
 
   /**
