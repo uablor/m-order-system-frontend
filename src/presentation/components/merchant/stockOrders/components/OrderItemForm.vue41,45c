@@ -19,7 +19,7 @@
           <!-- Left Column: Image Upload -->
           <a-col :sm="24" :md="8">
             <a-form-item :label="$t('merchant.orders.items.productImage')">
-              <div v-if="!variantForCalculation.productImage" class="avatar-upload-container" :class="{ uploading: imageUploading }">
+              <div v-if="!variantForCalculation.productImage" class="avatar-upload-container">
                 <div class="avatar-upload-placeholder">
                   <div class="avatar-upload-icon">
                     <CameraOutlined />
@@ -38,10 +38,6 @@
                 >
                   <div class="avatar-upload-trigger"></div>
                 </a-upload>
-                <!-- Loading State -->
-                <div v-if="imageUploading" class="avatar-upload-loading">
-                  <a-spin size="large" />
-                </div>
               </div>
               <div v-else class="uploaded-image-container">
                 <div class="uploaded-image-content">
@@ -69,11 +65,10 @@
                           class="uploaded-image-action-btn uploaded-image-delete-btn"
                           @click="removeImage"
                         >
-                          <template #icon><DeleteOutlined /></template>
+                          <template #icon><CloseOutlined /></template>
                         </a-button>
                       </div>
                     </div>
-                  </div>
                 </div>
                 <a-upload
                   :before-upload="beforeImageUpload"
@@ -88,7 +83,7 @@
               </div>
             </a-form-item>
           </a-col>
-    
+          
           <!-- Right Column: Product Name + Shipping + Discount -->
           <a-col :sm="24" :md="16">
             <a-form-item
@@ -128,14 +123,14 @@
                   </a-select>
                 </a-form-item>
               </a-col>
-              <a-col :span="12">
+              <a-col v-if="item.discountType" :span="12">
                 <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
-                  <a-input-number v-model:value="item.discountValue" :min="0" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType" />
+                  <a-input-number v-model:value="item.discountValue" :min="0" :formatter="numFormatter" :parser="numParser" class="w-full" />
                 </a-form-item>
               </a-col>
             </a-row>
             
-            <a-row v-if="!isBuySameCurrency" :gutter="[16, 0]">
+            <a-row v-if="item.discountType && !isBuySameCurrency" :gutter="[16, 0]">
               <a-col :span="24">
                 <a-form-item :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
                   <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
@@ -160,7 +155,7 @@
           />
         </a-form-item>
         <a-form-item :label="$t('merchant.orders.items.productImage')">
-          <div v-if="!variantForCalculation.productImage" class="avatar-upload-container" :class="{ uploading: imageUploading }">
+          <div v-if="!variantForCalculation.productImage" class="avatar-upload-container">
             <div class="avatar-upload-placeholder">
               <div class="avatar-upload-icon">
                 <CameraOutlined />
@@ -179,10 +174,6 @@
             >
               <div class="avatar-upload-trigger"></div>
             </a-upload>
-            <!-- Loading State -->
-            <div v-if="imageUploading" class="avatar-upload-loading">
-              <a-spin size="large" />
-            </div>
           </div>
           <div v-else class="uploaded-image-container">
             <div class="uploaded-image-content">
@@ -242,10 +233,10 @@
             <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
-          <a-input-number v-model:value="item.discountValue" :min="0" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType" />
+        <a-form-item v-if="item.discountType" :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
+          <a-input-number v-model:value="item.discountValue" :min="0" :formatter="numFormatter" :parser="numParser" class="w-full" />
         </a-form-item>
-        <a-form-item v-if="!isBuySameCurrency" :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
+        <a-form-item v-if="item.discountType && !isBuySameCurrency" :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
           <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
         </a-form-item>
       </template>
@@ -635,7 +626,7 @@ const fmtNum = fmtNumber;
 const fmtRate = (val: number) => val.toLocaleString('en-US');
 
 const gutter = computed<[number, number]>(() => props.isMobile ? [12, 0] : [16, 0]);
-const halfCol = computed(() => props.isMobile ? { span: 12 } : { sm: 12, md: 8 });
+const halfCol = computed(() => props.isMobile ? { span: 12 } : { sm: 12, md: 6 });
 
 const isBuySameCurrency = computed(() => props.buyBaseCcy === props.buyTargetCcy);
 const isSellSameCurrency = computed(() => props.sellBaseCcy === props.sellTargetCcy);
@@ -941,32 +932,12 @@ watch(currentVariant, (newVariant) => {
   }
 }, { deep: true });
 
-// Watch discount type to reset discount value when cleared
-watch(() => props.item.discountType, (newType, oldType) => {
-  if (!newType && oldType) {
-    // Discount type was cleared, reset discount value to 0
-    props.item.discountValue = 0;
-  }
-}, { immediate: true });
-
-// Ensure discount value is never undefined
-watch(() => props.item.discountValue, (value) => {
-  if (value === undefined || value === null) {
-    props.item.discountValue = 0;
-  }
-}, { immediate: true });
-
 // Initial sync when component mounts
 if (currentVariant.value) {
   props.item.purchasePrice = currentVariant.value.purchasePrice || 0;
   props.item.sellingPriceForeign = currentVariant.value.sellingPriceForeign || 0;
   // ✅ Remove shippingPrice, discountType, discountValue initial sync from variant level
   props.item.customers = [...(currentVariant.value.customers || [])];
-}
-
-// Ensure discount value is initialized to 0
-if (props.item.discountValue === undefined || props.item.discountValue === null) {
-  props.item.discountValue = 0;
 }
 </script>
 
@@ -1012,36 +983,17 @@ if (props.item.discountValue === undefined || props.item.discountValue === null)
   flex-direction: column;
   align-items: center;
   width: 100%;
-  height: 300px; /* Same as uploaded image */
+  /* border: #059669 solid; */
   border: 2px dashed #d1d5db;
-  border-radius: 12px;
-  background: #ffffff;
-  margin: 0 auto;
-  transition: all 0.2s ease;
-}
 
-.avatar-upload-container.uploading {
-  border-color: #3b82f6;
-  background: #eff6ff;
-}
 
-.avatar-upload-loading {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  z-index: 10;
+
 }
 
 .avatar-upload-placeholder {
-  width: 100%;
-  height: 100%;
+  /* width: 120px;
+  height: 120px; */
+  /* border: 2px dashed #d1d5db; */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1049,7 +1001,7 @@ if (props.item.discountValue === undefined || props.item.discountValue === null)
   background: #f8fafc;
   cursor: pointer;
   transition: all 0.3s ease;
-  border-radius: 10px;
+  margin: 0 auto;
 }
 
 .avatar-upload-placeholder:hover {
@@ -1161,13 +1113,13 @@ if (props.item.discountValue === undefined || props.item.discountValue === null)
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding: 4px;
+  align-items: flex-start; /* ✅ Align to top */
+  justify-content: flex-end; /* ✅ Align to right */
+  padding: 8px; /* ✅ Space from edges */
   opacity: 0;
   transition: opacity 0.3s ease;
   border-radius: 8px;
@@ -1179,6 +1131,38 @@ if (props.item.discountValue === undefined || props.item.discountValue === null)
 
 .uploaded-image-actions {
   display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.uploaded-image-icon {
+  font-size: 32px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.uploaded-image-text {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.uploaded-image-text.clickable {
+  cursor: pointer;
+  color: #1d4ed8;
+}
+
+.uploaded-image-text.clickable:hover {
+  text-decoration: underline;
+}
+
+.uploaded-image-actions {
+  flex-shrink: 0;
+  display: flex;
   gap: 4px;
   align-items: center;
   justify-content: center;
@@ -1188,10 +1172,10 @@ if (props.item.discountValue === undefined || props.item.discountValue === null)
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  border-radius: 4px;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -1648,8 +1632,7 @@ if (props.item.discountValue === undefined || props.item.discountValue === null)
   transition: opacity 0.2s ease;
   padding: 2px;
   min-width: 24px;
-  border-radius: 2px;
-  height: 16px !important;
+  height: 24px;
 }
 
 .variant-item:hover .variant-delete-btn {

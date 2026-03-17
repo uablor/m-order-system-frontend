@@ -112,66 +112,84 @@ export function useOrderSubmit(
     submitting.value = true;
     try {
       // Transform nested structure → backend format
-      const customerMap = new Map<number, { orderItemIndex: number; quantity: number; sellingPriceForeign: number }[]>();
+      const customerMap = new Map<number, { orderItemIndex: number; skuIndex: number; quantity: number; sellingPriceForeign: number }[]>();
       let orderItemIndex = 0;
       
       // Expand each item with variants into separate order items
       const expandedItems: Array<{
         Index: number;
         productName: string;
-        variant?: string;
-        quantity: number;
-        purchasePrice: number;
-        shippingPrice?: number;
-        discountType?: 'percent' | 'cash';
+        skus: Array<{
+          orderItemSkuIndex: number;
+          variant: string;
+          quantity: number;
+          purchasePrice: number;
+          sellingPriceForeign: number;
+          exchangeRateBuyId?: number;
+          exchangeRateSellId?: number;
+        }>;
+        discountType?: 'PERCENT' | 'FIX';
         discountValue?: number;
-        sellingPriceForeign: number;
         imageId?: number;
+        shippingPrice?: number;
       }> = [];
       
       items.value.forEach((item) => {
         if (item.variants && item.variants.length > 0) {
-          // Create separate order items for each variant
-          item.variants.forEach((variant) => {
+          // Create ONE order item with multiple SKUs for all variants
+          const skus = item.variants.map((variant, variantIndex) => {
             const variantTotalQty = variant.customers.reduce((sum, c) => sum + (c.qty || 0), 0);
-            
-            expandedItems.push({
-              Index: orderItemIndex++,
-              productName: item.productName.trim(),
-              variant: variant.variant.trim() || undefined,
-              quantity: variantTotalQty,
-              purchasePrice: variant.purchasePrice,
-              shippingPrice: variant.shippingPrice || undefined,
-              discountType: variant.discountType || undefined,
-              discountValue: variant.discountType ? variant.discountValue : undefined,
-              sellingPriceForeign: variant.sellingPriceForeign,
-              ...(item.imageId && { imageId: item.imageId }), // Only include imageId if it exists
-            });
             
             // Map customers for this variant
             variant.customers.forEach(c => {
               if (!c.customerId) return;
               if (!customerMap.has(c.customerId)) customerMap.set(c.customerId, []);
               customerMap.get(c.customerId)!.push({
-                orderItemIndex: expandedItems.length - 1, // Use the actual index in expandedItems
+                orderItemIndex: orderItemIndex, // ✅ Always 0 for single order item
+                skuIndex: variantIndex, // ✅ Use variant index as skuIndex
                 quantity: c.qty,
                 sellingPriceForeign: variant.sellingPriceForeign,
               });
             });
+            
+            return {
+              orderItemSkuIndex: variantIndex, // ✅ Use variant index
+              variant: variant.variant.trim() || '',
+              quantity: variantTotalQty,
+              purchasePrice: variant.purchasePrice,
+              sellingPriceForeign: variant.sellingPriceForeign,
+              exchangeRateBuyId: 1, // Default value - you may want to get this from UI
+              exchangeRateSellId: 2 // Default value - you may want to get this from UI
+            };
+          });
+          
+          expandedItems.push({
+            Index: orderItemIndex++,
+            productName: item.productName.trim(),
+            skus: skus, // ✅ Multiple SKUs in one order item
+            discountType: item.discountType === 'percent' ? 'PERCENT' : (item.discountType === 'cash' ? 'FIX' : undefined), // ✅ Use item level
+            discountValue: item.discountType ? item.discountValue : undefined, // ✅ Use item level
+            ...(item.imageId && { imageId: item.imageId }),
+            shippingPrice: item.shippingPrice || undefined // ✅ Use item level
           });
         } else {
           // No variants - create single order item as before
           expandedItems.push({
             Index: orderItemIndex++,
             productName: item.productName.trim(),
-            variant: item.variant.trim() || undefined,
-            quantity: item.customers.reduce((sum, c) => sum + (c.qty || 0), 0),
-            purchasePrice: item.purchasePrice,
-            shippingPrice: item.shippingPrice || undefined,
-            discountType: item.discountType || undefined,
-            discountValue: item.discountType ? item.discountValue : undefined,
-            sellingPriceForeign: item.sellingPriceForeign,
-            ...(item.imageId && { imageId: item.imageId }), // Only include imageId if it exists
+            skus: [{
+              orderItemSkuIndex: 0,
+              variant: item.variant.trim() || '',
+              quantity: item.customers.reduce((sum, c) => sum + (c.qty || 0), 0),
+              purchasePrice: item.purchasePrice,
+              sellingPriceForeign: item.sellingPriceForeign,
+              exchangeRateBuyId: 1, // Default value - you may want to get this from UI
+              exchangeRateSellId: 2 // Default value - you may want to get this from UI
+            }],
+            discountType: item.discountType === 'percent' ? 'PERCENT' : (item.discountType === 'cash' ? 'FIX' : undefined), // ✅ Use item level
+            discountValue: item.discountType ? item.discountValue : undefined, // ✅ Use item level
+            ...(item.imageId && { imageId: item.imageId }),
+            shippingPrice: item.shippingPrice || undefined // ✅ Use item level
           });
           
           // Map customers for this item
@@ -180,6 +198,7 @@ export function useOrderSubmit(
             if (!customerMap.has(c.customerId)) customerMap.set(c.customerId, []);
             customerMap.get(c.customerId)!.push({
               orderItemIndex: expandedItems.length - 1,
+              skuIndex: 0, // Always 0 for single variant items
               quantity: c.qty,
               sellingPriceForeign: item.sellingPriceForeign,
             });

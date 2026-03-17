@@ -5,21 +5,29 @@ import type { Order } from '@/domain/entities/user.entity';
 import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
 import { extractSingleResult } from '@/shared/types/backend-response.types';
 
+export interface CreateFullOrderItemSkuDto {
+  orderItemSkuIndex: number;
+  variant: string;
+  quantity: number;
+  purchasePrice: number;
+  sellingPriceForeign: number;
+  exchangeRateBuyId?: number;
+  exchangeRateSellId?: number;
+}
+
 export interface CreateFullOrderItemDto {
   Index: number;
   productName: string;
-  variant?: string;
-  quantity: number;
-  purchasePrice: number;
-  shippingPrice?: number;
-  discountType?: 'percent' | 'cash';
+  skus: CreateFullOrderItemSkuDto[];
+  discountType?: 'PERCENT' | 'FIX';
   discountValue?: number;
-  sellingPriceForeign: number;
   imageId?: number;
+  shippingPrice?: number;
 }
 
 export interface CreateFullCustomerOrderItemDto {
   orderItemIndex: number;
+  skuIndex: number;
   quantity: number;
   sellingPriceForeign?: number;
 }

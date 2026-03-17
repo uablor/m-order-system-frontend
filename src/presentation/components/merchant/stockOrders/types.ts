@@ -21,9 +21,9 @@ export interface ItemForm {
   productName: string;
   variant: string;
   purchasePrice: number;
-  shippingPrice: number;
-  discountType: 'percent' | 'cash' | undefined;
-  discountValue: number;
+  shippingPrice: number; // ✅ Move to item level
+  discountType: 'percent' | 'cash' | undefined; // ✅ Move to item level
+  discountValue: number; // ✅ Move to item level
   sellingPriceForeign: number;
   customers: CustomerInItemForm[];
   quantity: number; // Add missing quantity property
@@ -38,9 +38,7 @@ export interface ProductVariant {
   variant: string;
   purchasePrice: number;
   sellingPriceForeign: number;
-  shippingPrice: number;
-  discountType?: 'percent' | 'cash';
-  discountValue?: number;
+  // ✅ Remove shippingPrice, discountType, discountValue from variant level
   customers: CustomerInItemForm[];
   productImage?: string; // Product image URL for this variant
 }
