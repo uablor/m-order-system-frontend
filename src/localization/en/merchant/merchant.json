@@ -628,6 +628,7 @@
     "colOrderItem": "Order Item",
     "arrivedQty": "Arrived Qty",
     "tableIndex": "#",
+    "tableAvatar": "Avatar",
     "tableOrderCode": "Order Code",
     "tableVariant": "Variant",
     "tableQuantity": "Quantity",

@@ -2,7 +2,7 @@
  * Composable for Arrival List in Notification Tab
  * Handles fetching, filtering, and table display of arrival data
  */
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, h } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { TablePaginationConfig } from 'ant-design-vue';
 import type { TableColumnsType } from 'ant-design-vue';
@@ -41,6 +41,20 @@ export function useArrivalList() {
   const { isMobile } = useIsMobile();
   const authStore = useAuthStore();
   const { authPayload } = storeToRefs(authStore);
+
+  // Image modal state
+  const imageModalVisible = ref(false);
+  const modalImageUrl = ref('');
+  
+  const showImageModal = (imageUrl: string) => {
+    modalImageUrl.value = imageUrl;
+    imageModalVisible.value = true;
+  };
+
+  const closeImageModal = () => {
+    imageModalVisible.value = false;
+    modalImageUrl.value = '';
+  };
 
   const showFilterToggle = computed(() => isMobile.value);
   const useMobileLayout = computed(() => isMobile.value);
@@ -141,6 +155,35 @@ export function useArrivalList() {
       },
     },
     {
+      title: t('merchant.arrivalDetail.tableAvatar'),
+      key: 'image',
+      width: 80,
+      align: 'center',
+      customRender: ({ record }: { record: Arrival }) => {
+        // Show images from arrival items
+        const images = record.arrivalItems?.map((item: ArrivalItem) => {
+          const publicUrl = item.publicUrl;
+          
+          if (publicUrl) {
+            return h('img', {
+              src: publicUrl,
+              alt: 'Product Image',
+              style: 'width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #f0f0f0; cursor: pointer;',
+              onClick: () => showImageModal(publicUrl)
+            });
+          } else {
+            return h('div', {
+              style: 'width: 40px; height: 40px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999; border: 1px solid #e8e8e8;'
+            }, 'No Img');
+          }
+        }) || [];
+
+        return h('div', {
+          style: 'display: flex; flex-direction: column; gap: 4px; align-items: center; padding: 4px 0;'
+        }, images);
+      },
+    },
+    {
       title: t('merchant.arrivalDetail.tableOrderCode'),
       key: 'orderCode',
       width: 120,
@@ -150,12 +193,20 @@ export function useArrivalList() {
     {
       title: t('merchant.arrivalDetail.tableVariant'),
       key: 'variant',
-      width: 150,
-      align: 'center',
+      width: 200,
+      align: 'left',
       customRender: ({ record }: { record: Arrival }) => {
-        // Show variant from arrival items
-        const variants = record.arrivalItems?.map((item: ArrivalItem) => item.orderItem?.variant || '-').join(', ');
-        return variants || '-';
+        // Show variant text only (no images)
+        const variants = record.arrivalItems?.map((item: ArrivalItem) => {
+          const variant = item.variant || '-';
+          const arrivedQuantity = item.arrivedQuantity || 0;
+          
+          return h('div', {
+            style: 'margin-bottom: 4px; font-size: 13px;'
+          }, `${variant} (${arrivedQuantity})`);
+        }) || [];
+
+        return h('div', variants);
       },
     },
     {
@@ -194,7 +245,7 @@ export function useArrivalList() {
       width: 100,
       align: 'center',
       customRender: ({ record }: { record: Arrival }) => {
-        const prices = (record.arrivalItems || []).map((item: ArrivalItem) => Number(item.orderItem?.purchasePrice) || 0).filter((price: number) => price > 0);
+        const prices = (record.arrivalItems || []).map((item: ArrivalItem) => Number(item.purchasePrice) || 0).filter((price: number) => price > 0);
         return prices.length > 0 ? prices.join(', ') : '-';
       },
     },
@@ -204,7 +255,7 @@ export function useArrivalList() {
       width: 100,
       align: 'center',
       customRender: ({ record }: { record: Arrival }) => {
-        const prices = (record.arrivalItems || []).map((item: ArrivalItem) => Number(item.orderItem?.sellingPriceForeign) || 0).filter((price: number) => price > 0);
+        const prices = (record.arrivalItems || []).map((item: ArrivalItem) => Number(item.sellingPriceForeign) || 0).filter((price: number) => price > 0);
         return prices.length > 0 ? prices.join(', ') : '-';
       },
     },
@@ -215,7 +266,7 @@ export function useArrivalList() {
       align: 'center',
       customRender: ({ record }: { record: Arrival }) => {
         const totalProfit = record.arrivalItems?.reduce((sum: number, item: ArrivalItem) => {
-          const profit = Number(item.orderItem?.profit) || 0;
+          const profit = Number(item.profit) || 0;
           return sum + profit;
         }, 0) || 0;
         return totalProfit.toLocaleString();
@@ -381,5 +432,10 @@ export function useArrivalList() {
     closeCreateNotiModal,
     createNotifications,
     fetchCustomers, // Add fetchCustomers to return
+    // Image modal functionality
+    imageModalVisible,
+    modalImageUrl,
+    showImageModal,
+    closeImageModal,
   };
 }

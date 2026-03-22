@@ -155,10 +155,42 @@
 
                     <div class="card-detail">
                       <div class="detail-row">
+                        <span class="detail-label">{{ $t('merchant.arrivalDetail.tableAvatar') }}</span>
+                        <div class="detail-val">
+                          <div 
+                            v-for="item in arrival.arrivalItems" 
+                            :key="item.id"
+                            class="image-item"
+                          >
+                            <img 
+                              v-if="item.publicUrl"
+                              :src="item.publicUrl"
+                              alt="Product Image"
+                              class="product-image clickable-image"
+                              @click="showImageModal(item.publicUrl)"
+                            />
+                            <div 
+                              v-else
+                              class="no-image-small"
+                            >
+                              No Image
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="detail-row">
                         <span class="detail-label">{{ $t('merchant.arrivalDetail.tableVariant') }}</span>
-                        <span class="detail-val">
-                          {{ arrival.arrivalItems?.map(item => item.orderItem?.variant || '-').join(', ') || '-' }}
-                        </span>
+                        <div class="detail-val">
+                          <div 
+                            v-for="item in arrival.arrivalItems" 
+                            :key="item.id"
+                            class="variant-item-text"
+                          >
+                            <span class="variant-text">
+                              {{ item.variant || '-' }} ({{ item.arrivedQuantity }})
+                            </span>
+                          </div>
+                        </div>
                       </div>
                       <div class="detail-row">
                         <span class="detail-label">{{ $t('merchant.arrivalDetail.tableQuantity') }}</span>
@@ -175,19 +207,19 @@
                       <div class="detail-row">
                         <span class="detail-label">{{ $t('merchant.arrivalDetail.tablePurchasePrice') }}</span>
                         <span class="detail-val">
-                          {{ arrival.arrivalItems?.map(item => Number(item.orderItem?.purchasePrice) || 0).filter(p => p > 0).join(', ') || '-' }}
+                          {{ arrival.arrivalItems?.map(item => Number(item.purchasePrice) || 0).filter(p => p > 0).join(', ') || '-' }}
                         </span>
                       </div>
                       <div class="detail-row">
                         <span class="detail-label">{{ $t('merchant.arrivalDetail.tableSellingPrice') }}</span>
                         <span class="detail-val">
-                          {{ arrival.arrivalItems?.map(item => Number(item.orderItem?.sellingPriceForeign) || 0).filter(p => p > 0).join(', ') || '-' }}
+                          {{ arrival.arrivalItems?.map(item => Number(item.sellingPriceForeign) || 0).filter(p => p > 0).join(', ') || '-' }}
                         </span>
                       </div>
                       <div class="detail-row">
                         <span class="detail-label">{{ $t('merchant.arrivalDetail.tableProfit') }}</span>
                         <span class="detail-val">
-                          {{ arrival.arrivalItems?.reduce((sum, item) => sum + (Number(item.orderItem?.profit) || 0), 0).toLocaleString() || '0' }}
+                          {{ arrival.arrivalItems?.reduce((sum, item) => sum + (Number(item.profit) || 0), 0).toLocaleString() || '0' }}
                         </span>
                       </div>
                     </div>
@@ -620,6 +652,24 @@
         </div>
       </div>
     </a-modal>
+
+    <!-- Image Preview Modal -->
+    <a-modal
+      v-model:open="imageModalVisible"
+      :title="$t('merchant.arrivalDetail.tableAvatar')"
+      :width="800"
+      :footer="null"
+      @cancel="closeImageModal"
+    >
+      <div class="image-modal-content">
+        <img 
+          v-if="modalImageUrl"
+          :src="modalImageUrl"
+          alt="Product Image"
+          class="modal-image"
+        />
+      </div>
+    </a-modal>
   </div>
 </template>
 
@@ -677,6 +727,12 @@ const {
   openCreateNotiConfirm,
   closeCreateNotiModal,
   createNotifications,
+  fetchCustomers, // Add fetchCustomers to return
+  // Image modal functionality
+  imageModalVisible,
+  modalImageUrl,
+  showImageModal,
+  closeImageModal,
 } = arrivalData;
 
 // Use notification composable for history tab
@@ -981,6 +1037,31 @@ watch(
 .arrival-date { font-size: 12px; color: #64748b; margin-top: 2px; }
 .arrival-panel { margin-bottom: 8px !important; }
 .pagination-row { padding: 16px; background: #f8fafc; border-radius: 12px; }
+.variant-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.variant-image { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
+.no-image { 
+  width: 40px; height: 40px; background: #f0f0f0; border-radius: 4px; 
+  display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999;
+}
+.image-item { margin-bottom: 4px; }
+.product-image { 
+  width: 40px; height: 40px; object-fit: cover; border-radius: 4px; 
+  border: 1px solid #f0f0f0; 
+}
+.clickable-image {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.clickable-image:hover {
+  transform: scale(1.05);
+}
+.no-image-small { 
+  width: 40px; height: 40px; background: #f0f0f0; border-radius: 4px; 
+  display: flex; align-items: center; justify-content: center; font-size: 10px; 
+  color: #999; border: 1px solid #e8e8e8; 
+}
+.variant-item-text { margin-bottom: 4px; }
+.variant-text { font-size: 13px; color: #374151; }
 .notif-avatar-wrap { position: relative; flex-shrink: 0; }
 .notif-avatar {
   background: rgba(22, 119, 255, 0.1); color: #1677ff;
@@ -1047,6 +1128,22 @@ watch(
 }
 .whatsapp-lang-buttons .lang-btn {
   width: 100%;
+}
+
+/* Image Modal Styles */
+.image-modal-content {
+  text-align: center;
+  padding: 16px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.modal-image {
+  max-width: 100%;
+  max-height: 600px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  object-fit: contain;
 }
 </style>
 

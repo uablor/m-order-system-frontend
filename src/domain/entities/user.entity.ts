@@ -454,10 +454,24 @@ export interface ArrivalItem {
   id: number;
   arrivalId: number;
   orderItemId: number;
+  variant: string | null;
+  quantity: number;
+  publicUrl: string | null;
+  purchasePrice: string | null;
+  purchaseTotal: number;
+  shippingPrice: number;
+  totalCostBeforeDiscount: number;
+  discountType: string | null;
+  discountValue: string | null;
+  discountAmount: number;
+  finalCost: number;
+  sellingPriceForeign: string | null;
+  sellingTotal: number;
+  profit: number;
   arrivedQuantity: number;
   condition: ArrivalItemCondition | null;
   notes: string | null;
-  orderItem?: OrderItem;
+  orderItem?: OrderItem; // For when backend fixes the relationship
   createdAt: string;
   updatedAt: string;
 }
