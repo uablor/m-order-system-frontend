@@ -37,6 +37,8 @@ export function useOrderItems(isMobile: Ref<boolean>) {
       discountType: undefined, discountValue: 0, sellingPriceForeign: 0,
       customers: [],
       quantity: 0,
+      productImage: '', // Initialize productImage
+      imageId: undefined, // Initialize imageId
     });
     if (isMobile.value) nextTick(() => scrollToItem(items.value.length - 1));
   };

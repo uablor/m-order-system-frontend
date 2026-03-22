@@ -44,5 +44,8 @@
     "updateFailed": "Failed to update profile",
     "saving": "Saving...",
     "statusUpdated": "Status updated successfully!"
+  },
+  "pagination": {
+    "total": "Showing {start} to {end} of {total} entries"
   }
 }

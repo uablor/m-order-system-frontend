@@ -11,6 +11,24 @@
 
    
 
+    <!-- Status Tabs - Above Summary -->
+    <a-card :bordered="false" class="status-tabs-card mb-4">
+      <a-tabs v-model:activeKey="activeStatusTab" class="payment-status-tabs" @change="onStatusTabChange">
+        <a-tab-pane :key="'all'" :tab="$t('merchant.payment.tabAll')">
+          <!-- All payments content will be shown below -->
+        </a-tab-pane>
+        <a-tab-pane :key="'PENDING'" :tab="$t('merchant.payment.tabPending')">
+          <!-- Pending payments content will be shown below -->
+        </a-tab-pane>
+        <a-tab-pane :key="'VERIFIED'" :tab="$t('merchant.payment.tabVerified')">
+          <!-- Verified payments content will be shown below -->
+        </a-tab-pane>
+        <a-tab-pane :key="'REJECTED'" :tab="$t('merchant.payment.tabRejected')">
+          <!-- Rejected payments content will be shown below -->
+        </a-tab-pane>
+      </a-tabs>
+    </a-card>
+
     <!-- Financial Summary: 4-grid layout -->
     <!-- <div class="page-header" style="margin-top: 24px;">
       <div class="title-block">
@@ -107,16 +125,6 @@
           :placeholder="$t('merchant.payment.endDate')"
           value-format="YYYY-MM-DD"
         />
-        <a-select
-          v-model:value="filters.status"
-          allow-clear
-          class="filter-select"
-          :placeholder="$t('merchant.payment.statusFilter')"
-        >
-          <a-select-option value="PENDING">{{ $t('merchant.payment.statusPending') }}</a-select-option>
-          <a-select-option value="VERIFIED">{{ $t('merchant.payment.statusVerified') }}</a-select-option>
-          <a-select-option value="REJECTED">{{ $t('merchant.payment.statusRejected') }}</a-select-option>
-        </a-select>
         <a-button type="primary" @click="applyFilters"><SearchOutlined /> {{ $t('common.search') }}</a-button>
         <a-button @click="resetFilters">{{ $t('common.reset') }}</a-button>
       </div>
@@ -398,6 +406,9 @@ const currentPage = ref(1);
 const pageSize = ref(10);
 const showFilters = ref(false);
 
+// Status tab state
+const activeStatusTab = ref('all');
+
 // Financial Summary computed properties
 const allCurrencies = computed(() =>
   (dashboard.value?.priceCurrencySummary ?? []).filter((c) => c?.baseCurrency || c?.targetCurrency)
@@ -545,11 +556,26 @@ const fetchPayments = async () => {
 
 const triggerSearch = () => { currentPage.value = 1; fetchPayments(); };
 const applyFilters = () => { currentPage.value = 1; fetchPayments(); };
+
+// Status tab change handler
+const onStatusTabChange = (key: string) => {
+  activeStatusTab.value = key;
+  // Update filters based on selected tab
+  if (key === 'all') {
+    filters.status = undefined;
+  } else {
+    filters.status = key as 'PENDING' | 'VERIFIED' | 'REJECTED';
+  }
+  currentPage.value = 1;
+  fetchPayments();
+};
+
 const resetFilters = () => {
   filters.search = '';
   filters.status = undefined;
   filters.startDate = null;
   filters.endDate = null;
+  activeStatusTab.value = 'all';
   currentPage.value = 1;
   fetchPayments();
 };
@@ -714,6 +740,29 @@ onUnmounted(() => {
 
 <style scoped>
 .mb-4 { margin-bottom: 16px; }
+
+/* ===== Status Tabs ===== */
+.status-tabs-card {
+  background: #f8fafc;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.status-tabs-card :deep(.ant-card-body) {
+  padding: 0 16px 16px;
+}
+.payment-status-tabs :deep(.ant-tabs-nav) {
+  margin-bottom: 0;
+}
+.payment-status-tabs :deep(.ant-tabs-tab) {
+  padding: 12px 0;
+  font-weight: 500;
+}
+.payment-status-tabs :deep(.ant-tabs-ink-bar) {
+  background: #1677ff;
+}
+.payment-status-tabs :deep(.ant-tabs-tab-active .ant-tabs-tab-btn) {
+  color: #1677ff;
+}
 
 /* ===== Currency Grid Layout ===== */
 .currency-grid {

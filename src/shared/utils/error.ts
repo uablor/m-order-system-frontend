@@ -28,7 +28,12 @@ export function handleApiError(error: unknown, t: (key: string) => string): void
           message.error(t('error.notFound'));
           break;
         case 500:
-          message.error(t('error.server'));
+          // Check for specific exchangeRateBuy relation error
+          if (errorMessage.includes('exchangeRateBuy') && errorMessage.includes('Relation with property path')) {
+            message.error('Database configuration error: Exchange rate relation not found. Please contact administrator.');
+          } else {
+            message.error(t('error.server'));
+          }
           break;
         default:
           message.error(errorMessage);

@@ -1,9 +1,18 @@
 import { ApiClient } from '@/infrastructure/apis/api';
 import { API_ENDPOINTS } from '@/shared/constants/api-endpoints';
 import type { CreateArrivalDto, CreateMultipleArrivalsDto, ArrivalUpdateDto, ArrivalListQueryDto, ArrivalItemListQueryDto, ArrivalItemUpdateDto } from '@/application/dto/arrival.dto';
-import type { Arrival, ArrivalItem } from '@/domain/entities/user.entity';
 import type { BackendPaginatedResponse } from '@/shared/types/backend-response.types';
 import { extractSingleResult } from '@/shared/types/backend-response.types';
+import type { Arrival, ArrivalItem } from '@/domain/entities/user.entity';
+
+export interface ArrivalQueryDto {
+  page?: number;
+  limit?: number;
+  merchantId?: number;
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+}
 
 export class ArrivalRepository {
   private apiClient: ApiClient;

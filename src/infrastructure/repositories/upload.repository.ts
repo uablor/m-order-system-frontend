@@ -68,3 +68,10 @@ export async function uploadFilesForMerchant(
   if (Array.isArray(data)) return data;
   return [];
 }
+
+/**
+ * Delete uploaded file by ID (requires authentication)
+ */
+export async function deleteFile(fileId: number): Promise<void> {
+  await api.delete(`${API_ENDPOINTS.UPLOAD.DELETE_FILE_V2}/${fileId}`);
+}

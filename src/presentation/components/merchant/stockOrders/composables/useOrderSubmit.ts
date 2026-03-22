@@ -215,6 +215,13 @@ export function useOrderSubmit(
         })),
       };
 
+      console.log('🚀 Submitting order payload:', JSON.stringify(payload, null, 2));
+      console.log('📸 Items with imageId:', expandedItems.map(item => ({ 
+        productName: item.productName, 
+        imageId: item.imageId,
+        hasImage: !!item.imageId 
+      })));
+
       await orderRepository.createFull(payload);
       message.success(t('merchant.orders.toast.createSuccess'));
       clearAllErrors();

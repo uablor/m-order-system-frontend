@@ -315,7 +315,7 @@ defineExpose({ open, close });
   border-radius: 14px;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.modal-title { font-size: 18px; font-weight: 700; line-height: 1.25; }
+.modal-title { font-size: 18px; font-weight: 700; line-height: 1.25; color: white; }
 .modal-subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
 
 /* Forms grid */

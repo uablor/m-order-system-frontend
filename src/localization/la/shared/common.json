@@ -44,5 +44,8 @@
     "updateFailed": "ອັບເດດໂປຣໄຟລ໌ລົ້ມເຫລວ",
     "saving": "ກຳລັງບັນທຶກ...",
     "statusUpdated": "ອັບເດດສະຖານະສຳເລັດ!"
+  },
+  "pagination": {
+    "total": "ສະແດງ {start} ຫາ {end} ຈາກທັງໝົດ {total} ລາຍການ"
   }
 }

@@ -11,11 +11,11 @@
         <!-- Notification tab: Filter + Create Noti (เหมือน History) -->
         <template v-if="activeTab === 'notification'">
           <a-button
-            v-if="arrivalListShowFilterToggle"
+            v-if="arrivalShowFilterToggle"
             type="default"
             class="filter-toggle-btn"
-            :class="{ active: arrivalListShowFilters }"
-            @click="toggleArrivalListFilters"
+            :class="{ active: arrivalShowFilters }"
+            @click="showFilters = !showFilters"
           >
             <FilterOutlined />
           </a-button>
@@ -50,12 +50,162 @@
     <a-card :bordered="false" class="tabs-card mb-4">
       <a-tabs v-model:activeKey="activeTab" class="notification-tabs">
         <a-tab-pane :key="'notification'" :tab="$t('merchant.notifications.tabNotification')">
-          <ArrivalListContent
-            ref="arrivalListRef"
-            embedded
-            :notification-filter="false"
-            :controls-in-parent="true"
-          />
+          <!-- Arrival Table in Notification Tab -->
+          <div class="notification-arrival-content">
+            <!-- Filter Panel -->
+            <Transition name="filter-slide">
+              <a-card
+                v-if="!showFilterToggle || showFilters"
+                :bordered="false"
+                class="filter-card mb-4"
+              >
+                <div class="filter-bar">
+                  <!-- Customer Name Filter -->
+                  <a-select
+                    v-model:value="arrivalFilters.customerId"
+                    allow-clear
+                    show-search
+                    option-filter-prop="label"
+                    class="filter-select"
+                    :placeholder="$t('merchant.arrivals.customerNameFilterShort')"
+                    :loading="arrivalLoadingCustomers"
+                    :filter-option="false"
+                    @search="onCustomerSearch"
+                    @change="arrivalOnFilterChange"
+                  >
+                    <a-select-option
+                      v-for="customer in customerOptions"
+                      :key="customer.id"
+                      :value="customer.id"
+                      :label="customer.name"
+                    >
+                      {{ customer.name }}
+                    </a-select-option>
+                  </a-select>
+                  
+                  <!-- Create Notification Button -->
+                  <a-button 
+                    type="primary" 
+                    :disabled="selectedArrivalIds.size === 0"
+                    :loading="createNotiSubmitting"
+                    @click="openCreateNotiConfirm"
+                    class="create-noti-btn"
+                  >
+                    {{ $t('merchant.arrivals.createNoti') }} ({{ selectedArrivalIds.size }})
+                  </a-button>
+                </div>
+              </a-card>
+            </Transition>
+
+            <!-- Arrival Table -->
+            <a-card v-if="!arrivalUseMobileLayout" :bordered="false" class="panel-card" :class="{ 'tablet-layout': isTabletLayout }">
+              <a-table
+                :columns="arrivalColumns"
+                :data-source="arrivals"
+                :pagination="arrivalPaginationConfig"
+                :row-selection="{
+                  selectedRowKeys: Array.from(selectedArrivalIds),
+                  onChange: (selectedKeys: (string | number)[]) => {
+                    selectedArrivalIds.clear();
+                    selectedKeys.forEach(key => selectedArrivalIds.add(key as number));
+                  },
+                  getCheckboxProps: () => ({
+                    disabled: false,
+                  }),
+                }"
+                row-key="id"
+                size="middle"
+                :loading="arrivalLoading"
+                :scroll="{ x: 1700 }"
+                @change="arrivalHandleTableChange"
+              />
+            </a-card>
+
+            <!-- Mobile Arrival Card List -->
+            <div v-else class="arrivals-mobile">
+              <a-spin :spinning="arrivalLoading">
+                <a-empty v-if="arrivals.length === 0 && !arrivalLoading" :description="$t('merchant.arrivals.noArrivals')" />
+
+                <a-collapse accordion ghost class="arrivals-collapse">
+                  <template #expandIcon="{ isActive }">
+                    <DownOutlined class="expand-icon" :class="{ rotated: isActive }" />
+                  </template>
+
+                  <a-collapse-panel v-for="arrival in arrivals" :key="arrival.id" class="arrival-panel">
+                    <template #header>
+                      <div class="card-row">
+                        <div class="arrival-info">
+                          <div class="arrival-name">{{ arrival.order?.orderCode || '-' }}</div>
+                          <div class="arrival-date">{{ formatDateTime(arrival.arrivedDate + ' ' + arrival.arrivedTime) }}</div>
+                        </div>
+                        <div class="selection-side">
+                          <a-checkbox 
+                            :checked="selectedArrivalIds.has(arrival.id)"
+                            @change="(e: any) => {
+                              if (e.target.checked) {
+                                selectedArrivalIds.add(arrival.id);
+                              } else {
+                                selectedArrivalIds.delete(arrival.id);
+                              }
+                            }"
+                          />
+                        </div>
+                      </div>
+                    </template>
+
+                    <div class="card-detail">
+                      <div class="detail-row">
+                        <span class="detail-label">{{ $t('merchant.arrivalDetail.tableVariant') }}</span>
+                        <span class="detail-val">
+                          {{ arrival.arrivalItems?.map(item => item.orderItem?.variant || '-').join(', ') || '-' }}
+                        </span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">{{ $t('merchant.arrivalDetail.tableQuantity') }}</span>
+                        <span class="detail-val">
+                          {{ arrival.arrivalItems?.reduce((sum, item) => sum + item.arrivedQuantity, 0) || 0 }}
+                        </span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">{{ $t('merchant.arrivalDetail.tableCondition') }}</span>
+                        <span class="detail-val">
+                          {{ arrival.arrivalItems?.map(item => item.condition || '-').join(', ') || '-' }}
+                        </span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">{{ $t('merchant.arrivalDetail.tablePurchasePrice') }}</span>
+                        <span class="detail-val">
+                          {{ arrival.arrivalItems?.map(item => Number(item.orderItem?.purchasePrice) || 0).filter(p => p > 0).join(', ') || '-' }}
+                        </span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">{{ $t('merchant.arrivalDetail.tableSellingPrice') }}</span>
+                        <span class="detail-val">
+                          {{ arrival.arrivalItems?.map(item => Number(item.orderItem?.sellingPriceForeign) || 0).filter(p => p > 0).join(', ') || '-' }}
+                        </span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">{{ $t('merchant.arrivalDetail.tableProfit') }}</span>
+                        <span class="detail-val">
+                          {{ arrival.arrivalItems?.reduce((sum, item) => sum + (Number(item.orderItem?.profit) || 0), 0).toLocaleString() || '0' }}
+                        </span>
+                      </div>
+                    </div>
+                  </a-collapse-panel>
+                </a-collapse>
+
+                <div v-if="arrivals.length > 0" class="pagination-row">
+                  <a-pagination
+                    v-model:current="currentPage"
+                    v-model:pageSize="pageSize"
+                    :total="total"
+                    simple
+                    @change="arrivalOnPageChange"
+                  />
+                </div>
+              </a-spin>
+            </div>
+          </div>
         </a-tab-pane>
         <a-tab-pane :key="'history'" :tab="$t('merchant.notifications.tabHistory')">
           <!-- History tab content: notification table -->
@@ -63,13 +213,13 @@
     <!-- Filter Panel: Search + filters (filter ทำงานอัตโนมัติเมื่อเลือกค่า) -->
     <Transition name="filter-slide">
       <a-card
-        v-if="!showFilterToggle || showFilters"
+        v-if="!historyUseMobileLayout || showFilters"
         :bordered="false"
         class="filter-card mb-4"
       >
         <div class="filter-bar">
           <a-input
-            v-model:value="filters.search"
+            v-model:value="historyFilters.search"
             allow-clear
             class="search-input"
             :placeholder="$t('merchant.notifications.searchPlaceholder')"
@@ -80,7 +230,7 @@
           </a-input>
           <!-- Notification Type -->
         <a-select
-          v-model:value="filters.notificationType"
+          v-model:value="historyFilters.notificationType"
           allow-clear
           class="filter-select"
           :placeholder="$t('merchant.notifications.typeFilter')"
@@ -93,7 +243,7 @@
 
         <!-- Status -->
         <a-select
-          v-model:value="filters.status"
+          v-model:value="historyFilters.status"
           allow-clear
           class="filter-select"
           :placeholder="$t('merchant.notifications.statusFilter')"
@@ -105,7 +255,7 @@
 
         <!-- Start Date -->
         <a-date-picker
-          v-model:value="startDate"
+          v-model:value="historyStartDate"
           class="filter-date-single"
           :placeholder="$t('merchant.notifications.startDate')"
           popup-class-name="single-panel-picker"
@@ -114,7 +264,7 @@
 
         <!-- End Date -->
         <a-date-picker
-          v-model:value="endDate"
+          v-model:value="historyEndDate"
           class="filter-date-single"
           :placeholder="$t('merchant.notifications.endDate')"
           popup-class-name="single-panel-picker"
@@ -127,20 +277,20 @@
     </Transition>
 
     <!-- Desktop Table -->
-    <a-card v-if="!useMobileLayout" :bordered="false" class="panel-card" :class="{ 'tablet-layout': isTabletLayout }">
+    <a-card v-if="!historyUseMobileLayout" :bordered="false" class="panel-card" :class="{ 'tablet-layout': isTabletLayout }">
       <a-table
-        :columns="columns"
-        :data-source="notifications"
-        :pagination="paginationConfig"
+        :columns="historyColumns"
+        :data-source="historyNotifications"
+        :pagination="historyPaginationConfig"
         row-key="id"
         size="middle"
-        :loading="loading"
+        :loading="notificationLoading"
         :scroll="{ x: 1700 }"
         @change="handleTableChange"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'index'">
-            {{ (currentPage - 1) * pageSize + notifications.indexOf(record) + 1 }}
+            {{ (historyCurrentPage - 1) * historyPageSize + historyNotifications.indexOf(record) + 1 }}
           </template>
           <template v-else-if="column.key === 'notificationType'">
             <a-tag :color="typeColor(record.notificationType)" class="pill-tag">
@@ -195,7 +345,7 @@
             <span v-else>—</span>
           </template>
           <template v-else-if="column.key === 'sentAt'">
-            {{ record.sentAt ? formatDateTime(record.sentAt) : '—' }}
+            {{ record.sentAt ? historyFormatDateTime(record.sentAt) : '—' }}
           </template>
           <template v-else-if="column.key === 'actions'">
             <div class="flex items-center justify-end gap-2">
@@ -235,15 +385,15 @@
 
     <!-- Mobile Card List -->
     <div v-else class="notifications-mobile">
-      <a-spin :spinning="loading">
-        <a-empty v-if="notifications.length === 0 && !loading" :description="$t('merchant.notifications.noNotifications')" />
+      <a-spin :spinning="notificationLoading">
+        <a-empty v-if="historyNotifications.length === 0 && !notificationLoading" :description="$t('merchant.notifications.noNotifications')" />
 
         <a-collapse accordion ghost class="notifications-collapse">
           <template #expandIcon="{ isActive }">
             <DownOutlined class="expand-icon" :class="{ rotated: isActive }" />
           </template>
 
-          <a-collapse-panel v-for="notif in notifications" :key="notif.id" class="notif-panel">
+          <a-collapse-panel v-for="notif in historyNotifications" :key="notif.id" class="notif-panel">
             <template #header>
               <div class="card-row">
                 <div class="notif-avatar-wrap">
@@ -261,7 +411,7 @@
                     {{ notif.customer?.contactFacebook || notif.recipientContact }}
                   </a>
                   <div v-else class="notif-name">{{ notif.recipientContact }}</div>
-                  <div class="notif-date">{{ notif.sentAt ? formatDateTime(notif.sentAt) : '—' }}</div>
+                  <div class="notif-date">{{ notif.sentAt ? historyFormatDateTime(notif.sentAt) : '—' }}</div>
                 </div>
                 <div class="status-side">
                   <a-tag :color="statusColor(notif.status)" class="status-tag">
@@ -329,7 +479,7 @@
               </div>
               <div class="detail-row">
                 <span class="detail-label">{{ $t('merchant.notifications.colSentAt') }}</span>
-                <span class="detail-val">{{ notif.sentAt ? formatDateTime(notif.sentAt) : '—' }}</span>
+                <span class="detail-val">{{ notif.sentAt ? historyFormatDateTime(notif.sentAt) : '—' }}</span>
               </div>
               <div class="detail-row border-none pt-2">
                 <a-popconfirm :title="$t('merchant.notifications.confirmDelete')" @confirm="handleDelete(notif.id)">
@@ -342,11 +492,11 @@
           </a-collapse-panel>
         </a-collapse>
 
-        <div v-if="notifications.length > 0" class="pagination-row">
+        <div v-if="historyNotifications.length > 0" class="pagination-row">
           <a-pagination
-            v-model:current="currentPage"
-            v-model:pageSize="pageSize"
-            :total="total"
+            v-model:current="historyCurrentPage"
+            v-model:pageSize="historyPageSize"
+            :total="historyTotal"
             simple
             @change="onPageChange"
           />
@@ -447,6 +597,29 @@
         </div>
       </div>
     </a-modal>
+
+    <!-- Create Notification Language Selection Modal -->
+    <a-modal
+      v-model:open="showCreateNotiModal"
+      :title="$t('merchant.notifications.whatsappLangModalTitle')"
+      :footer="null"
+      @cancel="closeCreateNotiModal"
+    >
+      <div class="whatsapp-lang-modal">
+        <p class="whatsapp-lang-hint">{{ $t('merchant.notifications.whatsappLangModalHint') }}</p>
+        <div class="whatsapp-lang-buttons">
+          <a-button type="primary" size="large" class="lang-btn" @click="createNotifications()">
+            {{ $t('merchant.notifications.whatsappLangEn') }}
+          </a-button>
+          <a-button type="primary" size="large" class="lang-btn" @click="createNotifications()">
+            {{ $t('merchant.notifications.whatsappLangTh') }}
+          </a-button>
+          <a-button type="primary" size="large" class="lang-btn" @click="createNotifications()">
+            {{ $t('merchant.notifications.whatsappLangLa') }}
+          </a-button>
+        </div>
+      </div>
+    </a-modal>
   </div>
 </template>
 
@@ -461,54 +634,78 @@ import {
   WhatsAppOutlined,
   FacebookOutlined,
 } from '@ant-design/icons-vue';
-import ArrivalListContent from '../arrivals/ArrivalListContent.vue';
+import { useArrivalList } from './useArrivalList';
 import { useNotificationList } from './useNotificationList';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 
 const activeTab = ref<string>('notification');
-const arrivalListRef = ref<InstanceType<typeof ArrivalListContent> | null>(null);
 const { isMobile, isTablet } = useIsMobile();
 
-const arrivalListShowFilterToggle = computed(() => isMobile.value);
-const arrivalListShowFilters = computed(() => arrivalListRef.value?.showFilters ?? false);
-// Removed unused computed properties for commented header Create Notification button
+const showFilterToggle = computed(() => isMobile.value);
+const showFilters = ref(false);
 
-const toggleArrivalListFilters = () => {
-  arrivalListRef.value?.toggleShowFilters?.();
+// Use arrival composable for notification tab
+const arrivalData = useArrivalList();
+
+// Customer search handler
+const onCustomerSearch = (value: string) => {
+  arrivalData.fetchCustomers(value);
 };
 
 const {
-  loading,
-  notifications,
-  total,
+  loading: arrivalLoading,
+  arrivals,
+  showFilters: arrivalShowFilters,
+  filters: arrivalFilters,
+  showFilterToggle: arrivalShowFilterToggle,
+  useMobileLayout: arrivalUseMobileLayout,
+  columns: arrivalColumns,
+  paginationConfig: arrivalPaginationConfig,
+  formatDateTime,
+  onFilterChange: arrivalOnFilterChange,
+  handleTableChange: arrivalHandleTableChange,
   currentPage,
   pageSize,
-  showFilters,
-  startDate,
-  endDate,
-  filters,
-  showFilterToggle,
-  useMobileLayout,
-  columns,
-  paginationConfig,
+  total,
+  onPageChange: arrivalOnPageChange,
+  // Notification functionality
+  selectedArrivalIds,
+  createNotiSubmitting,
+  showCreateNotiModal,
+  customerOptions,
+  loadingCustomers: arrivalLoadingCustomers,
+  openCreateNotiConfirm,
+  closeCreateNotiModal,
+  createNotifications,
+} = arrivalData;
+
+// Use notification composable for history tab
+const notificationData = useNotificationList();
+const {
+  loading: notificationLoading,
+  notifications: historyNotifications,
+  total: historyTotal,
+  currentPage: historyCurrentPage,
+  pageSize: historyPageSize,
+  startDate: historyStartDate,
+  endDate: historyEndDate,
+  filters: historyFilters,
+  useMobileLayout: historyUseMobileLayout,
+  columns: historyColumns,
+  paginationConfig: historyPaginationConfig,
   typeColor,
   typeLabel,
   statusColor,
   statusLabel,
-  formatDateTime,
-  handleWhatsAppClick,
-  canOpenWhatsApp,
-  whatsappLangModalVisible,
-  closeWhatsAppLangModal,
-  sendWhatsAppWithLang,
-  handleFacebookClick,
-  canOpenFacebook,
+  formatDateTime: historyFormatDateTime,
   onFilterChange,
   onSearchChange,
   resetFilters,
   onPageChange,
   handleTableChange,
+  handleWhatsAppClick,
   handleDelete,
+  fetchNotifications: fetchHistoryNotifications,
   createModalVisible,
   createForm,
   createSubmitting,
@@ -520,8 +717,13 @@ const {
   canSubmitCreate,
   handleCreateSubmit,
   getCustomerOrderLabel,
-  fetchNotifications,
-} = useNotificationList();
+  whatsappLangModalVisible,
+  closeWhatsAppLangModal,
+  sendWhatsAppWithLang,
+  canOpenFacebook,
+  handleFacebookClick,
+  canOpenWhatsApp,
+} = notificationData;
 
 /* แสดง tablet layout adjustments สำหรับ Galaxy Tab S7 */
 const isTabletLayout = computed(() => isTablet.value);
@@ -532,7 +734,7 @@ watch(
   async (newTab) => {
     if (newTab === 'history') {
       // Auto refetch notifications when switching to history tab
-      await fetchNotifications();
+      await fetchHistoryNotifications();
     }
   }
 );
@@ -682,6 +884,7 @@ watch(
   }
   .filter-date-single { width: 100%; }
   .filter-select { width: 100%; }
+  .create-noti-btn { width: 100%; }
 }
 /* Tablet (Galaxy Tab S7 ~800px) */
 @media (min-width: 768px) and (max-width: 1024px) {
@@ -744,8 +947,11 @@ watch(
 
 /* ===== Mobile card list ===== */
 .notifications-mobile { display: flex; flex-direction: column; gap: 12px; }
+.arrivals-mobile { display: flex; flex-direction: column; gap: 12px; }
 .notifications-collapse { background: transparent !important; border: none !important; }
-.notifications-collapse :deep(.ant-collapse-item) {
+.arrivals-collapse { background: transparent !important; border: none !important; }
+.notifications-collapse :deep(.ant-collapse-item),
+.arrivals-collapse :deep(.ant-collapse-item) {
   background: #ffffff !important;
   border-radius: 16px !important;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.06) !important;
@@ -753,10 +959,12 @@ watch(
   overflow: hidden;
   margin-bottom: 10px !important;
 }
-.notifications-collapse :deep(.ant-collapse-header) {
+.notifications-collapse :deep(.ant-collapse-header),
+.arrivals-collapse :deep(.ant-collapse-header) {
   padding: 14px 14px !important; align-items: center !important;
 }
-.notifications-collapse :deep(.ant-collapse-content) {
+.notifications-collapse :deep(.ant-collapse-content),
+.arrivals-collapse :deep(.ant-collapse-content) {
   background: transparent !important;
   border-top: 1px solid rgba(148, 163, 184, 0.18) !important;
 }
@@ -767,6 +975,12 @@ watch(
 .expand-icon.rotated { transform: rotate(180deg); }
 .card-row { display: flex; align-items: center; gap: 12px; padding-right: 4px; }
 .status-side { flex-shrink: 0; margin-left: auto; }
+.selection-side { flex-shrink: 0; margin-left: auto; }
+.arrival-info { flex: 1; min-width: 0; }
+.arrival-name { font-weight: 600; color: #0f172a; font-size: 14px; }
+.arrival-date { font-size: 12px; color: #64748b; margin-top: 2px; }
+.arrival-panel { margin-bottom: 8px !important; }
+.pagination-row { padding: 16px; background: #f8fafc; border-radius: 12px; }
 .notif-avatar-wrap { position: relative; flex-shrink: 0; }
 .notif-avatar {
   background: rgba(22, 119, 255, 0.1); color: #1677ff;

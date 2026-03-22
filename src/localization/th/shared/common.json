@@ -44,5 +44,8 @@
     "updateFailed": "อัปเดตโปรไฟล์ล้มเหลว",
     "saving": "กำลังบันทึก...",
     "statusUpdated": "อัปเดตสถานะสำเร็จ!"
+  },
+  "pagination": {
+    "total": "แสดง {start} ถึง {end} จากทั้งหมด {total} รายการ"
   }
 }

@@ -3,7 +3,7 @@
   "customerManagement": "จัดการลูกค้า",
   "customerList": "รายการลูกค้า",
   "addCustomer": "เพิ่มลูกค้า",
-  "stockOrder": "สต๊อก / ออเดอร์",
+  "stockOrder": "สร้างออเดอร์",
   "manageStock": "จัดการสต๊อก",
   "createOrder": "สร้างออเดอร์",
   "orders": "ออเดอร์ทั้งหมด",

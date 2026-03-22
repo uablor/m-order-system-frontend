@@ -3,7 +3,7 @@
   "customerManagement": "Customer Management",
   "customerList": "Customer List",
   "addCustomer": "Add Customer",
-  "stockOrder": "Stock / Order",
+  "stockOrder": "Create Order",
   "manageStock": "Manage Stock",
   "createOrder": "Create Order",
   "orders": "Orders",

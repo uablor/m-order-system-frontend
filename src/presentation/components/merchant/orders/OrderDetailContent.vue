@@ -214,8 +214,7 @@
             <div 
               v-for="(item, idx) in order.orderItems" 
               :key="item.id" 
-              class="item-card clickable-card"
-              @click="selectOrderItem(item.id)"
+              class="item-card"
             >
               <!-- Image Section -->
               <div class="item-image-section">
@@ -235,50 +234,27 @@
               <div class="item-content">
                 <div class="item-header">
                   <span class="item-num">#{{ idx + 1 }}</span>
-                  <a-tooltip :title="item.productName" placement="top">
-                    <span class="item-name truncated-text">{{ item.productName }}</span>
-                  </a-tooltip>
-                  <span v-if="item.variant" class="item-variant">({{ item.variant }})</span>
+                  <span class="item-name truncated-text">{{ item.productName }}</span>
                 </div>
 
-                <div class="item-info">
-                <div class="info-row">
-                  <span class="info-label">{{ $t('merchant.orderDetail.quantity') }}:</span>
-                  <a-tooltip :title="item.quantity.toString()" placement="top">
-                    <span class="info-value truncated-text">{{ item.quantity }}</span>
-                  </a-tooltip>
+                <!-- Order Item Summary -->
+                <div class="item-summary">
+                  <div class="summary-row">
+                    <span class="summary-label">{{ $t('merchant.orderDetail.totalQuantity') }}:</span>
+                    <span class="summary-value">{{ item.quantity }}</span>
+                  </div>
+                  <div class="summary-row">
+                    <span class="summary-label">{{ $t('merchant.orderDetail.skus') }}:</span>
+                    <span class="summary-value">{{ (item as any).skus?.length || 0 }}</span>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Price Info -->
-              <div class="price-info">
-                <div class="price-row">
-                  <span class="price-label">{{ $t('merchant.orderDetail.purchasePrice') }}</span>
-                  <a-tooltip :title="`${formatNumber(item.purchasePrice)} ${item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || ''}`" placement="top">
-                    <span class="price-value truncated-text">{{ formatNumber(item.purchasePrice) }} {{ item.exchangeRateBuy?.baseCurrency || order.exchangeRateBuy?.baseCurrency || '' }}</span>
-                  </a-tooltip>
-                </div>
-                <div class="price-row">
-                  <span class="price-label">{{ $t('merchant.orderDetail.sellingPrice') }}</span>
-                  <a-tooltip :title="`${formatNumber(item.sellingPriceForeign)} ${item.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || ''}`" placement="top">
-                    <span class="price-value truncated-text">{{ formatNumber(item.sellingPriceForeign) }} {{ item.exchangeRateSell?.baseCurrency || order.exchangeRateSell?.baseCurrency || '' }}</span>
-                  </a-tooltip>
-                </div>
-              </div>
-
-              <!-- Profit -->
-              <div class="profit-section">
-                <span class="profit-label">{{ $t('merchant.orderDetail.profitLak') }}</span>
-                <a-tooltip :title="`${formatNumber(item.targetCurrencyProfit)} LAK`" placement="top">
-                  <span class="profit-value truncated-text" :class="{ 'profit-positive': Number(item.targetCurrencyProfit) >= 0, 'profit-negative': Number(item.targetCurrencyProfit) < 0 }">
-                    {{ formatNumber(item.targetCurrencyProfit) }} LAK
-                  </span>
-                </a-tooltip>
-              </div>
-
-                <div class="click-hint">
-                  <EyeOutlined />
-                  {{ $t('merchant.orderDetail.viewDetails') }}
+                <!-- View Detail Button -->
+                <div class="action-section">
+                  <a-button type="primary" size="small" @click="selectOrderItem(item.id)">
+                    <EyeOutlined />
+                    {{ $t('merchant.orderDetail.viewDetails') }}
+                  </a-button>
                 </div>
               </div>
             </div>
@@ -948,7 +924,7 @@ onMounted(() => {
   
   .item-card {
     height: auto;
-    min-height: 120px;
+    min-height: 180px;
     flex-direction: column;
   }
   
@@ -970,6 +946,28 @@ onMounted(() => {
   
   .item-info {
     width: 100%;
+  }
+  
+  .sku-section {
+    margin: 8px 0;
+    padding: 8px;
+  }
+  
+  .sku-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 6px 8px;
+  }
+  
+  .sku-details {
+    align-self: flex-end;
+    gap: 8px;
+  }
+  
+  .item-summary {
+    margin: 8px 0;
+    padding: 8px;
   }
   
   .price-info {
@@ -1085,34 +1083,28 @@ onMounted(() => {
 
 .item-card {
   background: #ffffff;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  transition: all 0.3s ease;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   display: flex;
-  flex-direction: row;
-  height: 160px;
+  flex-direction: column;
+  height: auto;
 }
 
 .item-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  border-color: #1d4ed8;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  transform: translateY(-2px);
 }
 
 .item-image-section {
-  width: 160px;
-  height: 100%;
-  background: #f1f5f9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
   position: relative;
-  border-right: 1px solid #e2e8f0;
-  flex-shrink: 0;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: #f8fafc;
 }
 
 .item-image {
@@ -1127,9 +1119,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #64748b;
-  font-size: 32px;
   background: #f1f5f9;
+  color: #94a3b8;
+  font-size: 48px;
 }
 
 .item-content {
@@ -1140,6 +1132,106 @@ onMounted(() => {
   background: #ffffff;
   flex: 1;
   overflow-y: auto;
+}
+
+.action-section {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* SKU Section Styles */
+.sku-section {
+  margin: 12px 0;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.sku-header {
+  margin-bottom: 8px;
+}
+
+.sku-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.sku-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sku-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.sku-variant {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  flex: 1;
+}
+
+.sku-details {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.sku-qty {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.sku-price {
+  font-size: 12px;
+  color: #059669;
+  font-weight: 600;
+}
+
+/* Item Summary Styles */
+.item-summary {
+  margin: 12px 0;
+  padding: 12px;
+  background: #f0f9ff;
+  border-radius: 8px;
+  border: 1px solid #dbeafe;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.summary-row:last-child {
+  margin-bottom: 0;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.summary-value {
+  font-size: 13px;
+  color: #1d4ed8;
+  font-weight: 700;
 }
 
 .item-header {

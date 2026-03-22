@@ -601,7 +601,7 @@ import { fmtNumber, numFormatter, numParser } from '@/shared/utils/format';
 import { useItemCalculations } from '../composables/useItemCalculations';
 import type { Customer } from '@/domain/entities/user.entity';
 import type { ItemForm } from '../types';
-import { uploadFilesForMerchant } from '@/infrastructure/repositories/upload.repository';
+import { uploadFilesForMerchant, deleteFile } from '@/infrastructure/repositories/upload.repository';
 
 const props = defineProps<{
   item: ItemForm;
@@ -635,7 +635,7 @@ const fmtNum = fmtNumber;
 const fmtRate = (val: number) => val.toLocaleString('en-US');
 
 const gutter = computed<[number, number]>(() => props.isMobile ? [12, 0] : [16, 0]);
-const halfCol = computed(() => props.isMobile ? { span: 12 } : { sm: 12, md: 8 });
+const halfCol = computed(() => props.isMobile ? { span: 24 } : { sm: 12, md: 8 });
 
 const isBuySameCurrency = computed(() => props.buyBaseCcy === props.buyTargetCcy);
 const isSellSameCurrency = computed(() => props.sellBaseCcy === props.sellTargetCcy);
@@ -824,34 +824,71 @@ const beforeImageUpload = (file: File) => {
 
 const handleImageUpload = async (options: any) => {
   const { file } = options;
+  console.log('Starting image upload for file:', file.name);
   imageUploading.value = true;
   
   try {
     // Upload image to server and get real imageId
     const uploadedImages = await uploadFilesForMerchant([file]);
+    console.log('Upload response:', uploadedImages);
+    
     const imageId = uploadedImages[0]?.id;
+    if (!imageId) {
+      throw new Error('No image ID returned from server');
+    }
     
     // Create a preview URL for the image
     const reader = new FileReader();
     reader.onload = (e) => {
       props.item.productImage = e.target?.result as string;
       props.item.imageId = imageId; // Use real imageId from server
-      console.log('Uploaded image with ID:', imageId);
+      console.log('✅ Uploaded image successfully:', {
+        imageId,
+        fileName: file.name,
+        previewUrl: e.target?.result
+      });
       message.success('Image uploaded successfully!');
+    };
+    reader.onerror = (error) => {
+      console.error('❌ FileReader error:', error);
+      message.error('Failed to read image file');
     };
     reader.readAsDataURL(file);
   } catch (error) {
-    console.error('Image upload error:', error);
-    message.error('Failed to upload image');
+    console.error('❌ Image upload error:', error);
+    message.error('Failed to upload image: ' + (error as Error).message);
   } finally {
     imageUploading.value = false;
   }
 };
 
-const removeImage = () => {
+const removeImage = async () => {
+  // If there's an imageId, delete the file from server
+  if (props.item.imageId) {
+    try {
+      console.log('🗑️ Attempting to delete image with ID:', props.item.imageId);
+      await deleteFile(props.item.imageId);
+      console.log('✅ Image deleted successfully from server:', props.item.imageId);
+      message.success('Image deleted successfully');
+    } catch (error: any) {
+      console.error('❌ Failed to delete image from server:', error);
+      
+      // Handle different error types
+      if (error.response?.status === 404) {
+        message.warning('Image not found on server, removed locally');
+      } else if (error.response?.status === 403) {
+        message.error('Permission denied: Cannot delete image');
+      } else {
+        message.warning('Image removed locally, but deletion from server failed');
+      }
+    }
+  } else {
+    message.info('No image to remove');
+  }
+  
+  // Always remove from local state
   props.item.productImage = '';
   props.item.imageId = undefined;
-  message.info('Image removed');
 };
 
 const triggerFileUpload = () => {
