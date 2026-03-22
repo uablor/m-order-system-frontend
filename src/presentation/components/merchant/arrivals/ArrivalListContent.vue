@@ -110,34 +110,13 @@
               <a-select-option value="ASC">{{ $t('merchant.arrivals.sortAsc') }}</a-select-option>
             </a-select>
             
-            <!-- Customer Name Filter -->
-            <a-select
-              v-model:value="filters.customerId"
-              allow-clear
-              show-search
-              option-filter-prop="label"
-              class="filter-select filter-select--customer"
-              :placeholder="$t('merchant.arrivals.customerNameFilterShort')"
-              :loading="loadingCustomers"
-              @change="onFilterChange"
-            >
-              <a-select-option
-                v-for="customer in customerOptions"
-                :key="customer.id"
-                :value="customer.id"
-                :label="customer.name"
-              >
-                {{ customer.name }}
-              </a-select-option>
-            </a-select>
-            
             <!-- Search Input -->
             <a-input
               v-model:value="filters.search"
               allow-clear
               class="filter-input filter-input--search"
               :placeholder="$t('merchant.arrivals.searchPlaceholder')"
-              @change="onFilterChange"
+              @change="onSearchChange"
             >
               <template #prefix><SearchOutlined /></template>
             </a-input>
@@ -326,9 +305,9 @@ import {
 } from '@ant-design/icons-vue';
 import { message } from 'ant-design-vue';
 import { arrivalRepository } from '@/infrastructure/repositories/arrival.repository';
-import { orderRepository } from '@/infrastructure/repositories/order.repository';
 import { notificationRepository, type CreateNotificationDto, type CreateNotificationMultipleResponseItem } from '@/infrastructure/repositories/notification.repository';
-import type { Arrival, Order } from '@/domain/entities/user.entity';
+import { dashboardRepository } from '@/infrastructure/repositories/dashboard.repository';
+import type { Arrival } from '@/domain/entities/user.entity';
 import type { ArrivalListQueryDto } from '@/application/dto/arrival.dto';
 import { useAuthStore } from '@/store/auth.store';
 import { storeToRefs } from 'pinia';
@@ -359,29 +338,24 @@ const filters = reactive<{
   search: string;
   searchField: string;
   orderId: number | undefined;
-  customerId: number | undefined;
   sort: 'ASC' | 'DESC' | undefined;
-  customerName: string;
+  customerId: number | undefined;
 }>({
   search: '',
   searchField: 'orderCode',
   orderId: undefined,
-  customerId: undefined,
   sort: undefined,
-  customerName: '',
+  customerId: undefined,
 });
 
-const orderOptions = ref<Order[]>([]);
-const orderOptionsForFilter = ref<Order[]>([]);
-const loadingOrders = ref(false);
-
-// Customer filter variables (restored for customer select filter)
-const customerOptions = ref<{ id: number; name: string }[]>([]);
-const loadingCustomers = ref(false);
 const selectedArrivalIds = ref<Set<number>>(new Set());
 const createNotiConfirmVisible = ref(false);
 const createNotiSubmitting = ref(false);
 const createNotiLanguage = ref<'en' | 'th' | 'la'>('en');
+
+// Customer filter related
+const loadingCustomers = ref(false);
+const customerOptions = ref<Array<{ id: number; name: string }>>([]);
 
 const columns = computed<TableColumnsType>(() => [
   { title: '#', key: 'index', width: 60 },
@@ -437,16 +411,21 @@ const onFilterChange = () => {
   fetchArrivals();
 };
 
-/* ใช้เมื่อ uncomment customer name filter input
-let customerNameTimer: ReturnType<typeof setTimeout> | undefined;
-const onCustomerNameChange = () => {
-  clearTimeout(customerNameTimer);
-  customerNameTimer = setTimeout(() => {
+// Search change handler with delay
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+const onSearchChange = () => {
+  clearTimeout(searchTimer);
+  if (!filters.search) {
+    currentPage.value = 1;
+    fetchArrivals();
+    return;
+  }
+  searchTimer = setTimeout(() => {
     currentPage.value = 1;
     fetchArrivals();
   }, 450);
 };
-*/
+
 
 const buildQuery = (): ArrivalListQueryDto => {
   const query: ArrivalListQueryDto = {
@@ -458,8 +437,6 @@ const buildQuery = (): ArrivalListQueryDto => {
   if (filters.searchField) query.searchField = filters.searchField;
   if (filters.orderId) query.orderId = filters.orderId;
   if (filters.customerId) query.customerId = filters.customerId;
-  if (filters.sort) query.sort = filters.sort;
-  if (filters.customerName?.trim()) query.customerName = filters.customerName.trim();
   if (startDate.value) query.startDate = startDate.value.format('YYYY-MM-DD');
   if (endDate.value) query.endDate = endDate.value.format('YYYY-MM-DD');
   if (props.notificationFilter !== undefined) query.notification = props.notificationFilter;
@@ -479,54 +456,6 @@ const fetchArrivals = async () => {
   }
 };
 
-const fetchOrders = async () => {
-  loadingOrders.value = true;
-  try {
-    const [listRes, filterRes] = await Promise.all([
-      orderRepository.getListByMerchant({
-        limit: 200,
-        merchantId: authPayload.value?.merchantId,
-        arrivalStatus: 'NOT_ARRIVED',
-      }),
-      orderRepository.getListByMerchant({
-        limit: 500,
-        merchantId: authPayload.value?.merchantId,
-      }),
-    ]);
-    orderOptions.value = listRes.results ?? [];
-    orderOptionsForFilter.value = filterRes.results ?? [];
-  } catch (err) {
-    handleApiError(err, t);
-  } finally {
-    loadingOrders.value = false;
-    // Load customers after orders are available
-    fetchCustomers();
-  }
-};
-
-const fetchCustomers = async () => {
-  loadingCustomers.value = true;
-  try {
-    // Extract unique customers from existing orders
-    const uniqueCustomers = new Map<number, string>();
-    for (const order of orderOptionsForFilter.value) {
-      const customerOrders = order.customerOrders ?? [];
-      for (const customerOrder of customerOrders) {
-        if (customerOrder.customer && customerOrder.customer.id && customerOrder.customer.customerName) {
-          uniqueCustomers.set(customerOrder.customer.id, customerOrder.customer.customerName);
-        }
-      }
-    }
-    customerOptions.value = Array.from(uniqueCustomers.entries())
-      .map(([id, name]) => ({ id, name }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  } catch (err) {
-    handleApiError(err, t);
-  } finally {
-    loadingCustomers.value = false;
-  }
-};
-
 const onPageChange = (page: number, size: number) => {
   currentPage.value = page;
   pageSize.value = size;
@@ -535,6 +464,23 @@ const onPageChange = (page: number, size: number) => {
 
 const viewDetail = (id: number) => {
   router.push(`/merchant/arrivals/${id}`);
+};
+
+const fetchCustomers = async () => {
+  loadingCustomers.value = true;
+  try {
+    const res = await dashboardRepository.getTopCustomers();
+    // Handle both single object and array response
+    const result = Array.isArray(res.results) ? res.results[0] : res.results;
+    customerOptions.value = result?.customers?.map((c: any) => ({
+      id: c.customerId,
+      name: c.customerName,
+    })) ?? [];
+  } catch (err) {
+    handleApiError(err, t);
+  } finally {
+    loadingCustomers.value = false;
+  }
 };
 
 const buildNotisFromSelectedArrivals = (): CreateNotificationDto[] => {
@@ -642,15 +588,15 @@ defineExpose({
 
 onMounted(() => {
   fetchArrivals();
-  fetchOrders();
-  fetchCustomers();
+  // Fetch customers for the filter if embedded
+  if (props.embedded) {
+    fetchCustomers();
+  }
 });
 
-// โหลด orders และ customers สำหรับ filter
+// โหลด orders สำหรับ filter
 watch(showFilters, (visible) => {
   if (visible) {
-    if (orderOptions.value.length === 0) fetchOrders();
-    if (customerOptions.value.length === 0) fetchCustomers();
   }
 });
 </script>

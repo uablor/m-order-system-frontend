@@ -7,10 +7,14 @@ import { useI18n } from 'vue-i18n';
 import type { TablePaginationConfig } from 'ant-design-vue';
 import type { TableColumnsType } from 'ant-design-vue';
 import type { Dayjs } from 'dayjs';
-import { arrivalRepository } from '@/infrastructure/repositories/arrival.repository';
+import { customerOrderRepository } from '@/infrastructure/repositories/customer-order.repository';
 import { customerRepository } from '@/infrastructure/repositories/customer.repository';
-import type { Arrival, ArrivalItem } from '@/domain/entities/user.entity';
+import { notificationRepository } from '@/infrastructure/repositories/notification.repository';
+import { useWhatsApp } from '@/shared/composables/useWhatsApp';
+import { message } from 'ant-design-vue';
+import type { CustomerOrder, CustomerOrderItem } from '@/infrastructure/repositories/customer-order.repository';
 import type { CustomerListQueryDto } from '@/application/dto/customer.dto';
+import type { CreateNotificationDto, CreateNotificationMultipleResponseItem } from '@/infrastructure/repositories/notification.repository';
 
 // Debounce utility function
 const debounce = <T extends (...args: any[]) => any>(func: T, delay: number) => {
@@ -21,7 +25,7 @@ const debounce = <T extends (...args: any[]) => any>(func: T, delay: number) => 
   };
 };
 
-export interface ArrivalQueryDto {
+export interface CustomerOrderQueryDto {
   page?: number;
   limit?: number;
   merchantId?: number;
@@ -29,6 +33,9 @@ export interface ArrivalQueryDto {
   startDate?: string;
   endDate?: string;
   customerId?: number;
+  orderCode?: string;
+  paymentStatus?: string;
+  notificationStatus?: string;
 }
 import { useAuthStore } from '@/store/auth.store';
 import { storeToRefs } from 'pinia';
@@ -36,7 +43,7 @@ import { useIsMobile } from '@/shared/composables/useIsMobile';
 import { formatDateTime } from '@/shared/utils/date.utils';
 import { handleApiError } from '@/shared/utils/error';
 
-export function useArrivalList() {
+export function useCustomerOrderList() {
   const { t } = useI18n();
   const { isMobile } = useIsMobile();
   const authStore = useAuthStore();
@@ -60,7 +67,7 @@ export function useArrivalList() {
   const useMobileLayout = computed(() => isMobile.value);
 
   const loading = ref(false);
-  const arrivals = ref<Arrival[]>([]);
+  const customerOrders = ref<CustomerOrder[]>([]);
   const total = ref(0);
   const currentPage = ref(1);
   const pageSize = ref(10);
@@ -76,7 +83,7 @@ export function useArrivalList() {
   });
 
   // Customer selection for notifications
-  const selectedArrivalIds = ref<Set<number>>(new Set());
+  const selectedCustomerOrderIds = ref<Set<number>>(new Set());
   const createNotiSubmitting = ref(false);
   const showCreateNotiModal = ref(false);
   const selectedLanguage = ref<'en' | 'th' | 'la'>('en');
@@ -110,27 +117,30 @@ export function useArrivalList() {
   }, 500); // 500ms delay
 
   // Build query for API
-  const buildQuery = (): ArrivalQueryDto => {
-    const q: ArrivalQueryDto = {
+  const buildQuery = (): CustomerOrderQueryDto => {
+    const q: CustomerOrderQueryDto = {
       page: currentPage.value,
       limit: pageSize.value,
-      merchantId: authPayload.value?.merchantId,
+      // notificationStatus: 'null', // Filter for orders where notification is null - removed since backend defaults to null
     };
 
     if (filters.search) q.search = filters.search;
     if (filters.customerId) q.customerId = filters.customerId;
     if (startDate.value) q.startDate = startDate.value.format('YYYY-MM-DD');
     if (endDate.value) q.endDate = endDate.value.format('YYYY-MM-DD');
+    
+    // Optional: explicitly set notificationStatus if needed
+    // q.notificationStatus = 'null'; // Uncomment to explicitly filter for null notifications
 
     return q;
   };
 
-  // Fetch arrivals from API
-  const fetchArrivals = async () => {
+  // Fetch customer orders from API
+  const fetchCustomerOrders = async () => {
     loading.value = true;
     try {
-      const res = await arrivalRepository.getListByMerchant(buildQuery());
-      arrivals.value = res.results ?? [];
+      const res = await customerOrderRepository.getList(buildQuery());
+      customerOrders.value = res.results ?? [];
       total.value = res.pagination?.total ?? 0;
     } catch (err) {
       handleApiError(err, t);
@@ -139,7 +149,7 @@ export function useArrivalList() {
     }
   };
 
-  // Table columns for arrival items
+  // Table columns for customer orders
   const columns = computed<TableColumnsType>(() => [
     {
       title: () => {
@@ -147,137 +157,57 @@ export function useArrivalList() {
         return '';
       },
       key: 'checkbox',
-      width: 50,
+      width: 20,
       align: 'center',
-      customRender: ({ record }: { record: Arrival }) => {
+      customRender: ({ record }: { record: CustomerOrder }) => {
         // Will be handled in template
         return record.id ? '' : '';
       },
     },
     {
-      title: t('merchant.arrivalDetail.tableAvatar'),
-      key: 'image',
-      width: 80,
-      align: 'center',
-      customRender: ({ record }: { record: Arrival }) => {
-        // Show images from arrival items
-        const images = record.arrivalItems?.map((item: ArrivalItem) => {
-          const publicUrl = item.publicUrl;
-          
-          if (publicUrl) {
-            return h('img', {
-              src: publicUrl,
-              alt: 'Product Image',
-              style: 'width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #f0f0f0; cursor: pointer;',
-              onClick: () => showImageModal(publicUrl)
-            });
-          } else {
-            return h('div', {
-              style: 'width: 40px; height: 40px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999; border: 1px solid #e8e8e8;'
-            }, 'No Img');
-          }
-        }) || [];
-
-        return h('div', {
-          style: 'display: flex; flex-direction: column; gap: 4px; align-items: center; padding: 4px 0;'
-        }, images);
-      },
-    },
-    {
       title: t('merchant.arrivalDetail.tableOrderCode'),
       key: 'orderCode',
-      width: 120,
+      width: 100,
       align: 'center',
-      customRender: ({ record }: { record: Arrival }) => record.order?.orderCode || '-',
+      customRender: ({ record }: { record: CustomerOrder }) => record.orderCode || '-',
     },
     {
-      title: t('merchant.arrivalDetail.tableVariant'),
-      key: 'variant',
-      width: 200,
+      title: t('merchant.arrivalDetail.tableCustomerName'),
+      key: 'customerName',
+      width: 60,
       align: 'left',
-      customRender: ({ record }: { record: Arrival }) => {
-        // Show variant text only (no images)
-        const variants = record.arrivalItems?.map((item: ArrivalItem) => {
-          const variant = item.variant || '-';
-          const arrivedQuantity = item.arrivedQuantity || 0;
-          
-          return h('div', {
-            style: 'margin-bottom: 4px; font-size: 13px;'
-          }, `${variant} (${arrivedQuantity})`);
-        }) || [];
-
-        return h('div', variants);
-      },
+      customRender: ({ record }: { record: CustomerOrder }) => record.customerName || '-',
     },
     {
       title: t('merchant.arrivalDetail.tableQuantity'),
       key: 'quantity',
       width: 80,
       align: 'center',
-      customRender: ({ record }: { record: Arrival }) => {
-        const totalQty = record.arrivalItems?.reduce((sum: number, item: ArrivalItem) => sum + item.arrivedQuantity, 0) || 0;
+      customRender: ({ record }: { record: CustomerOrder }) => {
+        const totalQty = record.customerOrderItems?.reduce((sum: number, item: CustomerOrderItem) => sum + item.quantity, 0) || 0;
         return totalQty;
       },
     },
     {
-      title: t('merchant.arrivalDetail.tableArrivedQuantity'),
-      key: 'arrivedQuantity',
-      width: 100,
-      align: 'center',
-      customRender: ({ record }: { record: Arrival }) => {
-        const totalArrived = record.arrivalItems?.reduce((sum, item) => sum + item.arrivedQuantity, 0) || 0;
-        return totalArrived;
-      },
-    },
-    {
-      title: t('merchant.arrivalDetail.tableCondition'),
-      key: 'condition',
-      width: 80,
-      align: 'center',
-      customRender: ({ record }: { record: Arrival }) => {
-        const conditions = record.arrivalItems?.map((item: ArrivalItem) => item.condition || '-').join(', ');
-        return conditions || '-';
-      },
-    },
-    {
-      title: t('merchant.arrivalDetail.tablePurchasePrice'),
-      key: 'purchasePrice',
-      width: 100,
-      align: 'center',
-      customRender: ({ record }: { record: Arrival }) => {
-        const prices = (record.arrivalItems || []).map((item: ArrivalItem) => Number(item.purchasePrice) || 0).filter((price: number) => price > 0);
-        return prices.length > 0 ? prices.join(', ') : '-';
-      },
-    },
-    {
       title: t('merchant.arrivalDetail.tableSellingPrice'),
-      key: 'sellingPriceForeign',
-      width: 100,
+      key: 'totalSellingAmount',
+      width: 120,
       align: 'center',
-      customRender: ({ record }: { record: Arrival }) => {
-        const prices = (record.arrivalItems || []).map((item: ArrivalItem) => Number(item.sellingPriceForeign) || 0).filter((price: number) => price > 0);
-        return prices.length > 0 ? prices.join(', ') : '-';
-      },
+      customRender: ({ record }: { record: CustomerOrder }) => record.totalSellingAmount || '0.00',
     },
     {
-      title: t('merchant.arrivalDetail.tableProfit'),
-      key: 'profit',
+      title: t('merchant.arrivalDetail.tablePaymentStatus'),
+      key: 'paymentStatus',
       width: 100,
       align: 'center',
-      customRender: ({ record }: { record: Arrival }) => {
-        const totalProfit = record.arrivalItems?.reduce((sum: number, item: ArrivalItem) => {
-          const profit = Number(item.profit) || 0;
-          return sum + profit;
-        }, 0) || 0;
-        return totalProfit.toLocaleString();
-      },
+      customRender: ({ record }: { record: CustomerOrder }) => record.paymentStatus || '-',
     },
     {
-      title: t('merchant.arrivalDetail.tableArrivedDate'),
-      key: 'arrivedDate',
-      width: 100,
+      title: t('merchant.arrivalDetail.tableCreatedDate'),
+      key: 'createdAt',
+      width: 120,
       align: 'center',
-      customRender: ({ record }: { record: Arrival }) => formatDateTime(record.arrivedDate + ' ' + record.arrivedTime),
+      customRender: ({ record }: { record: CustomerOrder }) => formatDateTime(record.createdAt),
     },
   ]);
 
@@ -295,7 +225,7 @@ export function useArrivalList() {
   // Filter change handler
   const onFilterChange = () => {
     currentPage.value = 1;
-    fetchArrivals();
+    fetchCustomerOrders();
   };
 
   // Search change handler
@@ -304,12 +234,12 @@ export function useArrivalList() {
     clearTimeout(searchTimer);
     if (!filters.search) {
       currentPage.value = 1;
-      fetchArrivals();
+      fetchCustomerOrders();
       return;
     }
     searchTimer = setTimeout(() => {
       currentPage.value = 1;
-      fetchArrivals();
+      fetchCustomerOrders();
     }, 450);
   };
 
@@ -319,21 +249,25 @@ export function useArrivalList() {
     startDate.value = null;
     endDate.value = null;
     currentPage.value = 1;
-    fetchArrivals();
+    fetchCustomerOrders();
   };
 
   // Page change handler
-  const onPageChange = (page: number, size: number) => {
+  const onPageChange = (page: number, newPageSize?: number) => {
     currentPage.value = page;
-    pageSize.value = size;
-    fetchArrivals();
+    if (newPageSize) pageSize.value = newPageSize;
+    fetchCustomerOrders();
   };
 
   // Table change handler
-  const handleTableChange = (pagination: TablePaginationConfig) => {
-    currentPage.value = pagination.current ?? 1;
-    pageSize.value = pagination.pageSize ?? 10;
-    fetchArrivals();
+  const handleTableChange = (
+    pagination: any,
+    filters: any,
+    sorter: any,
+  ) => {
+    currentPage.value = pagination.current;
+    pageSize.value = pagination.pageSize;
+    fetchCustomerOrders();
   };
 
   // Toggle filters
@@ -342,28 +276,28 @@ export function useArrivalList() {
   };
 
   // Checkbox selection functions
-  const toggleArrivalSelection = (arrivalId: number) => {
-    if (selectedArrivalIds.value.has(arrivalId)) {
-      selectedArrivalIds.value.delete(arrivalId);
+  const toggleArrivalSelection = (orderId: number) => {
+    if (selectedCustomerOrderIds.value.has(orderId)) {
+      selectedCustomerOrderIds.value.delete(orderId);
     } else {
-      selectedArrivalIds.value.add(arrivalId);
+      selectedCustomerOrderIds.value.add(orderId);
     }
   };
 
   const toggleSelectAll = () => {
-    if (selectedArrivalIds.value.size === arrivals.value.length) {
-      selectedArrivalIds.value.clear();
+    if (selectedCustomerOrderIds.value.size === customerOrders.value.length) {
+      selectedCustomerOrderIds.value.clear();
     } else {
-      selectedArrivalIds.value = new Set(arrivals.value.map(a => a.id));
+      selectedCustomerOrderIds.value = new Set(customerOrders.value.map(co => co.id));
     }
   };
 
-  const isAllSelected = computed(() => arrivals.value.length > 0 && selectedArrivalIds.value.size === arrivals.value.length);
-  const isIndeterminate = computed(() => selectedArrivalIds.value.size > 0 && selectedArrivalIds.value.size < arrivals.value.length);
+  const isAllSelected = computed(() => customerOrders.value.length > 0 && selectedCustomerOrderIds.value.size === customerOrders.value.length);
+  const isIndeterminate = computed(() => selectedCustomerOrderIds.value.size > 0 && selectedCustomerOrderIds.value.size < customerOrders.value.length);
 
   // Create notification functions
   const openCreateNotiConfirm = () => {
-    if (selectedArrivalIds.value.size === 0) return;
+    if (selectedCustomerOrderIds.value.size === 0) return;
     showCreateNotiModal.value = true;
   };
 
@@ -373,32 +307,104 @@ export function useArrivalList() {
   };
 
   const createNotifications = async () => {
-    if (selectedArrivalIds.value.size === 0) return;
+    if (selectedCustomerOrderIds.value.size === 0) return;
     
     createNotiSubmitting.value = true;
     try {
-      // TODO: Implement API call to create notifications
-      // For now, just simulate and close modal
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      selectedArrivalIds.value.clear();
-      closeCreateNotiModal();
-      // TODO: Show success message
+      // Map selected customer orders to customers for notification creation
+      const customerMap = new Map<number, { customerId: number; customerName: string; customerOrders: number[]; }>();
+      
+      // Group customer orders by customer
+      customerOrders.value.forEach(customerOrder => {
+        if (selectedCustomerOrderIds.value.has(customerOrder.id)) {
+          const customerId = customerOrder.customerId;
+          
+          if (customerId) {
+            if (!customerMap.has(customerId)) {
+              customerMap.set(customerId, {
+                customerId,
+                customerName: customerOrder.customerName,
+                customerOrders: [],
+              });
+            }
+            customerMap.get(customerId)!.customerOrders.push(customerOrder.id);
+          }
+        }
+      });
+
+      // Create notifications for each customer
+      const notifications: CreateNotificationDto[] = Array.from(customerMap.entries()).map(([customerId, customerData]) => ({
+        customerId,
+        customerOrderIds: customerData.customerOrders,
+      }));
+      
+      // If no notifications, show warning
+      if (notifications.length === 0) {
+        message.warning('No customer orders selected for notification creation');
+        createNotiSubmitting.value = false;
+        return;
+      }
+      
+      try {
+        // Call API to create notifications
+        const res = await notificationRepository.createMultiple({ 
+          notifications, 
+          language: selectedLanguage.value 
+        });
+        
+        if (res && res.length > 0) {
+          message.success('Notifications created successfully');
+          selectedCustomerOrderIds.value.clear();
+          closeCreateNotiModal();
+          
+          // Refetch customer orders to update the list
+          fetchCustomerOrders();
+          
+          // Open WhatsApp chats for each notification
+          if (res && res.length > 0) {
+            const { openWhatsAppChat } = useWhatsApp();
+            
+            res.forEach((notification: CreateNotificationMultipleResponseItem, index: number) => {
+              const customerName = notification.customer?.customerName || 'Customer';
+              const lang: 'en' | 'th' | 'la' = notification.language === 'th' || notification.language === 'la' 
+                ? notification.language 
+                : 'en';
+              
+              setTimeout(() => {
+                openWhatsAppChat({
+                  phone: notification.recipientContact || '',
+                  notificationLink: notification.notificationLink,
+                  template: {
+                    customerName,
+                    orderNumbers: notification.relatedOrders || undefined,
+                  },
+                  lang,
+                });
+              }, index * 1000); // Stagger WhatsApp opens
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to create notifications:', error);
+        message.error('Failed to create notifications');
+      } finally {
+        createNotiSubmitting.value = false;
+      }
     } catch (error) {
-      // TODO: Handle error
-    } finally {
+      console.error('Error in notification creation process:', error);
+      message.error('An error occurred while creating notifications');
       createNotiSubmitting.value = false;
     }
   };
 
-  // Initialize on mount
+  // Initialize data on mount
   onMounted(() => {
-    fetchArrivals();
-    fetchCustomers();
+    fetchCustomerOrders();
   });
 
   return {
     loading,
-    arrivals,
+    customerOrders,
     total,
     currentPage,
     pageSize,
@@ -418,16 +424,11 @@ export function useArrivalList() {
     handleTableChange,
     toggleShowFilters,
     // Notification functionality
-    selectedArrivalIds,
+    selectedCustomerOrderIds,
     createNotiSubmitting,
     showCreateNotiModal,
-    selectedLanguage,
     customerOptions,
     loadingCustomers,
-    toggleArrivalSelection,
-    toggleSelectAll,
-    isAllSelected,
-    isIndeterminate,
     openCreateNotiConfirm,
     closeCreateNotiModal,
     createNotifications,

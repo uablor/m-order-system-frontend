@@ -639,7 +639,24 @@
     "arrivedQty": "จำนวนที่มาถึง",
     "condition": "สภาพ",
     "itemNotes": "หมายเหตุ",
-    "updateSuccess": "อัปเดตการมาถึงสำเร็จ"
+    "updateSuccess": "อัปเดตการมาถึงสำเร็จ",
+    "table": {
+      "tableIndex": "#",
+      "tableAvatar": "รูปภาพ",
+      "tableOrderCode": "รหัสออเดอร์",
+      "tableCustomerName": "ชื่อลูกค้า",
+      "tableItems": "สินค้า",
+      "tableVariant": "รุ่น",
+      "tableQuantity": "จำนวน",
+      "tableArrivedQuantity": "จำนวนที่มาถึง",
+      "tableCondition": "สภาพ",
+      "tablePurchasePrice": "ราคาซื้อ",
+      "tableSellingPrice": "ราคาขาย",
+      "tableProfit": "กำไร",
+      "tableArrivedDate": "วันที่มาถึง",
+      "tablePaymentStatus": "สถานะการชำระเงิน",
+      "tableCreatedDate": "วันที่สร้าง"
+    }
   },
   "payment": {
     "breadcrumb": "การชำระเงิน",

@@ -639,7 +639,24 @@
     "arrivedQty": "ຈຳນວນທີ່ມາຮອດ",
     "condition": "ສະພາບ",
     "itemNotes": "ໝາຍເຫດ",
-    "updateSuccess": "ອັບເດດການມາຮອດສຳເລັດ"
+    "updateSuccess": "ອັບເດດການມາຮອດສຳເລັດ",
+    "table": {
+      "tableIndex": "#",
+      "tableAvatar": "ຮູບພາບ",
+      "tableOrderCode": "ລະຫັດອໍເດີ",
+      "tableCustomerName": "ຊື່ລູກຄ້າ",
+      "tableItems": "ສິນຄ້າ",
+      "tableVariant": "ລະດັບ",
+      "tableQuantity": "ຈຳນວນ",
+      "tableArrivedQuantity": "ຈຳນວນທີ່ມາຮອດ",
+      "tableCondition": "ສະພາບ",
+      "tablePurchasePrice": "ລາຄາຊື້",
+      "tableSellingPrice": "ລາຄາຂາຍ",
+      "tableProfit": "ກຳໄົາ",
+      "tableArrivedDate": "ວັນທີ່ມາຮອດ",
+      "tablePaymentStatus": "ສະຖານການເລົງ",
+      "tableCreatedDate": "ວັນທີ່ສ້າງ"
+    }
   },
   "payment": {
     "breadcrumb": "ການຊຳລະເງິນ",

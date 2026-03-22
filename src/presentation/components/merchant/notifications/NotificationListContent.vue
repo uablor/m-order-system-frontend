@@ -86,12 +86,12 @@
                   <!-- Create Notification Button -->
                   <a-button 
                     type="primary" 
-                    :disabled="selectedArrivalIds.size === 0"
+                    :disabled="selectedCustomerOrderIds.size === 0"
                     :loading="createNotiSubmitting"
                     @click="openCreateNotiConfirm"
                     class="create-noti-btn"
                   >
-                    {{ $t('merchant.arrivals.createNoti') }} ({{ selectedArrivalIds.size }})
+                    {{ $t('merchant.arrivals.createNoti') }} ({{ selectedCustomerOrderIds.size }})
                   </a-button>
                 </div>
               </a-card>
@@ -101,13 +101,13 @@
             <a-card v-if="!arrivalUseMobileLayout" :bordered="false" class="panel-card" :class="{ 'tablet-layout': isTabletLayout }">
               <a-table
                 :columns="arrivalColumns"
-                :data-source="arrivals"
+                :data-source="customerOrders"
                 :pagination="arrivalPaginationConfig"
                 :row-selection="{
-                  selectedRowKeys: Array.from(selectedArrivalIds),
+                  selectedRowKeys: Array.from(selectedCustomerOrderIds),
                   onChange: (selectedKeys: (string | number)[]) => {
-                    selectedArrivalIds.clear();
-                    selectedKeys.forEach(key => selectedArrivalIds.add(key as number));
+                    selectedCustomerOrderIds.clear();
+                    selectedKeys.forEach(key => selectedCustomerOrderIds.add(key as number));
                   },
                   getCheckboxProps: () => ({
                     disabled: false,
@@ -117,35 +117,35 @@
                 size="middle"
                 :loading="arrivalLoading"
                 :scroll="{ x: 1700 }"
-                @change="arrivalHandleTableChange"
+                @change="customerOrderData.handleTableChange"
               />
             </a-card>
 
             <!-- Mobile Arrival Card List -->
             <div v-else class="arrivals-mobile">
               <a-spin :spinning="arrivalLoading">
-                <a-empty v-if="arrivals.length === 0 && !arrivalLoading" :description="$t('merchant.arrivals.noArrivals')" />
+                <a-empty v-if="customerOrders.length === 0 && !arrivalLoading" :description="$t('merchant.arrivals.noArrivals')" />
 
                 <a-collapse accordion ghost class="arrivals-collapse">
                   <template #expandIcon="{ isActive }">
                     <DownOutlined class="expand-icon" :class="{ rotated: isActive }" />
                   </template>
 
-                  <a-collapse-panel v-for="arrival in arrivals" :key="arrival.id" class="arrival-panel">
+                  <a-collapse-panel v-for="customerOrder in customerOrders" :key="customerOrder.id" class="arrival-panel">
                     <template #header>
                       <div class="card-row">
                         <div class="arrival-info">
-                          <div class="arrival-name">{{ arrival.order?.orderCode || '-' }}</div>
-                          <div class="arrival-date">{{ formatDateTime(arrival.arrivedDate + ' ' + arrival.arrivedTime) }}</div>
+                          <div class="arrival-name">{{ customerOrder.orderCode || '-' }}</div>
+                          <div class="arrival-date">{{ formatDateTime(customerOrder.createdAt) }}</div>
                         </div>
                         <div class="selection-side">
                           <a-checkbox 
-                            :checked="selectedArrivalIds.has(arrival.id)"
+                            :checked="selectedCustomerOrderIds.has(customerOrder.id)"
                             @change="(e: any) => {
                               if (e.target.checked) {
-                                selectedArrivalIds.add(arrival.id);
+                                selectedCustomerOrderIds.add(customerOrder.id);
                               } else {
-                                selectedArrivalIds.delete(arrival.id);
+                                selectedCustomerOrderIds.delete(customerOrder.id);
                               }
                             }"
                           />
@@ -155,84 +155,34 @@
 
                     <div class="card-detail">
                       <div class="detail-row">
-                        <span class="detail-label">{{ $t('merchant.arrivalDetail.tableAvatar') }}</span>
-                        <div class="detail-val">
-                          <div 
-                            v-for="item in arrival.arrivalItems" 
-                            :key="item.id"
-                            class="image-item"
-                          >
-                            <img 
-                              v-if="item.publicUrl"
-                              :src="item.publicUrl"
-                              alt="Product Image"
-                              class="product-image clickable-image"
-                              @click="showImageModal(item.publicUrl)"
-                            />
-                            <div 
-                              v-else
-                              class="no-image-small"
-                            >
-                              No Image
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="detail-row">
-                        <span class="detail-label">{{ $t('merchant.arrivalDetail.tableVariant') }}</span>
-                        <div class="detail-val">
-                          <div 
-                            v-for="item in arrival.arrivalItems" 
-                            :key="item.id"
-                            class="variant-item-text"
-                          >
-                            <span class="variant-text">
-                              {{ item.variant || '-' }} ({{ item.arrivedQuantity }})
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="detail-row">
                         <span class="detail-label">{{ $t('merchant.arrivalDetail.tableQuantity') }}</span>
                         <span class="detail-val">
-                          {{ arrival.arrivalItems?.reduce((sum, item) => sum + item.arrivedQuantity, 0) || 0 }}
+                          {{ customerOrder.customerOrderItems?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0 }}
                         </span>
                       </div>
                       <div class="detail-row">
-                        <span class="detail-label">{{ $t('merchant.arrivalDetail.tableCondition') }}</span>
+                        <span class="detail-label">{{ $t('merchant.arrivalDetail.tablePaymentStatus') }}</span>
                         <span class="detail-val">
-                          {{ arrival.arrivalItems?.map(item => item.condition || '-').join(', ') || '-' }}
-                        </span>
-                      </div>
-                      <div class="detail-row">
-                        <span class="detail-label">{{ $t('merchant.arrivalDetail.tablePurchasePrice') }}</span>
-                        <span class="detail-val">
-                          {{ arrival.arrivalItems?.map(item => Number(item.purchasePrice) || 0).filter(p => p > 0).join(', ') || '-' }}
-                        </span>
-                      </div>
-                      <div class="detail-row">
-                        <span class="detail-label">{{ $t('merchant.arrivalDetail.tableSellingPrice') }}</span>
-                        <span class="detail-val">
-                          {{ arrival.arrivalItems?.map(item => Number(item.sellingPriceForeign) || 0).filter(p => p > 0).join(', ') || '-' }}
+                          {{ customerOrder.paymentStatus || '-' }}
                         </span>
                       </div>
                       <div class="detail-row">
                         <span class="detail-label">{{ $t('merchant.arrivalDetail.tableProfit') }}</span>
                         <span class="detail-val">
-                          {{ arrival.arrivalItems?.reduce((sum, item) => sum + (Number(item.profit) || 0), 0).toLocaleString() || '0' }}
+                          {{ customerOrder.customerOrderItems?.reduce((sum: number, item: any) => sum + (Number(item.profit) || 0), 0).toLocaleString() || '0' }}
                         </span>
                       </div>
                     </div>
                   </a-collapse-panel>
                 </a-collapse>
 
-                <div v-if="arrivals.length > 0" class="pagination-row">
+                <div v-if="customerOrders.length > 0" class="pagination-row">
                   <a-pagination
                     v-model:current="currentPage"
                     v-model:pageSize="pageSize"
                     :total="total"
                     simple
-                    @change="arrivalOnPageChange"
+                    @change="customerOrderData.onPageChange"
                   />
                 </div>
               </a-spin>
@@ -684,7 +634,7 @@ import {
   WhatsAppOutlined,
   FacebookOutlined,
 } from '@ant-design/icons-vue';
-import { useArrivalList } from './useArrivalList';
+import { useCustomerOrderList } from './useArrivalList';
 import { useNotificationList } from './useNotificationList';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 
@@ -694,17 +644,17 @@ const { isMobile, isTablet } = useIsMobile();
 const showFilterToggle = computed(() => isMobile.value);
 const showFilters = ref(false);
 
-// Use arrival composable for notification tab
-const arrivalData = useArrivalList();
+// Use customer order composable for notification tab
+const customerOrderData = useCustomerOrderList();
 
 // Customer search handler
 const onCustomerSearch = (value: string) => {
-  arrivalData.fetchCustomers(value);
+  customerOrderData.fetchCustomers(value);
 };
 
 const {
   loading: arrivalLoading,
-  arrivals,
+  customerOrders,
   showFilters: arrivalShowFilters,
   filters: arrivalFilters,
   showFilterToggle: arrivalShowFilterToggle,
@@ -713,13 +663,12 @@ const {
   paginationConfig: arrivalPaginationConfig,
   formatDateTime,
   onFilterChange: arrivalOnFilterChange,
-  handleTableChange: arrivalHandleTableChange,
   currentPage,
   pageSize,
   total,
   onPageChange: arrivalOnPageChange,
   // Notification functionality
-  selectedArrivalIds,
+  selectedCustomerOrderIds,
   createNotiSubmitting,
   showCreateNotiModal,
   customerOptions,
@@ -733,7 +682,7 @@ const {
   modalImageUrl,
   showImageModal,
   closeImageModal,
-} = arrivalData;
+} = customerOrderData;
 
 // Use notification composable for history tab
 const notificationData = useNotificationList();
@@ -766,7 +715,7 @@ const {
   createForm,
   createSubmitting,
   customers,
-  customerOrders,
+  customerOrders: historyCustomerOrders,
   loadingCustomers,
   loadingCustomerOrders,
   closeCreateModal,
