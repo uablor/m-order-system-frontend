@@ -134,17 +134,20 @@
           </a-select>
         </a-col>
         <a-col :xs="24" :sm="16" :md="8">
-          <a-input
+          <a-auto-complete
             v-model:value="filters.search"
             allow-clear
+            :options="currencyOptions"
             :placeholder="filters.searchField
               ? $t('merchant.exchangeRates.filter.searchByField')
               : $t('merchant.exchangeRates.filter.searchPlaceholder')"
             @pressEnter="applyFilters"
             @change="onSearchChange"
+            @select="onCurrencySelect"
+            style="width: 100%"
           >
             <template #prefix><SearchOutlined /></template>
-          </a-input>
+          </a-auto-complete>
         </a-col>
         <!-- Start Date -->
         <a-col :xs="12" :sm="6" :md="4">
@@ -170,26 +173,12 @@
 
       <!-- Row 3: Advanced Filters -->
       <a-row :gutter="[10, 10]" class="filter-row filter-row--adv">
-        <a-col :xs="12" :sm="6" :md="4">
-          <a-input
-            v-model:value="filters.baseCurrency"
-            allow-clear
-            :placeholder="$t('merchant.exchangeRates.filter.baseCurrency')"
-            @pressEnter="applyFilters"
-            @input="onBaseTargetInput('base')"
-            @change="() => onFilterChange(true)"
-          />
-        </a-col>
-        <a-col :xs="12" :sm="6" :md="4">
-          <a-input
-            v-model:value="filters.targetCurrency"
-            allow-clear
-            :placeholder="$t('merchant.exchangeRates.filter.targetCurrency')"
-            @pressEnter="applyFilters"
-            @input="onBaseTargetInput('target')"
-            @change="() => onFilterChange(true)"
-          />
-        </a-col>
+        <!-- <a-col :xs="12" :sm="6" :md="4"> -->
+          <!-- Removed base currency filter -->
+        <!-- </a-col> -->
+        <!-- <a-col :xs="12" :sm="6" :md="4"> -->
+          <!-- Removed target currency filter -->
+        <!-- </a-col> -->
         <a-col :xs="12" :sm="6" :md="4">
           <a-select
             v-model:value="filters.isActive"
@@ -331,6 +320,50 @@ const filterCurrencies = (input: string) => {
   const q = (input || '').toUpperCase();
   const filtered = CURRENCY_OPTIONS.filter((c) => c.startsWith(q));
   return (filtered.length ? filtered : CURRENCY_OPTIONS).map((c) => ({ value: c }));
+};
+
+// Currency options for auto-complete
+const currencyOptions = computed(() => {
+  return CURRENCY_OPTIONS.map(currency => ({ 
+    value: currency,
+    label: currency
+  }));
+});
+
+// Handle currency selection from dropdown
+const onCurrencySelect = (value: string) => {
+  filters.search = value;
+  applyFilters();
+};
+
+// Custom dropdown state and methods
+const showCurrencyDropdown = ref(false);
+const dropdownPosition = ref({ top: 0, left: 0 });
+
+const hideCurrencyDropdown = () => {
+  setTimeout(() => {
+    showCurrencyDropdown.value = false;
+  }, 200);
+};
+
+const selectCurrency = (currency: string) => {
+  filters.search = currency;
+  showCurrencyDropdown.value = false;
+  applyFilters();
+};
+
+const updateDropdownPosition = (event: FocusEvent) => {
+  const target = event.target as HTMLElement;
+  const rect = target.getBoundingClientRect();
+  dropdownPosition.value = {
+    top: rect.bottom + window.scrollY,
+    left: rect.left + window.scrollX
+  };
+};
+
+const showDropdown = (event: FocusEvent) => {
+  updateDropdownPosition(event);
+  showCurrencyDropdown.value = true;
 };
 
 const { t } = useI18n();
@@ -799,6 +832,52 @@ onUnmounted(() => {
 :deep(.ant-input) { border-radius: 8px !important; }
 :deep(.ant-select-selector) { border-radius: 8px !important; }
 :deep(.ant-input-affix-wrapper) { border-radius: 8px !important; }
+/* auto-complete fix - prevent input from becoming small */
+:deep(.ant-auto-complete) { width: 100% !important; }
+:deep(.ant-auto-complete .ant-select-selector) { width: 100% !important; min-width: 100% !important; }
+:deep(.ant-auto-complete .ant-input) { width: 100% !important; min-width: 100% !important; }
+:deep(.ant-auto-complete .ant-input-affix-wrapper) { width: 100% !important; min-width: 100% !important; }
+:deep(.ant-select-selection-search) { width: 100% !important; }
+:deep(.ant-select-selection-item) { flex: none !important; }
+
+/* Custom currency dropdown */
+.currency-dropdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99999;
+  pointer-events: none;
+}
+
+.currency-dropdown {
+  position: absolute;
+  background: white;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100000;
+  pointer-events: auto;
+  min-width: 200px;
+}
+
+.currency-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s;
+}
+
+.currency-option:hover {
+  background-color: #f5f5f5;
+}
+
+.currency-option:last-child {
+  border-bottom: none;
+}
 
 /* Galaxy Tab S7 (~800px) และ tablet responsive */
 @media (max-width: 1023px) {

@@ -508,6 +508,9 @@ const getStatusText = (status: string | undefined) => {
   flex: 1;
   overflow-y: auto;
   padding-bottom: 12px;
+  /* border: 1px solid rgb(36, 79, 179); */
+
+  margin-bottom: 80px;
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }

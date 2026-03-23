@@ -29,7 +29,6 @@
         v-for="(item, idx) in formattedOrderItems" 
         :key="item.id" 
         class="item-card"
-        @click="selectOrderItem(item)"
       >
         <!-- Image Section -->
         <div class="item-image-section">
@@ -50,8 +49,7 @@
         <div class="item-content">
           <div class="item-header">
             <span class="item-num">#{{ idx + 1 }}</span>
-            <span class="item-name truncated-text">{{ item.productName }}</span>
-            <span v-if="item.variant" class="item-variant">({{ item.variant }})</span>
+            <span class="item-name truncated-text">{{ getOrderItemData(item).productName || 'Product Name' }}</span>
           </div>
 
           <div class="item-info">
@@ -69,7 +67,17 @@
             </div>
           </div>
 
-          <div class="click-hint" v-if="getItemImage(item)">
+          <!-- SKU Preview -->
+          <!-- <div v-if="getOrderItemSkus(item).length > 0" class="sku-preview">
+            <div class="sku-chip">
+              <span class="sku-variant">{{ getOrderItemSkus(item)[0]?.variant || 'Standard' }}</span>
+              <span class="sku-quantity">×{{ getOrderItemSkus(item)[0]?.quantity || 0 }}</span>
+            </div>
+            <span v-if="getOrderItemSkus(item).length > 1" class="more-skus">+{{ getOrderItemSkus(item).length - 1 }} more</span>
+          </div> -->
+
+          <!-- Click hint for SKU details -->
+          <div v-if="getOrderItemSkus(item).length > 0" class="click-hint" @click.stop="openSkuDetailsModal(item)">
             <EyeOutlined />
             {{ $t('customer.detail.clickToViewImage') }}
           </div>
@@ -240,6 +248,98 @@
     </Transition>
   </Teleport>
 
+  <!-- SKU Details Modal -->
+  <Teleport to="body">
+    <Transition name="modal-fade" appear>
+      <div v-if="showSkuDetailsModal && selectedOrderItem" class="sku-modal-overlay" @click="closeSkuDetailsModal">
+        <div class="sku-modal-container" @click.stop>
+          <div class="sku-modal-header">
+            <div class="sku-modal-title">
+              <ShoppingCartOutlined class="title-icon" />
+              <span>{{ getOrderItemData(selectedOrderItem).productName || 'Product Name' }}</span>
+            </div>
+            <button class="modal-close-btn" @click="closeSkuDetailsModal">
+              <CloseOutlined />
+            </button>
+          </div>
+          <div class="sku-modal-content">
+            <div class="sku-carousel-container" v-if="getOrderItemSkus(selectedOrderItem).length > 1">
+              <!-- Navigation Buttons -->
+              <button 
+                class="carousel-nav-btn prev-btn" 
+                @click="previousSku"
+                :disabled="currentSkuIndex === 0"
+              >
+                <ArrowLeftOutlined />
+              </button>
+              <button 
+                class="carousel-nav-btn next-btn" 
+                @click="nextSku"
+                :disabled="currentSkuIndex === getOrderItemSkus(selectedOrderItem).length - 1"
+              >
+                <ArrowRightOutlined />
+              </button>
+              
+              <!-- SKU Indicators -->
+              <div class="sku-indicators">
+                <button
+                  v-for="(sku, index) in getOrderItemSkus(selectedOrderItem)"
+                  :key="sku.id || index"
+                  class="indicator-dot"
+                  :class="{ active: currentSkuIndex === index }"
+                  @click="goToSku(index)"
+                />
+              </div>
+            </div>
+
+            <!-- SKU Display -->
+            <div class="sku-display">
+              <div class="sku-list-header">
+                <h4>SKUs {{ getOrderItemSkus(selectedOrderItem).length > 1 ? `(${currentSkuIndex + 1}/${getOrderItemSkus(selectedOrderItem).length})` : '' }}</h4>
+              </div>
+              
+              <div 
+                v-if="getOrderItemSkus(selectedOrderItem)[currentSkuIndex]"
+                class="sku-item"
+              >
+                <div class="sku-field-row">
+                  <span class="field-label">{{ $t('customer.detail.variant') }}:</span>
+                  <span class="sku-variant-name">{{ getOrderItemSkus(selectedOrderItem)[currentSkuIndex]?.variant || 'Standard' }}</span>
+                </div>
+                <div class="sku-field-row">
+                  <span class="field-label">{{ $t('customer.detail.colQuantity') }}:</span>
+                  <div class="sku-quantity-badge">{{ getOrderItemSkus(selectedOrderItem)[currentSkuIndex]?.quantity || 0 }} </div>
+                </div>
+                <div class="sku-field-row">
+                  <span class="field-label">{{ $t('customer.detail.colTotalPrice') }}:</span>
+                  <div class="sku-price-info">
+                    <div class="sku-price">
+                      {{ formatSkuPrice(getOrderItemSkus(selectedOrderItem)[currentSkuIndex]) }}
+                    </div>
+                    <div class="sku-currency">
+                      {{ getCurrencySymbol(selectedOrderItem) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="sku-summary !mt-5">
+              <div class="summary-row">
+                <span class="summary-label">{{ $t('customer.detail.colQuantity') }}:</span>
+                <span class="summary-value">{{ getOrderItemSkus(selectedOrderItem).length }} {{ $t('customer.detail.qty') }}</span>
+              </div>
+              <div class="summary-row total">
+                <span class="summary-label">{{ $t('customer.detail.colTotalPrice') }}:</span>
+                <span class="summary-value">{{ getOrderItemData(selectedOrderItem).formattedPrice || formatItemPrice(selectedOrderItem) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
   <template v-if="canSubmit">
     <a-button
       type="primary"
@@ -269,6 +369,7 @@ import {
   CreditCardOutlined,
   CloudUploadOutlined,
   ArrowRightOutlined,
+  ArrowLeftOutlined,
   ShoppingCartOutlined,
   EyeOutlined,
   CloseOutlined,
@@ -297,6 +398,7 @@ const props = defineProps<{
 const orderCurrencyCache = ref<Map<number, string>>(new Map());
 
 const currencySymbol = (code: string | null) => {
+  console.log("no have currcecy",code);
   if (!code) return '₭';
   const map: Record<string, string> = { 
     LAK: '₭', 
@@ -396,8 +498,9 @@ const formatTotalDue = (o: CustomerOrder & {
   
   // Use exchangeRateSell.baseCurrency from first item for currency symbol
   const firstItem = o.customerOrderItems?.[0];
+  console.log("firstItem", firstItem)
   let currencyCode = firstItem?.exchangeRateSell?.baseCurrency ?? null;
-  
+   console.log("log currencycode", currencyCode)
   // If no exchange rate data, try to use cached currency
   if (!currencyCode) {
     currencyCode = orderCurrencyCache.value.get(o.id) ?? null;
@@ -434,10 +537,15 @@ const paymentLoading = ref(false);
 // Modal state
 const showPaymentImageModal = ref(false);
 const showItemImageModal = ref(false);
+const showSkuDetailsModal = ref(false);
 const imageLoaded = ref(false);
 const imageError = ref(false);
 const selectedItemImage = ref<string | null>(null);
 const selectedImageTitle = ref<string>('');
+const selectedOrderItem = ref<any>(null);
+
+// SKU carousel state
+const currentSkuIndex = ref(0);
 
 // Order item images cache
 const orderItemImages = ref<Map<number, OrderItem>>(new Map());
@@ -448,10 +556,6 @@ const paymentProofUrl = computed(() => {
 });
 
 // Methods for image handling
-const selectOrderItem = (item: any) => {
-  // For now just log, can be extended for detail view
-  console.log('Selected order item:', item);
-};
 
 const getItemImage = (customerOrderItem: any): string | undefined => {
   // Check if we have cached the order item with image
@@ -474,8 +578,27 @@ const fetchOrderItemImage = async (orderItemId: number) => {
   }
   
   try {
+    console.log(`=== FETCHING ORDER ITEM ${orderItemId} ===`);
     const orderItem = await orderItemRepository.getById(orderItemId);
+    console.log(`=== API RESPONSE FOR ORDER ITEM ${orderItemId} ===`);
+    console.log('Full response:', JSON.stringify(orderItem, null, 2));
+    console.log('Exchange rate sell data:', orderItem?.exchangeRateSell);
+    console.log('Base currency:', orderItem?.exchangeRateSell?.baseCurrency);
+    console.log('Target currency selling total:', orderItem?.targetCurrencySellingTotal);
+    
+    // Cache the order item
     orderItemImages.value.set(orderItemId, orderItem);
+    
+    // IMPORTANT: Update the order item in the props data with exchange rate info
+    const customerOrderItem = props.order.customerOrderItems?.find(item => item.id === orderItemId);
+    if (customerOrderItem && orderItem?.exchangeRateSell) {
+      console.log(`=== UPDATING ORDER ITEM ${orderItemId} WITH EXCHANGE RATE DATA ===`);
+      console.log('Before update:', customerOrderItem.exchangeRateSell);
+      // Type assertion to handle API response format
+      customerOrderItem.exchangeRateSell = orderItem.exchangeRateSell as any;
+      console.log('After update:', customerOrderItem.exchangeRateSell);
+    }
+    
   } catch (error) {
     console.error('Error fetching order item image:', error);
   }
@@ -505,6 +628,78 @@ const closeItemImageModal = () => {
   selectedImageTitle.value = '';
 };
 
+// SKU Details Modal Functions
+const openSkuDetailsModal = (item: any) => {
+  selectedOrderItem.value = item;
+  currentSkuIndex.value = 0; // Reset to first SKU
+  showSkuDetailsModal.value = true;
+};
+
+const closeSkuDetailsModal = () => {
+  showSkuDetailsModal.value = false;
+  selectedOrderItem.value = null;
+  currentSkuIndex.value = 0;
+};
+
+// Carousel navigation functions
+const nextSku = () => {
+  const skus = getOrderItemSkus(selectedOrderItem.value);
+  if (currentSkuIndex.value < skus.length - 1) {
+    currentSkuIndex.value++;
+  }
+};
+
+const previousSku = () => {
+  if (currentSkuIndex.value > 0) {
+    currentSkuIndex.value--;
+  }
+};
+
+const goToSku = (index: number) => {
+  currentSkuIndex.value = index;
+};
+
+// Helper functions for SKU modal
+const getOrderItemData = (customerOrderItem: any) => {
+  // Try to get cached order item with full data including productName
+  const cachedOrderItem = orderItemImages.value.get(customerOrderItem.id);
+  if (cachedOrderItem) {
+    return cachedOrderItem;
+  }
+  // Return the customer order item as fallback
+  return customerOrderItem;
+};
+
+const getOrderItemSkus = (customerOrderItem: any) => {
+  // Try to get cached order item with full SKU data
+  const cachedOrderItem = orderItemImages.value.get(customerOrderItem.id);
+  if (cachedOrderItem && cachedOrderItem.skus) {
+    return cachedOrderItem.skus;
+  }
+  // Fallback: create a mock SKU structure from the customer order item
+  return customerOrderItem.quantity ? [{
+    id: 0,
+    variant: customerOrderItem.variant || 'Standard',
+    quantity: customerOrderItem.quantity,
+    sellingTotal: customerOrderItem.sellingTotal || '0'
+  }] : [];
+};
+
+const formatSkuPrice = (sku: any) => {
+  const price = parseFloat(sku.sellingTotal || '0');
+  return formatAmount(price);
+};
+
+const getCurrencySymbol = (item: any) => {
+  const currencyCode = item.exchangeRateSell?.baseCurrency || 'LAK';
+  return currencySymbol(currencyCode);
+};
+
+const getTotalQuantity = (item: any) => {
+  if (!item.skus || item.skus.length === 0) return item.quantity || 0;
+  return item.skus.reduce((total: number, sku: any) => total + (sku.quantity || 0), 0);
+};
+
 // Watch for order changes to reset payment data and clear cache
 watch(() => props.order.id, (newOrderId, oldOrderId) => {
   console.log(`Order changed from ${oldOrderId} to ${newOrderId}, clearing cache`);
@@ -531,6 +726,9 @@ const handleEscKey = (event: KeyboardEvent) => {
     }
     if (showItemImageModal.value) {
       closeItemImageModal();
+    }
+    if (showSkuDetailsModal.value) {
+      closeSkuDetailsModal();
     }
   }
 };
@@ -1096,11 +1294,13 @@ const statusClass = (status: string) => {
   opacity: 0;
 }
 
-.modal-fade-enter-active .image-modal-container {
+.modal-fade-enter-active .image-modal-container,
+.modal-fade-enter-active .sku-modal-container {
   animation: modalSlideIn 0.3s ease-out;
 }
 
-.modal-fade-leave-active .image-modal-container {
+.modal-fade-leave-active .image-modal-container,
+.modal-fade-leave-active .sku-modal-container {
   animation: modalSlideOut 0.3s ease-in;
 }
 
@@ -1192,4 +1392,332 @@ const statusClass = (status: string) => {
   margin-top: 12px;
 }
 .submit-btn-inline:hover { opacity: 0.92 !important; }
+
+/* SKU Preview Styles */
+.sku-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.sku-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border: 1px solid #0ea5e9;
+  border-radius: 12px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0369a1;
+}
+
+.sku-variant {
+  color: #0c4a6e;
+}
+
+.sku-quantity {
+  color: #0ea5e9;
+  font-weight: 700;
+}
+
+.more-skus {
+  font-size: 10px;
+  color: #6b7280;
+  font-weight: 500;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+/* Card Hover Effect - REMOVED */
+.item-card {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.click-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.click-hint:hover {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+/* SKU Modal Styles */
+.sku-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.sku-modal-container {
+  background: white;
+  border-radius: 20px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+}
+
+.sku-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sku-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.title-icon {
+  color: #3b82f6;
+  font-size: 20px;
+}
+
+.sku-modal-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Carousel Styles */
+.sku-carousel-container {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.carousel-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  background: white;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.carousel-nav-btn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.carousel-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.prev-btn {
+  left: -20px;
+}
+
+.next-btn {
+  right: -20px;
+}
+
+.sku-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.indicator-dot:hover {
+  border-color: #3b82f6;
+}
+
+.indicator-dot.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.sku-display {
+  position: relative;
+}
+
+.sku-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.sku-list-header {
+  margin-bottom: 16px;
+}
+
+.sku-list-header h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.sku-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, #fafbfc, #f8fafc);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.sku-item:hover {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  border-color: #cbd5e1;
+  transform: translateX(4px);
+}
+
+.sku-field-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.field-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.sku-variant-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.sku-quantity-badge {
+  display: inline-flex;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #1d4ed8;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid #93c5fd;
+}
+
+.sku-price-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sku-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #059669;
+}
+
+.sku-currency {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.sku-summary {
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.summary-row:not(:last-child) {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.summary-row.total {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 2px solid #cbd5e1;
+}
+
+.summary-label {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.summary-value {
+  font-size: 15px;
+  color: #374151;
+  font-weight: 600;
+}
+
+.summary-row.total .summary-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.summary-row.total .summary-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: #059669;
+}
 </style>

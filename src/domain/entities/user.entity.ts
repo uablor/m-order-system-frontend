@@ -321,8 +321,34 @@ export interface ExchangeRateSnapshot {
   targetCurrency: string;
   rate: string;
   rateType: string;
-  rateDate: Date;
+  rateDate: string;
   isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderItemSku {
+  id: number;
+  orderItemId: number;
+  orderItemSkuIndex: number | null;
+  variant: string | null;
+  quantity: number;
+  exchangeRateBuy: ExchangeRateSnapshot | null;
+  exchangeRateSell: ExchangeRateSnapshot | null;
+  exchangeRateBuyValue: string | null;
+  exchangeRateSellValue: string | null;
+  purchasePrice: string;
+  purchaseTotal: string;
+  sellingPriceForeign: string;
+  sellingTotal: string;
+  profit: string;
+  targetCurrencyPurchaseTotal: string | null;
+  targetCurrencyPurchasePrice: string | null;
+  targetCurrencySellingPriceForeign: string | null;
+  targetCurrencySellingTotal: string | null;
+  targetCurrencyProfit: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface OrderItem {
@@ -338,6 +364,7 @@ export interface OrderItem {
     fileName: string;
     originalName: string;
   } | null;
+  skus: OrderItemSku[];
   exchangeRateBuy: ExchangeRateSnapshot | null;
   exchangeRateSell: ExchangeRateSnapshot | null;
   exchangeRateBuyValue: string | null;
