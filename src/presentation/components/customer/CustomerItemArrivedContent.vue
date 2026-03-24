@@ -93,7 +93,7 @@ const customerInitial = computed(() => (user.value?.fullName || 'C').charAt(0).t
 
 /* --- Store name: use first order's customerName or default --- */
 const storeName = computed(() => {
-  const first = orders.value[0];
+  const first = orders.value?.[0];
   return first?.customerName || 'Luxe Boutique';
 });
 
@@ -117,7 +117,7 @@ const filters = ref<CustomerOrderFilters>({});
 
 /* --- Filter order code บน frontend (ไม่เรียก API ใหม่) --- */
 const filteredOrders = computed(() => {
-  const list = orders.value;
+  const list = orders.value || [];
   const searchVal = filters.value.orderCode?.trim();
   if (!searchVal) return list;
   const lower = searchVal.toLowerCase();
@@ -129,10 +129,17 @@ const filteredOrders = computed(() => {
 
 /* --- Pagination สำหรับแสดงผล: เมื่อมี filter ใช้ข้อมูล filtered --- */
 const displayPagination = computed(() => {
-  const base = pagination.value;
+  const base = pagination.value || {
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  };
   const hasFilter = !!filters.value.orderCode?.trim();
   if (!hasFilter) return base;
-  const total = filteredOrders.value.length;
+  const total = filteredOrders.value?.length || 0;
   return {
     ...base,
     total,

@@ -25,17 +25,20 @@
     </div>
     <div class="balance-card">
       <div class="balance-bg-icon"><ShoppingOutlined /></div>
-      <div class="balance-label">{{ $t('customer.balanceLabel') }}</div>
-      <div class="balance-amount">{{ formatBalance(summary.totalDue) }}</div>
+      <!-- <div class="balance-label">{{ $t('customer.balanceLabel') }}</div>
+      <div class="balance-amount">{{ formatBalance(summary.totalDue) }}</div> -->
+      <div class="balance-label">{{ $t('customer.totalProducts') }}</div>
+      <div class="balance-amount">{{ formatBalance(summary.totalProducts) }}</div> 
+      
       <div class="balance-breakdown">
-        <div class="breakdown-item">
-          <div class="breakdown-label">{{ $t('customer.totalProducts') }}</div>
-          <div class="breakdown-val">{{ formatBalance(summary.totalProducts) }}</div>
-        </div>
         <div class="breakdown-item">
           <div class="breakdown-label">{{ $t('customer.paid') }}</div>
           <div class="breakdown-val">{{ formatBalance(summary.paid) }}</div>
         </div>
+        <!-- <div class="breakdown-item">
+          <div class="breakdown-label">{{ $t('customer.paid') }}</div>
+          <div class="breakdown-val">{{ formatBalance(summary.paid) }}</div>
+        </div> -->
       </div>
     </div>
 
@@ -118,9 +121,9 @@
                 <span class="product-sku">{{ $t('customer.orderLabel') }} #{{ getOrderDisplayCode(order) }}</span>
                 <span class="product-date">{{ formatDate(order.createdAt) }}</span>
               </div>
-              <div class="product-name">
-                {{ getOrderTitle(order) }}
-              </div>
+              <!-- <div class="product-name">
+                {{ getOrderTitle(order) }}jjj
+              </div> -->
               <div class="product-bottom-row">
                 <span class="product-price">{{ formatOrderAmount(order.remainingAmount, order.customerOrderItems?.[0]?.exchangeRateSell?.baseCurrency || null) }}</span>
                 <span class="product-status" :class="statusClass(displayPaymentStatus(order))">

@@ -571,14 +571,22 @@ const getOrderItemName = (orderItemId: number) => {
 };
 
 const getCoItemProductName = (coItem: any) => {
-  if (coItem.orderItem?.productName) {
-    const oi = coItem.orderItem;
-    return oi.variant ? `${oi.productName} (${oi.variant})` : oi.productName;
+  console.log('=== getCoItemProductName DEBUG ===');
+  console.log('coItem:', coItem);
+  console.log('coItem.variant:', coItem.variant);
+  
+  // Return only the variant - this is what you want
+  if (coItem.variant) {
+    return coItem.variant;
   }
+  
+  // Fallback to product name if no variant available
   if (coItem.productName) {
-    return coItem.variant ? `${coItem.productName} (${coItem.variant})` : coItem.productName;
+    return coItem.productName;
   }
-  return getOrderItemName(coItem.orderItemId);
+  
+  // Final fallback
+  return `SKU #${coItem.orderItemSkuId}`;
 };
 
 const goBack = () => {

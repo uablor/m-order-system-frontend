@@ -306,11 +306,14 @@ export function useCustomerOrderList() {
     selectedLanguage.value = 'en';
   };
 
-  const createNotifications = async () => {
+  const createNotifications = async (language?: 'en' | 'th' | 'la') => {
     if (selectedCustomerOrderIds.value.size === 0) return;
     
     createNotiSubmitting.value = true;
     try {
+      // Use the passed language parameter or fallback to selectedLanguage
+      const notificationLanguage = language || selectedLanguage.value;
+      
       // Map selected customer orders to customers for notification creation
       const customerMap = new Map<number, { customerId: number; customerName: string; customerOrders: number[]; }>();
       
@@ -349,7 +352,7 @@ export function useCustomerOrderList() {
         // Call API to create notifications
         const res = await notificationRepository.createMultiple({ 
           notifications, 
-          language: selectedLanguage.value 
+          language: notificationLanguage 
         });
         
         if (res && res.length > 0) {
@@ -366,8 +369,8 @@ export function useCustomerOrderList() {
             
             res.forEach((notification: CreateNotificationMultipleResponseItem, index: number) => {
               const customerName = notification.customer?.customerName || 'Customer';
-              const lang: 'en' | 'th' | 'la' = notification.language === 'th' || notification.language === 'la' 
-                ? notification.language 
+              const lang: 'en' | 'th' | 'la' = notificationLanguage === 'th' || notificationLanguage === 'la' 
+                ? notificationLanguage 
                 : 'en';
               
               setTimeout(() => {

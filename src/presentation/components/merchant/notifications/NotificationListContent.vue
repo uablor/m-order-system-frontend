@@ -590,13 +590,13 @@
       <div class="whatsapp-lang-modal">
         <p class="whatsapp-lang-hint">{{ $t('merchant.notifications.whatsappLangModalHint') }}</p>
         <div class="whatsapp-lang-buttons">
-          <a-button type="primary" size="large" class="lang-btn" @click="createNotifications()">
+          <a-button type="primary" size="large" class="lang-btn" @click="createNotifications('en')">
             {{ $t('merchant.notifications.whatsappLangEn') }}
           </a-button>
-          <a-button type="primary" size="large" class="lang-btn" @click="createNotifications()">
+          <a-button type="primary" size="large" class="lang-btn" @click="createNotifications('th')">
             {{ $t('merchant.notifications.whatsappLangTh') }}
           </a-button>
-          <a-button type="primary" size="large" class="lang-btn" @click="createNotifications()">
+          <a-button type="primary" size="large" class="lang-btn" @click="createNotifications('la')">
             {{ $t('merchant.notifications.whatsappLangLa') }}
           </a-button>
         </div>

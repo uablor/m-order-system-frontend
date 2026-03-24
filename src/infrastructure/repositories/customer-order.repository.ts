@@ -6,13 +6,14 @@ import { extractSingleResult } from '@/shared/types/backend-response.types';
 export interface CustomerOrderItem {
   id: number;
   orderId: number;
-  productName: string;
+  productName: string | null;
   variant: string | null;
   quantity: number;
   sellingPriceForeign: string;
   sellingTotal: string;
   targetCurrencySellingTotal: string | null;
   profit: string;
+  orderItemId: number | null;
   exchangeRateSell?: {
     id: number;
     createdAt: string;

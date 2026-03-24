@@ -20,7 +20,7 @@
     <div class="items-header">
       <ShoppingCartOutlined class="section-icon-sm" />
       <span>{{ $t('customer.detail.itemsTitle') }}</span>
-      <a-tag class="count-tag">{{ order.customerOrderItems?.length || 0 }}</a-tag>
+      <a-tag class="count-tag">{{ formattedOrderItems?.length || 0 }}</a-tag>
     </div>
     
     <!-- Cards View -->
@@ -35,7 +35,7 @@
           <img 
             v-if="getItemImage(item)" 
             :src="getItemImage(item)" 
-            :alt="item.productName"
+            :alt="item.productName || undefined"
             class="item-image"
             @error="handleImageError"
             @click.stop="openItemImageModal(item)"
@@ -55,7 +55,7 @@
           <div class="item-info">
             <div class="info-row">
               <span class="info-label">{{ $t('customer.detail.colQuantity') }}:</span>
-              <span class="info-value">{{ item.quantity }}</span>
+              <span class="info-value">{{ getItemQuantity(item) }}</span>
             </div>
           </div>
 
@@ -292,32 +292,43 @@
               </div>
             </div>
 
-            <!-- SKU Display -->
+            <!-- SKU Display with Sliding Animation -->
             <div class="sku-display">
               <div class="sku-list-header">
                 <h4>SKUs {{ getOrderItemSkus(selectedOrderItem).length > 1 ? `(${currentSkuIndex + 1}/${getOrderItemSkus(selectedOrderItem).length})` : '' }}</h4>
               </div>
               
-              <div 
-                v-if="getOrderItemSkus(selectedOrderItem)[currentSkuIndex]"
-                class="sku-item"
-              >
-                <div class="sku-field-row">
-                  <span class="field-label">{{ $t('customer.detail.variant') }}:</span>
-                  <span class="sku-variant-name">{{ getOrderItemSkus(selectedOrderItem)[currentSkuIndex]?.variant || 'Standard' }}</span>
-                </div>
-                <div class="sku-field-row">
-                  <span class="field-label">{{ $t('customer.detail.colQuantity') }}:</span>
-                  <div class="sku-quantity-badge">{{ getOrderItemSkus(selectedOrderItem)[currentSkuIndex]?.quantity || 0 }} </div>
-                </div>
-                <div class="sku-field-row">
-                  <span class="field-label">{{ $t('customer.detail.colTotalPrice') }}:</span>
-                  <div class="sku-price-info">
-                    <div class="sku-price">
-                      {{ formatSkuPrice(getOrderItemSkus(selectedOrderItem)[currentSkuIndex]) }}
-                    </div>
-                    <div class="sku-currency">
-                      {{ getCurrencySymbol(selectedOrderItem) }}
+              <!-- Sliding Container -->
+              <div class="sku-slider-container">
+                <div 
+                  class="sku-slider-wrapper"
+                  :style="{ transform: `translateX(-${currentSkuIndex * 100}%)` }"
+                >
+                  <div 
+                    v-for="(sku, index) in getOrderItemSkus(selectedOrderItem)"
+                    :key="sku.id || index"
+                    class="sku-slide-item"
+                  >
+                    <div class="sku-item">
+                      <div class="sku-field-row">
+                        <span class="field-label">{{ $t('customer.detail.variant') }}:</span>
+                        <span class="sku-variant-name">{{ sku?.variant || 'Standard' }}</span>
+                      </div>
+                      <div class="sku-field-row">
+                        <span class="field-label">{{ $t('customer.detail.colQuantity') }}:</span>
+                        <div class="sku-quantity-badge">{{ sku?.quantity || 0 }} </div>
+                      </div>
+                      <div class="sku-field-row">
+                        <span class="field-label">{{ $t('customer.detail.colTotalPrice') }}:</span>
+                        <div class="sku-price-info">
+                          <div class="sku-price">
+                            {{ formatSkuPrice(sku) }}
+                          </div>
+                          <div class="sku-currency">
+                            {{ getCurrencySymbol(selectedOrderItem) }}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -404,7 +415,7 @@ const currencySymbol = (code: string | null) => {
     LAK: '₭', 
     THB: '฿', 
     USD: '$', 
-    USDT: 'USDT',
+    USDT: '$',
     CNY: '¥',
     RMB: '¥'
   };
@@ -417,10 +428,32 @@ const formattedOrderItems = computed(() => {
   console.log('Current order ID:', props.order.id);
   console.log('Order customerOrderItems:', props.order.customerOrderItems);
   
-  const formatted = props.order.customerOrderItems?.map((item, index) => {
-    console.log(`Item ${index}:`, {
+  // Deduplicate items by orderItemId - show only one per unique orderItemId
+  const uniqueItems = props.order.customerOrderItems?.reduce((acc, item, index) => {
+    const orderItemId = item.orderItemId;
+    
+    // If no orderItemId or it's the first time we see this orderItemId, add it
+    if (!orderItemId || !acc.has(orderItemId)) {
+      console.log(`Adding unique item ${index}:`, {
+        id: item.id,
+        orderItemId: item.orderItemId,
+        productName: item.productName,
+        isFirstOccurrence: !orderItemId || !acc.has(orderItemId)
+      });
+      
+      acc.set(orderItemId, item);
+    } else {
+      console.log(`Skipping duplicate item ${index} with orderItemId:`, orderItemId);
+    }
+    
+    return acc;
+  }, new Map<number | null, any>()) || new Map();
+  
+  // Convert Map back to array and format
+  const formatted = Array.from(uniqueItems.values()).map((item, index) => {
+    console.log(`Processing unique item ${index}:`, {
       id: item.id,
-      orderItemId: item.id,
+      orderItemId: item.orderItemId,
       productName: item.productName,
       exchangeRateSell: item.exchangeRateSell,
       baseCurrency: item.exchangeRateSell?.baseCurrency,
@@ -429,22 +462,35 @@ const formattedOrderItems = computed(() => {
     
     return {
       ...item,
-      formattedPrice: formatItemPrice(item)
+      formattedPrice: formatItemPrice({
+        ...item,
+        productName: item.productName || ''
+      })
     };
-  }) || [];
+  });
   
-  console.log('Formatted items:', formatted);
+  console.log('Formatted items after deduplication:', formatted);
+  console.log('Total formatted items count:', formatted.length);
   return formatted;
 });
 
-const formatItemPrice = (item: { 
+const formatItemPrice = (customerOrderItem: { 
   productName: string;
   sellingTotal: string; 
   targetCurrencySellingTotal: string | null; 
   exchangeRateSell?: { baseCurrency: string } | null;
+  orderItemId?: number | null;
 }) => {
-  const amount = item.targetCurrencySellingTotal != null
-    ? parseFloat(item.targetCurrencySellingTotal)
+  // Try to get the cached OrderItem data first
+  const cachedOrderItem = customerOrderItem.orderItemId 
+    ? orderItemImages.value.get(customerOrderItem.orderItemId)
+    : null;
+  
+  // Use OrderItem data if available, otherwise fall back to CustomerOrderItem data
+  const item = cachedOrderItem || customerOrderItem;
+  
+  const amount = item.sellingTotal != null
+    ? parseFloat(item.sellingTotal)
     : parseFloat(item.sellingTotal);
   
   // Use exchangeRateSell.baseCurrency if available, otherwise check if targetCurrencySellingTotal exists
@@ -558,15 +604,15 @@ const paymentProofUrl = computed(() => {
 // Methods for image handling
 
 const getItemImage = (customerOrderItem: any): string | undefined => {
-  // Check if we have cached the order item with image
-  if (customerOrderItem.id && orderItemImages.value.has(customerOrderItem.id)) {
-    const orderItem = orderItemImages.value.get(customerOrderItem.id);
-    return orderItem?.image?.publicUrl || undefined;
+  // Check if we have cached the order item with image using orderItemId as key
+  if (customerOrderItem.orderItemId && orderItemImages.value.has(customerOrderItem.orderItemId)) {
+    const orderItem = orderItemImages.value.get(customerOrderItem.orderItemId);
+    return orderItem?.image?.publicUrl ?? undefined;
   }
   
   // Fetch the order item details if not cached
-  if (customerOrderItem.id) {
-    fetchOrderItemImage(customerOrderItem.id);
+  if (customerOrderItem.orderItemId) {
+    fetchOrderItemImage(customerOrderItem.orderItemId);
   }
   
   return undefined;
@@ -590,7 +636,7 @@ const fetchOrderItemImage = async (orderItemId: number) => {
     orderItemImages.value.set(orderItemId, orderItem);
     
     // IMPORTANT: Update the order item in the props data with exchange rate info
-    const customerOrderItem = props.order.customerOrderItems?.find(item => item.id === orderItemId);
+    const customerOrderItem = props.order.customerOrderItems?.find(item => item.orderItemId === orderItemId);
     if (customerOrderItem && orderItem?.exchangeRateSell) {
       console.log(`=== UPDATING ORDER ITEM ${orderItemId} WITH EXCHANGE RATE DATA ===`);
       console.log('Before update:', customerOrderItem.exchangeRateSell);
@@ -661,8 +707,8 @@ const goToSku = (index: number) => {
 
 // Helper functions for SKU modal
 const getOrderItemData = (customerOrderItem: any) => {
-  // Try to get cached order item with full data including productName
-  const cachedOrderItem = orderItemImages.value.get(customerOrderItem.id);
+  // Try to get cached order item with full data including productName using orderItemId as key
+  const cachedOrderItem = orderItemImages.value.get(customerOrderItem.orderItemId);
   if (cachedOrderItem) {
     return cachedOrderItem;
   }
@@ -671,8 +717,8 @@ const getOrderItemData = (customerOrderItem: any) => {
 };
 
 const getOrderItemSkus = (customerOrderItem: any) => {
-  // Try to get cached order item with full SKU data
-  const cachedOrderItem = orderItemImages.value.get(customerOrderItem.id);
+  // Try to get cached order item with full SKU data using orderItemId as key
+  const cachedOrderItem = orderItemImages.value.get(customerOrderItem.orderItemId);
   if (cachedOrderItem && cachedOrderItem.skus) {
     return cachedOrderItem.skus;
   }
@@ -695,12 +741,16 @@ const getCurrencySymbol = (item: any) => {
   return currencySymbol(currencyCode);
 };
 
-const getTotalQuantity = (item: any) => {
-  if (!item.skus || item.skus.length === 0) return item.quantity || 0;
-  return item.skus.reduce((total: number, sku: any) => total + (sku.quantity || 0), 0);
+const getItemQuantity = (customerOrderItem: { orderItemId?: number | null; quantity?: number }) => {
+  // Try to get the cached OrderItem data first
+  const cachedOrderItem = customerOrderItem.orderItemId 
+    ? orderItemImages.value.get(customerOrderItem.orderItemId)
+    : null;
+  
+  // Use OrderItem quantity if available, otherwise fall back to CustomerOrderItem quantity
+  return cachedOrderItem?.quantity ?? customerOrderItem.quantity ?? 0;
 };
 
-// Watch for order changes to reset payment data and clear cache
 watch(() => props.order.id, (newOrderId, oldOrderId) => {
   console.log(`Order changed from ${oldOrderId} to ${newOrderId}, clearing cache`);
   paymentData.value = null;
@@ -1517,12 +1567,58 @@ const statusClass = (status: string) => {
   flex: 1;
 }
 
-/* Carousel Styles */
+/* SKU Display Styles */
+.sku-display {
+  position: relative;
+}
+
+/* Carousel Container */
 .sku-carousel-container {
   position: relative;
   margin-bottom: 24px;
 }
 
+.sku-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* SKU Slider Animation Styles */
+.sku-slider-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.sku-slider-wrapper {
+  display: flex;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.sku-slide-item {
+  min-width: 100%;
+  flex-shrink: 0;
+  padding: 0 8px;
+}
+
+.sku-slide-item .sku-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.sku-slide-item .sku-item:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+/* Enhanced navigation button animations */
 .carousel-nav-btn {
   position: absolute;
   top: 50%;
@@ -1537,19 +1633,27 @@ const statusClass = (status: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .carousel-nav-btn:hover:not(:disabled) {
-  background: #f8fafc;
+  background: #3b82f6;
   border-color: #3b82f6;
-  color: #3b82f6;
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+}
+
+.carousel-nav-btn:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.95);
 }
 
 .carousel-nav-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+  transform: translateY(-50%);
 }
 
 .prev-btn {
@@ -1560,13 +1664,7 @@ const statusClass = (status: string) => {
   right: -20px;
 }
 
-.sku-indicators {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 16px;
-}
-
+/* Enhanced indicator animations */
 .indicator-dot {
   width: 8px;
   height: 8px;
@@ -1574,20 +1672,41 @@ const statusClass = (status: string) => {
   border: 2px solid #cbd5e1;
   background: white;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
 .indicator-dot:hover {
   border-color: #3b82f6;
+  transform: scale(1.2);
 }
 
 .indicator-dot.active {
   background: #3b82f6;
   border-color: #3b82f6;
+  transform: scale(1.3);
 }
 
-.sku-display {
-  position: relative;
+.indicator-dot.active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  animation: indicatorPulse 2s infinite;
+}
+
+@keyframes indicatorPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .sku-list {
@@ -1688,7 +1807,7 @@ const statusClass = (status: string) => {
 }
 
 .summary-row:not(:last-child) {
-  border-bottom: 1px solid #e2e8f0;
+  /* border-bottom: 1px solid #e2e8f0; */
 }
 
 .summary-row.total {
