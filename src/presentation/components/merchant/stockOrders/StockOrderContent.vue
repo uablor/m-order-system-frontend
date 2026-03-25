@@ -186,13 +186,13 @@ const getItemErrors = (idx: number): Record<string, string> => {
 };
 
 const summaryPurchaseTotalForeign = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcNetCostForeign(item), 0));
+  items.value.reduce((sum, item) => sum + calc.calcNetCostForeignWithVariants(item), 0));
 const summaryPurchaseTotalLak = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcNetCostLak(item), 0));
+  items.value.reduce((sum, item) => sum + calc.calcNetCostLakWithVariants(item), 0));
 const summarySellingTotalForeign = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcSellingTotalForeign(item), 0));
+  items.value.reduce((sum, item) => sum + calc.calcSellingTotalForeignWithVariants(item), 0));
 const summarySellingTotalLak = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcSellingTotalLak(item), 0));
+  items.value.reduce((sum, item) => sum + calc.calcSellingTotalLakWithVariants(item), 0));
 const summaryNetCostLak = summaryPurchaseTotalLak;
 const summaryProfitLak = computed(() => summarySellingTotalLak.value - summaryNetCostLak.value);
 const summaryProfitForeign = computed(() => {

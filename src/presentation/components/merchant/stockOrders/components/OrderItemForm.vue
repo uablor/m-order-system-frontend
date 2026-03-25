@@ -472,39 +472,39 @@
         </div>
 
         <!-- Summary Section -->
-        <div v-if="currentVariantQty > 0" class="summary-section">
+        <div v-if="itemTotalQuantity > 0" class="summary-section">
           <div class="summary-header">
             <CalculatorOutlined class="summary-icon" />
             <span class="summary-title">{{ $t('merchant.orders.items.itemSummary') }}</span>
-            <span class="summary-qty-badge">{{ $t('merchant.orders.items.totalQtyLabel') }}: <strong>{{ currentVariantQty }}</strong></span>
+            <span class="summary-qty-badge">{{ $t('merchant.orders.items.totalQtyLabel') }}: <strong>{{ itemTotalQuantity }}</strong></span>
           </div>
           <div class="summary-grid">
-            <!-- Net Cost -->
+            <!-- Total Purchase (changed from Net Cost) -->
             <div class="summary-stat">
-              <div class="summary-stat-label">{{ $t('merchant.orders.items.netCostForeign') }} ({{ buyBaseCcy }})</div>
-              <div class="summary-stat-value cost">{{ fmtNum(calc.calcNetCostForeign(variantForCalculation)) }}</div>
+              <div class="summary-stat-label">{{ $t('merchant.orders.summary.purchaseTotalForeign') }} ({{ buyBaseCcy }})</div>
+              <div class="summary-stat-value cost">{{ fmtNum(itemTotalNetCostForeign) }}</div>
             </div>
             <div v-if="!isBuySameCurrency" class="summary-stat">
-              <div class="summary-stat-label">{{ $t('merchant.orders.items.netCostKip') }} ({{ buyTargetCcy }})</div>
-              <div class="summary-stat-value cost">{{ fmtNum(calc.calcNetCostLak(variantForCalculation)) }}</div>
+              <div class="summary-stat-label">{{ $t('merchant.orders.summary.purchaseTotalLak') }} ({{ buyTargetCcy }})</div>
+              <div class="summary-stat-value cost">{{ fmtNum(itemTotalNetCostLak) }}</div>
             </div>
             <!-- Selling Total -->
             <div class="summary-stat">
-              <div class="summary-stat-label">{{ $t('merchant.orders.items.sellingTotalForeign') }} ({{ sellBaseCcy }})</div>
-              <div class="summary-stat-value selling">{{ fmtNum(calc.calcSellingTotalForeign(variantForCalculation)) }}</div>
+              <div class="summary-stat-label">{{ $t('merchant.orders.summary.sellingTotalForeign') }} ({{ sellBaseCcy }})</div>
+              <div class="summary-stat-value selling">{{ fmtNum(itemTotalSellingForeign) }}</div>
             </div>
             <div v-if="!isSellSameCurrency" class="summary-stat">
-              <div class="summary-stat-label">{{ $t('merchant.orders.items.sellingTotalKip') }} ({{ sellTargetCcy }})</div>
-              <div class="summary-stat-value selling">{{ fmtNum(calc.calcSellingTotalLak(variantForCalculation)) }}</div>
+              <div class="summary-stat-label">{{ $t('merchant.orders.summary.sellingTotalLak') }} ({{ sellTargetCcy }})</div>
+              <div class="summary-stat-value selling">{{ fmtNum(itemTotalSellingLak) }}</div>
             </div>
             <!-- Profit -->
             <div class="summary-stat profit-stat">
               <div class="summary-stat-label">{{ $t('merchant.orders.summary.profitForeign') }} ({{ sellBaseCcy }})</div>
-              <div class="summary-stat-value profit">{{ fmtNum(currentVariantProfitForeign) }}</div>
+              <div class="summary-stat-value profit">{{ fmtNum(itemTotalProfitForeign) }}</div>
             </div>
             <div v-if="!isSellSameCurrency" class="summary-stat profit-stat">
               <div class="summary-stat-label">{{ $t('merchant.orders.summary.profitLak') }} ({{ sellTargetCcy }})</div>
-              <div class="summary-stat-value profit">{{ fmtNum(currentVariantProfitLak) }}</div>
+              <div class="summary-stat-value profit">{{ fmtNum(itemTotalProfitLak) }}</div>
             </div>
           </div>
         </div>
@@ -705,6 +705,28 @@ const currentVariantProfitLak = computed(() => calc.calcSellingTotalLak(variantF
 const currentVariantProfitForeign = computed(() => {
   const rate = props.getSellRate();
   return rate === 0 ? 0 : currentVariantProfitLak.value / rate;
+});
+
+// Item-level summary calculations (all variants)
+const itemTotalNetCostForeign = computed(() => calc.calcNetCostForeignWithVariants(props.item));
+const itemTotalNetCostLak = computed(() => calc.calcNetCostLakWithVariants(props.item));
+const itemTotalSellingForeign = computed(() => calc.calcSellingTotalForeignWithVariants(props.item));
+const itemTotalSellingLak = computed(() => calc.calcSellingTotalLakWithVariants(props.item));
+const itemTotalProfitLak = computed(() => itemTotalSellingLak.value - itemTotalNetCostLak.value);
+const itemTotalProfitForeign = computed(() => {
+  const rate = props.getSellRate();
+  return rate === 0 ? 0 : itemTotalProfitLak.value / rate;
+});
+
+// Total quantity across all variants
+const itemTotalQuantity = computed(() => {
+  if (!props.item.variants || props.item.variants.length === 0) {
+    return currentVariantQty.value;
+  }
+  return props.item.variants.reduce((sum, variant) => {
+    const variantQty = variant.customers?.reduce((variantSum, c) => variantSum + (c.qty || 0), 0) || 0;
+    return sum + variantQty;
+  }, 0);
 });
 
 // Variant management functions

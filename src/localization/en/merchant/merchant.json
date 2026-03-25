@@ -419,6 +419,7 @@
     "skus": "SKUs",
     "totalQuantity": "Total Quantity",
     "quantityRemaining": "Remaining Qty",
+     "colProduct": "Variant",
     "purchasePrice": "Purchase Price",
     "purchaseCurrency": "Purchase Currency",
     "purchaseExchangeRate": "Buy Rate",

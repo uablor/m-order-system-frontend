@@ -1,6 +1,11 @@
 import type { ItemForm } from '../types';
 import { getItemTotalQty } from './useOrderItems';
 
+// Helper function to get total quantity for a variant
+function getVariantTotalQty(variant: any): number {
+  return variant.customers?.reduce((sum: number, c: any) => sum + (c.qty || 0), 0) || 0;
+}
+
 export function useItemCalculations(getBuyRate: () => number, getSellRate: () => number) {
   const calcPurchaseTotalForeign = (item: ItemForm) => item.purchasePrice * getItemTotalQty(item);
   const calcPurchaseUnitLak = (item: ItemForm) => item.purchasePrice * getBuyRate();
@@ -31,6 +36,61 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
   const calcSellingTotalForeign = (item: ItemForm) => item.sellingPriceForeign * getItemTotalQty(item);
   const calcSellingTotalLak = (item: ItemForm) => item.sellingPriceForeign * getItemTotalQty(item) * getSellRate();
 
+  // Variant-aware calculation functions
+  const calcPurchaseTotalForeignWithVariants = (item: ItemForm) => {
+    if (!item.variants || item.variants.length === 0) {
+      return calcPurchaseTotalForeign(item);
+    }
+    
+    // Sum across all variants
+    const variantsTotal = item.variants.reduce((sum, variant) => {
+      const variantQty = getVariantTotalQty(variant);
+      return sum + (variant.purchasePrice * variantQty);
+    }, 0);
+    
+    return variantsTotal;
+  };
+
+  const calcPurchaseTotalLakWithVariants = (item: ItemForm) => {
+    const foreignTotal = calcPurchaseTotalForeignWithVariants(item);
+    return foreignTotal * getBuyRate();
+  };
+
+  const calcSellingTotalForeignWithVariants = (item: ItemForm) => {
+    if (!item.variants || item.variants.length === 0) {
+      return calcSellingTotalForeign(item);
+    }
+    
+    // Sum across all variants
+    const variantsTotal = item.variants.reduce((sum, variant) => {
+      const variantQty = getVariantTotalQty(variant);
+      return sum + (variant.sellingPriceForeign * variantQty);
+    }, 0);
+    
+    return variantsTotal;
+  };
+
+  const calcSellingTotalLakWithVariants = (item: ItemForm) => {
+    const foreignTotal = calcSellingTotalForeignWithVariants(item);
+    return foreignTotal * getSellRate();
+  };
+
+  const calcNetCostForeignWithVariants = (item: ItemForm) => {
+    const variantsPurchaseTotal = calcPurchaseTotalForeignWithVariants(item);
+    const shippingForeign = item.shippingPrice || 0;
+    const discountForeign = calcDiscountForeign(item);
+    
+    return variantsPurchaseTotal + shippingForeign - discountForeign;
+  };
+
+  const calcNetCostLakWithVariants = (item: ItemForm) => {
+    const variantsPurchaseLak = calcPurchaseTotalLakWithVariants(item);
+    const shippingLak = calcShippingLak(item);
+    const discountLak = calcDiscountLak(item);
+    
+    return variantsPurchaseLak + shippingLak - discountLak;
+  };
+
   return {
     calcPurchaseTotalForeign,
     calcPurchaseUnitLak,
@@ -45,5 +105,12 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
     calcSellingUnitLak,
     calcSellingTotalForeign,
     calcSellingTotalLak,
+    // New variant-aware functions
+    calcPurchaseTotalForeignWithVariants,
+    calcPurchaseTotalLakWithVariants,
+    calcSellingTotalForeignWithVariants,
+    calcSellingTotalLakWithVariants,
+    calcNetCostForeignWithVariants,
+    calcNetCostLakWithVariants,
   };
 }
