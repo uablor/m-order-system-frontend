@@ -14,6 +14,7 @@ export interface CustomerOrderItem {
   targetCurrencySellingTotal: string | null;
   profit: string;
   orderItemId: number | null;
+  orderItemSkuId?: number;
   exchangeRateSell?: {
     id: number;
     createdAt: string;

@@ -287,7 +287,7 @@
                   :key="sku.id || index"
                   class="indicator-dot"
                   :class="{ active: currentSkuIndex === index }"
-                  @click="goToSku(index)"
+                  @click="goToSku(Number(index))"
                 />
               </div>
             </div>
@@ -428,48 +428,77 @@ const formattedOrderItems = computed(() => {
   console.log('Current order ID:', props.order.id);
   console.log('Order customerOrderItems:', props.order.customerOrderItems);
   
-  // Deduplicate items by orderItemId - show only one per unique orderItemId
-  const uniqueItems = props.order.customerOrderItems?.reduce((acc, item, index) => {
+  // Group items by orderItemId to handle multiple SKUs for same order item
+  const groupedItems = props.order.customerOrderItems?.reduce((acc, item, index) => {
     const orderItemId = item.orderItemId;
     
-    // If no orderItemId or it's the first time we see this orderItemId, add it
-    if (!orderItemId || !acc.has(orderItemId)) {
-      console.log(`Adding unique item ${index}:`, {
+    if (!orderItemId) {
+      // Handle items without orderItemId
+      acc.noOrderItemId = acc.noOrderItemId || [];
+      acc.noOrderItemId.push(item);
+    } else {
+      // Group by orderItemId
+      if (!acc[orderItemId]) {
+        acc[orderItemId] = [];
+      }
+      acc[orderItemId].push(item);
+      
+      console.log(`Grouping item ${index}:`, {
         id: item.id,
         orderItemId: item.orderItemId,
+        orderItemSkuId: item.orderItemSkuId,
+        variant: item.variant,
         productName: item.productName,
-        isFirstOccurrence: !orderItemId || !acc.has(orderItemId)
+        groupSize: acc[orderItemId].length
       });
-      
-      acc.set(orderItemId, item);
-    } else {
-      console.log(`Skipping duplicate item ${index} with orderItemId:`, orderItemId);
     }
     
     return acc;
-  }, new Map<number | null, any>()) || new Map();
+  }, {} as Record<number | string, any[]>) || {};
   
-  // Convert Map back to array and format
-  const formatted = Array.from(uniqueItems.values()).map((item, index) => {
-    console.log(`Processing unique item ${index}:`, {
-      id: item.id,
-      orderItemId: item.orderItemId,
-      productName: item.productName,
-      exchangeRateSell: item.exchangeRateSell,
-      baseCurrency: item.exchangeRateSell?.baseCurrency,
-      targetCurrencySellingTotal: item.targetCurrencySellingTotal
-    });
-    
-    return {
-      ...item,
-      formattedPrice: formatItemPrice({
+  // Convert grouped items to array with merged data
+  const formatted = Object.entries(groupedItems).map(([key, items]) => {
+    if (key === 'noOrderItemId') {
+      // Return items without orderItemId as separate cards
+      return items.map((item) => ({
         ...item,
-        productName: item.productName || ''
-      })
-    };
-  });
+        formattedPrice: formatItemPrice({
+          ...item,
+          productName: item.productName || ''
+        })
+      }));
+    } else {
+      // For items with same orderItemId, create one card with all SKUs
+      const firstItem = items[0];
+      const mergedItem = {
+        ...firstItem,
+        // Remove orderItemSkuId to prevent filtering in getOrderItemSkus
+        orderItemSkuId: undefined,
+        // Merge all SKUs for this order item
+        allSkus: items.map(item => ({
+          id: item.orderItemSkuId,
+          variant: item.variant,
+          quantity: item.quantity,
+          sellingTotal: item.sellingTotal
+        })),
+        // Keep first item's basic info
+        formattedPrice: formatItemPrice({
+          ...firstItem,
+          productName: firstItem.productName || ''
+        })
+      };
+      
+      console.log(`Merged item for orderItemId ${key}:`, {
+        totalSkus: items.length,
+        allSkus: mergedItem.allSkus,
+        firstItem: firstItem
+      });
+      
+      return mergedItem;
+    }
+  }).flat(); // Flatten to handle both grouped and individual items
   
-  console.log('Formatted items after deduplication:', formatted);
+  console.log('Formatted items after grouping:', formatted);
   console.log('Total formatted items count:', formatted.length);
   return formatted;
 });
@@ -481,52 +510,37 @@ const formatItemPrice = (customerOrderItem: {
   exchangeRateSell?: { baseCurrency: string } | null;
   orderItemId?: number | null;
 }) => {
-  // Try to get the cached OrderItem data first
-  const cachedOrderItem = customerOrderItem.orderItemId 
-    ? orderItemImages.value.get(customerOrderItem.orderItemId)
-    : null;
+  // Use customerOrderItems data to calculate price if orderItemId is available
+  if (customerOrderItem.orderItemId) {
+    return formatCustomerOrderItemPrice(customerOrderItem.orderItemId);
+  }
   
-  // Use OrderItem data if available, otherwise fall back to CustomerOrderItem data
-  const item = cachedOrderItem || customerOrderItem;
-  
-  const amount = item.sellingTotal != null
-    ? parseFloat(item.sellingTotal)
-    : parseFloat(item.sellingTotal);
+  // Fallback to original logic for items without orderItemId
+  const amount = parseFloat(customerOrderItem.sellingTotal || '0');
   
   // Use exchangeRateSell.baseCurrency if available, otherwise check if targetCurrencySellingTotal exists
   // If targetCurrencySellingTotal exists, it means the price is converted, so use LAK as fallback
   // If no conversion, try to get currency from exchange rate, fallback to LAK
   let currencyCode: string | null = null;
   
-  console.log(`formatItemPrice for "${item.productName}":`, {
-    sellingTotal: item.sellingTotal,
-    targetCurrencySellingTotal: item.targetCurrencySellingTotal,
-    exchangeRateSell: item.exchangeRateSell,
-    baseCurrency: item.exchangeRateSell?.baseCurrency
-  });
-  
-  if (item.exchangeRateSell?.baseCurrency) {
-    currencyCode = item.exchangeRateSell.baseCurrency;
+  if (customerOrderItem.exchangeRateSell?.baseCurrency) {
+    currencyCode = customerOrderItem.exchangeRateSell.baseCurrency;
     // Cache the currency for this order
     orderCurrencyCache.value.set(props.order.id, currencyCode);
-    console.log(`Using exchange rate currency: ${currencyCode}`);
-  } else if (item.targetCurrencySellingTotal != null) {
+  } else if (customerOrderItem.targetCurrencySellingTotal != null) {
     // Check if we have a cached currency for this order
     const cachedCurrency = orderCurrencyCache.value.get(props.order.id);
     if (cachedCurrency) {
       currencyCode = cachedCurrency;
-      console.log(`Using cached currency: ${currencyCode}`);
     } else {
       // If there's a converted amount but no exchange rate, assume it's converted to LAK
       currencyCode = 'LAK';
-      console.log('Using LAK fallback (has converted amount)');
     }
   } else {
     console.log('Using default fallback (no exchange rate, no conversion)');
   }
   
   const sym = currencySymbol(currencyCode);
-  console.log(`Final currency symbol: ${sym} for currency: ${currencyCode}`);
   
   return `${formatAmount(amount)} ${sym}`;
 };
@@ -604,39 +618,62 @@ const paymentProofUrl = computed(() => {
 // Methods for image handling
 
 const getItemImage = (customerOrderItem: any): string | undefined => {
-  // Check if we have cached the order item with image using orderItemId as key
+  // Check if we have cached order item with image using orderItemId as key
   if (customerOrderItem.orderItemId && orderItemImages.value.has(customerOrderItem.orderItemId)) {
     const orderItem = orderItemImages.value.get(customerOrderItem.orderItemId);
     return orderItem?.image?.publicUrl ?? undefined;
   }
   
-  // Fetch the order item details if not cached
-  if (customerOrderItem.orderItemId) {
+  // Also check by orderItemSkuId if available
+  if (customerOrderItem.orderItemSkuId && orderItemImages.value.has(customerOrderItem.orderItemSkuId)) {
+    const orderItem = orderItemImages.value.get(customerOrderItem.orderItemSkuId);
+    return orderItem?.image?.publicUrl ?? undefined;
+  }
+  
+  // Fetch order item details if not cached
+  // For grouped items (with allSkus), always fetch by orderItemId to get all SKUs
+  // For individual items, we can fetch by orderItemSkuId if available
+  if (customerOrderItem.allSkus && customerOrderItem.orderItemId) {
+    // Grouped item - fetch parent order item with all SKUs
     fetchOrderItemImage(customerOrderItem.orderItemId);
+  } else if (customerOrderItem.orderItemId) {
+    // Individual item - fetch by orderItemId to get all SKUs
+    fetchOrderItemImage(customerOrderItem.orderItemId);
+  } else if (customerOrderItem.orderItemSkuId) {
+    // Fallback - fetch by SKU (will only get that specific SKU)
+    fetchOrderItemImage(0, customerOrderItem.orderItemSkuId);
   }
   
   return undefined;
 };
 
-const fetchOrderItemImage = async (orderItemId: number) => {
-  if (orderItemImages.value.has(orderItemId)) {
+const fetchOrderItemImage = async (orderItemId: number, orderItemSkuId?: number) => {
+  const cacheKey = orderItemSkuId || orderItemId;
+  if (orderItemImages.value.has(cacheKey)) {
     return; // Already cached
   }
   
   try {
-    console.log(`=== FETCHING ORDER ITEM ${orderItemId} ===`);
+    console.log(`=== FETCHING ORDER ITEM ${orderItemId} ${orderItemSkuId ? `(SKU: ${orderItemSkuId})` : ''} ===`);
+    
+    // Always fetch by orderItemId to get all SKUs
+    // Only use SKU filter when we specifically want just that SKU (not for grouped items)
     const orderItem = await orderItemRepository.getById(orderItemId);
+      
     console.log(`=== API RESPONSE FOR ORDER ITEM ${orderItemId} ===`);
     console.log('Full response:', JSON.stringify(orderItem, null, 2));
     console.log('Exchange rate sell data:', orderItem?.exchangeRateSell);
     console.log('Base currency:', orderItem?.exchangeRateSell?.baseCurrency);
     console.log('Target currency selling total:', orderItem?.targetCurrencySellingTotal);
     
-    // Cache the order item
-    orderItemImages.value.set(orderItemId, orderItem);
+    // Cache order item
+    orderItemImages.value.set(cacheKey, orderItem);
     
-    // IMPORTANT: Update the order item in the props data with exchange rate info
-    const customerOrderItem = props.order.customerOrderItems?.find(item => item.orderItemId === orderItemId);
+    // IMPORTANT: Update order item in props data with exchange rate info
+    const customerOrderItem = props.order.customerOrderItems?.find(item => 
+      item.orderItemId === orderItemId || 
+      (orderItemSkuId && item.orderItemSkuId === orderItemSkuId)
+    );
     if (customerOrderItem && orderItem?.exchangeRateSell) {
       console.log(`=== UPDATING ORDER ITEM ${orderItemId} WITH EXCHANGE RATE DATA ===`);
       console.log('Before update:', customerOrderItem.exchangeRateSell);
@@ -707,24 +744,62 @@ const goToSku = (index: number) => {
 
 // Helper functions for SKU modal
 const getOrderItemData = (customerOrderItem: any) => {
+  // Use customerOrderItems data for modal summary if orderItemId is available
+  if (customerOrderItem.orderItemId) {
+    const itemWithPrice = { ...customerOrderItem } as any;
+    itemWithPrice.formattedPrice = formatCustomerOrderItemPrice(customerOrderItem.orderItemId);
+    console.log(`getOrderItemData: Using customerOrderItems data for orderItemId ${customerOrderItem.orderItemId}`);
+    return itemWithPrice;
+  }
+  
+  // Fallback to original logic for items without orderItemId
   // Try to get cached order item with full data including productName using orderItemId as key
   const cachedOrderItem = orderItemImages.value.get(customerOrderItem.orderItemId);
   if (cachedOrderItem) {
-    return cachedOrderItem;
+    // Calculate formatted price from SKUs if available
+    const itemWithPrice = { ...cachedOrderItem } as any;
+    if (cachedOrderItem.skus && cachedOrderItem.skus.length > 0) {
+      const totalFromSkus = cachedOrderItem.skus.reduce((sum, sku) => {
+        return sum + parseFloat(sku.sellingTotal || '0');
+      }, 0);
+      
+      // Use the same currency logic as formatItemPrice
+      let currencyCode = cachedOrderItem.exchangeRateSell?.baseCurrency || null;
+      if (!currencyCode && cachedOrderItem.targetCurrencySellingTotal) {
+        currencyCode = orderCurrencyCache.value.get(props.order.id) || 'LAK';
+      }
+      if (!currencyCode) {
+        currencyCode = 'LAK';
+      }
+      
+      itemWithPrice.formattedPrice = `${formatAmount(totalFromSkus)} ${currencySymbol(currencyCode)}`;
+      console.log(`getOrderItemData: Calculated price from SKUs: ${totalFromSkus} ${currencyCode}`);
+    }
+    return itemWithPrice;
   }
   // Return the customer order item as fallback
   return customerOrderItem;
 };
 
 const getOrderItemSkus = (customerOrderItem: any) => {
+  // Check if item has allSkus property (from grouped items)
+  if (customerOrderItem.allSkus) {
+    return customerOrderItem.allSkus;
+  }
+  
   // Try to get cached order item with full SKU data using orderItemId as key
   const cachedOrderItem = orderItemImages.value.get(customerOrderItem.orderItemId);
   if (cachedOrderItem && cachedOrderItem.skus) {
+    // Only filter by orderItemSkuId if this is NOT a grouped item (doesn't have allSkus)
+    // For grouped items, we want to show all SKUs
+    if (customerOrderItem.orderItemSkuId && !customerOrderItem.allSkus) {
+      return cachedOrderItem.skus.filter(sku => sku.id === customerOrderItem.orderItemSkuId);
+    }
     return cachedOrderItem.skus;
   }
   // Fallback: create a mock SKU structure from the customer order item
   return customerOrderItem.quantity ? [{
-    id: 0,
+    id: customerOrderItem.orderItemSkuId || 0,
     variant: customerOrderItem.variant || 'Standard',
     quantity: customerOrderItem.quantity,
     sellingTotal: customerOrderItem.sellingTotal || '0'
@@ -741,14 +816,70 @@ const getCurrencySymbol = (item: any) => {
   return currencySymbol(currencyCode);
 };
 
-const getItemQuantity = (customerOrderItem: { orderItemId?: number | null; quantity?: number }) => {
-  // Try to get the cached OrderItem data first
-  const cachedOrderItem = customerOrderItem.orderItemId 
-    ? orderItemImages.value.get(customerOrderItem.orderItemId)
-    : null;
+// Helper functions to calculate values from customerOrderItems
+const getQuantityFromCustomerOrderItems = (orderItemId: number) => {
+  if (!props.order.customerOrderItems) return 0;
   
-  // Use OrderItem quantity if available, otherwise fall back to CustomerOrderItem quantity
-  return cachedOrderItem?.quantity ?? customerOrderItem.quantity ?? 0;
+  const itemsWithSameOrderItemId = props.order.customerOrderItems.filter((item: any) => item.orderItemId === orderItemId);
+  const totalQuantity = itemsWithSameOrderItemId.reduce((sum, item: any) => sum + (item.quantity || 0), 0);
+  
+  console.log(`getQuantityFromCustomerOrderItems for orderItemId ${orderItemId}:`, {
+    totalQuantity,
+    itemsCount: itemsWithSameOrderItemId.length,
+    items: itemsWithSameOrderItemId.map((item: any) => ({ id: item.id, quantity: item.quantity }))
+  });
+  
+  return totalQuantity;
+};
+
+const getTotalPriceFromCustomerOrderItems = (orderItemId: number) => {
+  if (!props.order.customerOrderItems) return 0;
+  
+  const itemsWithSameOrderItemId = props.order.customerOrderItems.filter((item: any) => item.orderItemId === orderItemId);
+  const totalSellingTotal = itemsWithSameOrderItemId.reduce((sum, item: any) => sum + parseFloat(item.sellingTotal || '0'), 0);
+  
+  console.log(`getTotalPriceFromCustomerOrderItems for orderItemId ${orderItemId}:`, {
+    totalSellingTotal,
+    itemsCount: itemsWithSameOrderItemId.length,
+    items: itemsWithSameOrderItemId.map((item: any) => ({ id: item.id, sellingTotal: item.sellingTotal }))
+  });
+  
+  return totalSellingTotal;
+};
+
+const formatCustomerOrderItemPrice = (orderItemId: number) => {
+  const totalAmount = getTotalPriceFromCustomerOrderItems(orderItemId);
+  
+  // Get currency from the first customer order item with this orderItemId
+  const firstItem = props.order.customerOrderItems?.find((item: any) => item.orderItemId === orderItemId);
+  let currencyCode = firstItem?.exchangeRateSell?.baseCurrency || null;
+  
+  if (!currencyCode && firstItem?.exchangeRateSell) {
+    currencyCode = orderCurrencyCache.value.get(props.order.id) || 'LAK';
+  }
+  if (!currencyCode) {
+    currencyCode = 'LAK';
+  }
+  
+  const formattedPrice = `${formatAmount(totalAmount)} ${currencySymbol(currencyCode)}`;
+  
+  console.log(`formatCustomerOrderItemPrice for orderItemId ${orderItemId}:`, {
+    totalAmount,
+    currencyCode,
+    formattedPrice
+  });
+  
+  return formattedPrice;
+};
+
+const getItemQuantity = (customerOrderItem: { orderItemId?: number | null; quantity?: number }) => {
+  // Use customerOrderItems data to sum quantities by orderItemId
+  if (customerOrderItem.orderItemId) {
+    return getQuantityFromCustomerOrderItems(customerOrderItem.orderItemId);
+  }
+  
+  // Fallback to original logic for items without orderItemId
+  return customerOrderItem.quantity ?? 0;
 };
 
 watch(() => props.order.id, (newOrderId, oldOrderId) => {

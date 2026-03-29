@@ -399,6 +399,7 @@ export interface CustomerOrderItem {
   id: number;
   customerOrderId: number;
   orderItemId: number;
+  orderItemSkuId?: number;
   orderItemIndex: number | null;
   productName: string | null;
   variant: string | null;

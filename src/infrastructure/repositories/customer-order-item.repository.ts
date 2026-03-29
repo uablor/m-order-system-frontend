@@ -7,6 +7,7 @@ export interface CustomerOrderItemDetail {
   id: number;
   customerOrderId: number;
   orderItemId: number;
+  orderItemSkuId?: number;
   quantity: number;
   sellingPriceForeign: string;
   sellingTotalLak: string;
@@ -20,6 +21,7 @@ export interface CustomerOrderItemQuery {
   limit?: number;
   customerOrderId?: number;
   orderItemId?: number;
+  orderItemSkuId?: number;
 }
 
 class CustomerOrderItemRepository {

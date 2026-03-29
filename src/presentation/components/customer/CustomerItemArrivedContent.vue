@@ -29,21 +29,21 @@
 
       <!-- RIGHT PANEL: detail or placeholder (desktop only) -->
       <div class="right-panel">
-        <Transition name="fade">
-          <div v-if="!selectedOrder" class="detail-placeholder">
+        <Transition name="fade" mode="out-in">
+          <div v-if="!selectedOrder" key="placeholder" class="detail-placeholder">
             <div class="placeholder-icon"><InboxOutlined /></div>
             <div class="placeholder-text">{{ $t('customer.sectionTitle') }}</div>
             <div class="placeholder-hint">{{ $t('customer.greetingSub') }}</div>
           </div>
+          <CustomerOrderDetail
+            v-else-if="!isMobile"
+            key="desktop-detail"
+            :order="selectedOrder"
+            :customer-token="customerToken"
+            :is-mobile="false"
+            @submitted="onSubmitted"
+          />
         </Transition>
-
-        <CustomerOrderDetail
-          v-if="!isMobile"
-          :order="selectedOrder"
-          :customer-token="customerToken"
-          :is-mobile="false"
-          @submitted="onSubmitted"
-        />
       </div>
 
     </div>
@@ -51,6 +51,7 @@
     <!-- MOBILE: detail rendered via Teleport inside CustomerOrderDetail -->
     <CustomerOrderDetail
       v-if="isMobile"
+      key="mobile-detail"
       :order="selectedOrder"
       :customer-token="customerToken"
       :is-mobile="true"
@@ -118,6 +119,13 @@ const filters = ref<CustomerOrderFilters>({});
 /* --- Filter order code บน frontend (ไม่เรียก API ใหม่) --- */
 const filteredOrders = computed(() => {
   const list = orders.value || [];
+  
+  // Defensive check to ensure we always have an array
+  if (!Array.isArray(list)) {
+    console.warn('Orders is not an array:', list);
+    return [];
+  }
+  
   const searchVal = filters.value.orderCode?.trim();
   if (!searchVal) return list;
   const lower = searchVal.toLowerCase();
@@ -182,7 +190,15 @@ const fetchOrders = async (pageNum?: number, limitNum?: number) => {
       }),
     ]);
     const rawOrders = ordersRes.results ?? [];
-    orders.value = rawOrders;
+    
+    // Defensive check to prevent DOM issues
+    if (!Array.isArray(rawOrders)) {
+      console.warn('Invalid orders data received:', ordersRes);
+      orders.value = [];
+    } else {
+      orders.value = rawOrders;
+    }
+    
     summary.value = summaryRes ?? [];
     if (ordersRes.pagination) {
       pagination.value = ordersRes.pagination;

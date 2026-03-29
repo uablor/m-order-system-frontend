@@ -8,6 +8,7 @@ export interface OrderItemListQuery {
   page?: number;
   limit?: number;
   orderId?: number;
+  orderItemSkuId?: number;
 }
 
 class OrderItemRepository {
@@ -23,6 +24,7 @@ class OrderItemRepository {
       limit: query?.limit ?? 10,
     };
     if (query?.orderId) params.orderId = query.orderId;
+    if (query?.orderItemSkuId) params.orderItemSkuId = query.orderItemSkuId;
     return await this.apiClient.getPaginated<BackendPaginatedResponse<OrderItem>>(
       API_ENDPOINTS.ORDER_ITEMS.BY_MERCHANT,
       params,
@@ -35,6 +37,7 @@ class OrderItemRepository {
       limit: query?.limit ?? 10,
     };
     if (query?.orderId) params.orderId = query.orderId;
+    if (query?.orderItemSkuId) params.orderItemSkuId = query.orderItemSkuId;
     return await this.apiClient.getPaginated<BackendPaginatedResponse<OrderItem>>(
       API_ENDPOINTS.ORDER_ITEMS.LIST,
       params,
@@ -43,6 +46,17 @@ class OrderItemRepository {
 
   async getById(id: number): Promise<OrderItem> {
     const res = await this.apiClient.get<{ results: OrderItem }>(API_ENDPOINTS.ORDER_ITEMS.GET_BY_ID(id));
+    const item = extractSingleResult<OrderItem>(res);
+    if (!item) throw new Error('Order item not found');
+    return item;
+  }
+
+  async getByIdWithSkuFilter(id: number, filter: 'orderItem' | 'sku' = 'orderItem'): Promise<OrderItem> {
+    const url = filter === 'sku' 
+      ? `${API_ENDPOINTS.ORDER_ITEMS.GET_BY_ID(id)}?filter=sku`
+      : API_ENDPOINTS.ORDER_ITEMS.GET_BY_ID(id);
+    
+    const res = await this.apiClient.get<{ results: OrderItem }>(url);
     const item = extractSingleResult<OrderItem>(res);
     if (!item) throw new Error('Order item not found');
     return item;
