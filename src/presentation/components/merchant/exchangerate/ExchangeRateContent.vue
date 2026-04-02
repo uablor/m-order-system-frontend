@@ -337,35 +337,6 @@ const onCurrencySelect = (value: string) => {
 };
 
 // Custom dropdown state and methods
-const showCurrencyDropdown = ref(false);
-const dropdownPosition = ref({ top: 0, left: 0 });
-
-const hideCurrencyDropdown = () => {
-  setTimeout(() => {
-    showCurrencyDropdown.value = false;
-  }, 200);
-};
-
-const selectCurrency = (currency: string) => {
-  filters.search = currency;
-  showCurrencyDropdown.value = false;
-  applyFilters();
-};
-
-const updateDropdownPosition = (event: FocusEvent) => {
-  const target = event.target as HTMLElement;
-  const rect = target.getBoundingClientRect();
-  dropdownPosition.value = {
-    top: rect.bottom + window.scrollY,
-    left: rect.left + window.scrollX
-  };
-};
-
-const showDropdown = (event: FocusEvent) => {
-  updateDropdownPosition(event);
-  showCurrencyDropdown.value = true;
-};
-
 const { t } = useI18n();
 const { windowWidth } = useIsMobile();
 const { loading, rates, pagination, fetchRates, createRate, deleteRate } = useMerchantExchangeRates();
@@ -581,15 +552,6 @@ const onSearchChange = () => {
     return;
   }
   searchTimer = setTimeout(() => applyFilters(), 450);
-};
-
-/* base/target currency: toUpperCase + debounced auto-search */
-let baseTargetTimer: ReturnType<typeof setTimeout> | undefined;
-const onBaseTargetInput = (field: 'base' | 'target') => {
-  if (field === 'base') filters.baseCurrency = (filters.baseCurrency ?? '').toUpperCase();
-  else filters.targetCurrency = (filters.targetCurrency ?? '').toUpperCase();
-  clearTimeout(baseTargetTimer);
-  baseTargetTimer = setTimeout(() => applyFilters(), 450);
 };
 
 const resetFilters = () => {

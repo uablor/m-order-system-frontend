@@ -564,12 +564,6 @@ const formatDateOnly = (dateStr: string | Date) => {
   return d.toLocaleDateString();
 };
 
-const getOrderItemName = (orderItemId: number) => {
-  const item = order.value?.orderItems?.find(i => i.id === orderItemId);
-  if (!item) return `#${orderItemId}`;
-  return item.variant ? `${item.productName} (${item.variant})` : item.productName;
-};
-
 const getCoItemProductName = (coItem: any) => {
   console.log('=== getCoItemProductName DEBUG ===');
   console.log('coItem:', coItem);
@@ -643,11 +637,6 @@ const handleImageError = (event: any) => {
 const selectedOrderItem = computed(() => {
   if (!selectedOrderItemId.value || !order.value?.orderItems) return null;
   return order.value.orderItems.find(item => item.id === selectedOrderItemId.value);
-});
-
-const selectedItemIndex = computed(() => {
-  if (!selectedOrderItem.value || !order.value?.orderItems) return 1;
-  return order.value.orderItems.findIndex((item: any) => item.id === selectedOrderItem.value?.id) + 1;
 });
 
 const fetchOrder = async () => {

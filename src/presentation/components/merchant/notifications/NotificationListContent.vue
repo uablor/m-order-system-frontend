@@ -666,7 +666,7 @@ const {
   currentPage,
   pageSize,
   total,
-  onPageChange: arrivalOnPageChange,
+  onPageChange: _arrivalOnPageChange,
   // Notification functionality
   selectedCustomerOrderIds,
   createNotiSubmitting,
@@ -676,11 +676,11 @@ const {
   openCreateNotiConfirm,
   closeCreateNotiModal,
   createNotifications,
-  fetchCustomers, // Add fetchCustomers to return
+  // fetchCustomers, // Add fetchCustomers to return
   // Image modal functionality
   imageModalVisible,
   modalImageUrl,
-  showImageModal,
+  // showImageModal,
   closeImageModal,
 } = customerOrderData;
 
@@ -715,7 +715,7 @@ const {
   createForm,
   createSubmitting,
   customers,
-  customerOrders: historyCustomerOrders,
+  // customerOrders: historyCustomerOrders,
   loadingCustomers,
   loadingCustomerOrders,
   closeCreateModal,

@@ -367,12 +367,6 @@ const getOrderDisplayCode = (order: CustomerOrder): string => {
   return String(order.id);
 };
 
-const getOrderTitle = (order: CustomerOrder): string => {
-  const first = order.customerOrderItems?.[0];
-  if (first?.productName) return first.productName;
-  return `${t('customer.orderLabel')} #${getOrderDisplayCode(order)}`;
-};
-
 /** สถานะที่แสดง: ถ้ามี payment รอตรวจสอบ ให้แสดง PENDING_VERIFICATION */
 const displayPaymentStatus = (order: CustomerOrder): string => {
   if (order.hasPendingPayment) return 'PENDING_VERIFICATION';

@@ -2,7 +2,7 @@
  * Composable for Arrival List in Notification Tab
  * Handles fetching, filtering, and table display of arrival data
  */
-import { computed, onMounted, reactive, ref, h } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { TablePaginationConfig } from 'ant-design-vue';
 import type { TableColumnsType } from 'ant-design-vue';
@@ -262,38 +262,13 @@ export function useCustomerOrderList() {
   // Table change handler
   const handleTableChange = (
     pagination: any,
-    filters: any,
-    sorter: any,
+    _filters: any,
+    _sorter: any,
   ) => {
     currentPage.value = pagination.current;
     pageSize.value = pagination.pageSize;
     fetchCustomerOrders();
   };
-
-  // Toggle filters
-  const toggleShowFilters = () => {
-    showFilters.value = !showFilters.value;
-  };
-
-  // Checkbox selection functions
-  const toggleArrivalSelection = (orderId: number) => {
-    if (selectedCustomerOrderIds.value.has(orderId)) {
-      selectedCustomerOrderIds.value.delete(orderId);
-    } else {
-      selectedCustomerOrderIds.value.add(orderId);
-    }
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedCustomerOrderIds.value.size === customerOrders.value.length) {
-      selectedCustomerOrderIds.value.clear();
-    } else {
-      selectedCustomerOrderIds.value = new Set(customerOrders.value.map(co => co.id));
-    }
-  };
-
-  const isAllSelected = computed(() => customerOrders.value.length > 0 && selectedCustomerOrderIds.value.size === customerOrders.value.length);
-  const isIndeterminate = computed(() => selectedCustomerOrderIds.value.size > 0 && selectedCustomerOrderIds.value.size < customerOrders.value.length);
 
   // Create notification functions
   const openCreateNotiConfirm = () => {
@@ -425,7 +400,6 @@ export function useCustomerOrderList() {
     resetFilters,
     onPageChange,
     handleTableChange,
-    toggleShowFilters,
     // Notification functionality
     selectedCustomerOrderIds,
     createNotiSubmitting,

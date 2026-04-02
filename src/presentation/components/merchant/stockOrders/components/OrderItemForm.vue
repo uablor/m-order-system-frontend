@@ -701,12 +701,6 @@ const currentVariantQty = computed(() => {
   return currentVariant.value.customers.reduce((sum, c) => sum + (c.qty || 0), 0);
 });
 
-const currentVariantProfitLak = computed(() => calc.calcSellingTotalLak(variantForCalculation.value) - calc.calcNetCostLak(variantForCalculation.value));
-const currentVariantProfitForeign = computed(() => {
-  const rate = props.getSellRate();
-  return rate === 0 ? 0 : currentVariantProfitLak.value / rate;
-});
-
 // Item-level summary calculations (all variants)
 const itemTotalNetCostForeign = computed(() => calc.calcNetCostForeignWithVariants(props.item));
 const itemTotalNetCostLak = computed(() => calc.calcNetCostLakWithVariants(props.item));
