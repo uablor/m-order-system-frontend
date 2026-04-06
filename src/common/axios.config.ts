@@ -4,7 +4,13 @@ import router from '@/router';
 import { deleteCookie } from '@/shared/utils/cookie';
 import { useAuthStore } from '@/store/auth.store';
 
-const envBaseUrl = (import.meta.env.VITE_API_BASE_URL).trim();
+function getEnv(key: string): string {
+  const value = import.meta.env[key];
+  if (!value) throw new Error(`Missing env: ${key}`);
+  return value;
+}
+
+const envBaseUrl = getEnv('VITE_API_BASE_URL');
 
 const api: AxiosInstance = axios.create({
   baseURL: envBaseUrl,
