@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:dist/assets/useWhatsApp-C7tVqm7f.js
-const k=/\d/g;function d(e){if(!e||typeof e!="string")return"";const n=e.match(k);return n?n.join(""):""}function m(e){return!e||e.length<8?!1:/^\d+$/.test(e)}function f(e,n){const s=`https://wa.me/${e}`;return n&&n.trim()?`${s}?text=${encodeURIComponent(n.trim())}`:s}function g(e){const n="http://127.0.0.1:5173".trim().replace(/\/$/,""),s="/customer/item-arrived";if(!e||!e.includes("?"))return`${n}${s}`;const c=e.indexOf("?"),l=e.substring(c),a=`${n}${s}${l}`;return!a.startsWith("http://")&&!a.startsWith("https://")?`https://${a}`:a}function L(e={}){const{defaultMessage:n="",openInNewTab:s=!0}=e,c={en:{base:`Hello {customerName},
-========
 const k=/\d/g;function d(e){if(!e||typeof e!="string")return"";const n=e.match(k);return n?n.join(""):""}function m(e){return!e||e.length<8?!1:/^\d+$/.test(e)}function f(e,n){const s=`https://wa.me/${e}`;return n&&n.trim()?`${s}?text=${encodeURIComponent(n.trim())}`:s}function g(e){const n="http://localhost:5173".trim().replace(/\/$/,""),s="/customer/item-arrived";if(!e||!e.includes("?"))return`${n}${s}`;const c=e.indexOf("?"),l=e.substring(c),a=`${n}${s}${l}`;return!a.startsWith("http://")&&!a.startsWith("https://")?`https://${a}`:a}function L(e={}){const{defaultMessage:n="",openInNewTab:s=!0}=e,c={en:{base:`Hello {customerName},
->>>>>>>> 5cbc828 (update code for fix userid current):dist/assets/useWhatsApp-B9ll0TIi.js
 
 Good news! Your order has arrived and is ready for you.`,withLink:`
 
