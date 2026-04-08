@@ -8,6 +8,7 @@ import type { BackendPaginatedResponse } from '@/shared/types/backend-response.t
 import type { CustomerCreateDto, CustomerListQueryDto, CustomerUpdateDto } from '@/application/dto/customer.dto';
 import { handleApiError } from '@/shared/utils/error';
 import { useMerchantCustomerStore } from '@/presentation/stores/merchant/merchantCustomer.store';
+import { useAuthStore } from '@/store/auth.store';
 
 /**
  * Business logic สำหรับ Merchant: Customer/Agent CRUD
@@ -17,9 +18,19 @@ import { useMerchantCustomerStore } from '@/presentation/stores/merchant/merchan
 export function useMerchantCustomers() {
   const { t } = useI18n();
   const store = useMerchantCustomerStore();
+  const authStore = useAuthStore();
 
   const ensureMerchantId = async (): Promise<number | null> => {
     if (store.merchantId != null && store.merchantId !== null) return store.merchantId;
+    
+    // Use merchantId from JWT token instead of fetching first merchant
+    const merchantIdFromToken = authStore.authPayload?.merchantId;
+    if (merchantIdFromToken) {
+      store.setMerchantId(merchantIdFromToken);
+      return merchantIdFromToken;
+    }
+    
+    // Fallback: fetch merchant list if merchantId not in token
     try {
       const res = await merchantRepository.getList({ page: 1, limit: 1 });
       const first = res.results?.[0];
