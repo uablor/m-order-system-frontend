@@ -344,10 +344,13 @@ const goBack = () => router.push('/super-admin/users');
   min-height: 400px;
   display: flex;
   flex-direction: column;
+  overflow: visible;   /*  ADD THIS */
+  border: 2px solid red; /* Debug border */
 }
 
 .panel {
   padding: 28px 28px 20px;
+   overflow: visible;  /* ✅ ADD */
 }
 
 /* ====== divider ====== */
