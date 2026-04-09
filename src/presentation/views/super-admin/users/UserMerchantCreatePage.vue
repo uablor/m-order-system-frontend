@@ -64,6 +64,7 @@
               v-model:value="formState.contactEmail"
               :placeholder="$t('users.contactEmailPlaceholder')"
               size="large"
+              style="border: 1px solid #d9d9d9; box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);"
             />
           </a-form-item>
 
