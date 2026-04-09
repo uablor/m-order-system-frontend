@@ -20,9 +20,16 @@ export function usePaymentNotifications() {
       const payments = await paymentRepository.getUnreadPaymentsByMerchant();
       unreadPayments.value = payments;
     } catch (err) {
-      console.error('Error fetching unread payments:', err);
-      error.value = 'Failed to fetch notifications';
-      unreadPayments.value = [];
+      // Handle 403 errors gracefully (likely permission issues for super-admin)
+      if (err instanceof Error && err.message.includes('403')) {
+        // Silently handle 403 errors - super-admin may not have payment permissions
+        console.warn('Payment notifications not available for current user role');
+        unreadPayments.value = [];
+      } else {
+        console.error('Error fetching unread payments:', err);
+        error.value = 'Failed to fetch notifications';
+        unreadPayments.value = [];
+      }
     } finally {
       isLoading.value = false;
     }

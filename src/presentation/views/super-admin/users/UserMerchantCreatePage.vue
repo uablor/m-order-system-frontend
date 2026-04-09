@@ -415,12 +415,6 @@ const goBack = () => router.push('/super-admin/users');
    overflow: visible;  /* ✅ ADD */
 }
 
-/* ====== divider ====== */
-.panel-divider {
-  width: 1px;
-  background: #f0f0f0;
-  align-self: stretch;
-}
 
 /* ====== section header ====== */
 .panel-header {
