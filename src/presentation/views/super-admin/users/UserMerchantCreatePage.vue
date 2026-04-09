@@ -62,7 +62,8 @@
               <MailOutlined class="lbl-ico" />{{ $t('users.contactEmail') }}
             </label>
             <input
-              v-model="formState.contactEmail"
+              :value="formState.contactEmail"
+              @input="handleEmailInput"
               :placeholder="$t('users.contactEmailPlaceholder')"
               class="custom-input"
               type="email"
@@ -270,6 +271,11 @@ const retriggerConfirmValidation = () => {
 };
 
 const opt = (v: string) => (v.trim() ? v.trim() : undefined);
+
+const handleEmailInput = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  formState.contactEmail = target.value;
+};
 
 const submit = async () => {
   await formRef.value?.validate();
