@@ -46,31 +46,27 @@
           </a-form-item>
 
           <!-- เบอร์โทร + อีเมลร้าน -->
-          <a-row :gutter="12">
-            <a-col :xs="24" :sm="12">
-              <a-form-item name="contactPhone">
-                <template #label>
-                  <span class="field-label"><PhoneOutlined class="lbl-ico" />{{ $t('users.contactPhone') }}</span>
-                </template>
-                <PhoneInputWithCountry
-                  v-model="formState.contactPhone"
-                  placeholder="20 89 48 48 48"
-                />
-              </a-form-item>
-            </a-col>
-            <a-col :xs="24" :sm="12">
-              <a-form-item name="contactEmail">
-                <template #label>
-                  <span class="field-label"><MailOutlined class="lbl-ico" />{{ $t('users.contactEmail') }}</span>
-                </template>
-                <a-input
-                  v-model:value="formState.contactEmail"
-                  :placeholder="$t('users.contactEmailPlaceholder')"
-                  size="large"
-                />
-              </a-form-item>
-            </a-col>
-          </a-row>
+          <a-form-item name="contactPhone">
+            <template #label>
+              <span class="field-label"><PhoneOutlined class="lbl-ico" />{{ $t('users.contactPhone') }}</span>
+            </template>
+            <PhoneInputWithCountry
+              v-model="formState.contactPhone"
+              placeholder="20 89 48 48 48"
+            />
+          </a-form-item>
+
+          <a-form-item name="contactEmail">
+            <template #label>
+              <span class="field-label"><MailOutlined class="lbl-ico" />Contact Email</span>
+            </template>
+            <a-input
+              v-model:value="formState.contactEmail"
+              placeholder="test@email.com"
+              size="large"
+              style="border: 2px solid blue; background: #f0f8ff;"
+            />
+          </a-form-item>
 
           <!-- ที่อยู่ร้าน -->
           <a-form-item name="shopAddress">
@@ -330,9 +326,7 @@ const goBack = () => router.push('/super-admin/users');
 
 /* ====== 2-panel card ====== */
 .two-panel-card {
-  display: grid;
-  grid-template-columns: 1fr 1px 1fr;
-  gap: 0;
+  display: flex; /* Changed from grid to flex for debugging */
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.07), 0 8px 24px rgba(15, 23, 42, 0.05);
@@ -345,7 +339,7 @@ const goBack = () => router.push('/super-admin/users');
   display: flex;
   flex-direction: column;
   overflow: visible;   /*  ADD THIS */
-  border: 2px solid red; /* Debug border */
+  /* border: 2px solid red; Debug border */
 }
 
 .panel {
