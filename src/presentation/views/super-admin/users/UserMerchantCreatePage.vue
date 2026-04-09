@@ -58,13 +58,12 @@
 
           <a-form-item name="contactEmail">
             <template #label>
-              <span class="field-label"><MailOutlined class="lbl-ico" />Contact Email</span>
+              <span class="field-label"><MailOutlined class="lbl-ico" />{{ $t('users.contactEmail') }}</span>
             </template>
             <a-input
               v-model:value="formState.contactEmail"
-              placeholder="test@email.com"
+              :placeholder="$t('users.contactEmailPlaceholder')"
               size="large"
-              style="border: 2px solid blue; background: #f0f8ff;"
             />
           </a-form-item>
 
@@ -326,7 +325,9 @@ const goBack = () => router.push('/super-admin/users');
 
 /* ====== 2-panel card ====== */
 .two-panel-card {
-  display: flex; /* Changed from grid to flex for debugging */
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 0;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.07), 0 8px 24px rgba(15, 23, 42, 0.05);
