@@ -88,6 +88,7 @@ const MERCHANTS_ENDPOINTS = {
   GET_BY_ID: (id: number) => `${MERCHANTS_BASE}/${id}`,
   GET_DETAIL: (id: number) => `${MERCHANTS_BASE}/${id}/detail`,
   UPDATE: (id: number) => `${MERCHANTS_BASE}/${id}`,
+  UPDATE_ACTIVE: (id: number) => `${MERCHANTS_BASE}/${id}/active`,
   DELETE: (id: number) => `${MERCHANTS_BASE}/${id}`,
   PRICE_CURRENCY_SUMMARY_BY_DATE: (id: number) => `${MERCHANTS_BASE}/${id}/price-currency-summary-by-date`,
 } as const;

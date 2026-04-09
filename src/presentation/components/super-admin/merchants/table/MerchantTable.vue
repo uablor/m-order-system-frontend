@@ -125,18 +125,16 @@
               <a-button type="text" size="small" class="icon-action" @click="$emit('edit', record)">
                 <EditOutlined />
               </a-button>
-              <a-popconfirm 
-                :title="record.isActive ? $t('merchants.confirmDeactivate') : $t('merchants.confirmActivate')" 
-                @confirm="$emit('toggle-status', record)"
-              >
+              <a-tooltip :title="record.isActive ? $t('merchants.deactivateMerchant') : $t('merchants.activateMerchant')">
                 <a-button 
                   type="text" 
                   size="small" 
                   :class="['icon-action', record.isActive ? 'status-active' : 'status-inactive']"
+                  @click="$emit('toggle-status', record)"
                 >
                   <PoweroffOutlined />
                 </a-button>
-              </a-popconfirm>
+              </a-tooltip>
               <a-popconfirm :title="$t('merchants.confirmDelete')" @confirm="$emit('delete', record)">
                 <a-button type="text" size="small" danger class="icon-action"><DeleteOutlined /></a-button>
               </a-popconfirm>
@@ -205,18 +203,16 @@
                 <a-button type="default" size="small" class="action-btn" @click="$emit('edit', m)">
                   <EditOutlined /> {{ $t('common.edit') }}
                 </a-button>
-                <a-popconfirm 
-                  :title="m.isActive ? $t('merchants.confirmDeactivate') : $t('merchants.confirmActivate')" 
-                  @confirm="$emit('toggle-status', m)"
-                >
+                <a-tooltip :title="m.isActive ? $t('merchants.deactivateMerchant') : $t('merchants.activateMerchant')">
                   <a-button 
                     type="text" 
                     size="small" 
                     :class="['action-btn', m.isActive ? 'status-active' : 'status-inactive']"
+                    @click="$emit('toggle-status', m)"
                   >
                     <PoweroffOutlined /> {{ m.isActive ? $t('merchants.deactivate') : $t('merchants.activate') }}
                   </a-button>
-                </a-popconfirm>
+                </a-tooltip>
                 <a-popconfirm :title="$t('merchants.confirmDelete')" @confirm="$emit('delete', m)">
                   <a-button type="text" danger size="small" class="action-btn">
                     <DeleteOutlined /> {{ $t('common.delete') }}

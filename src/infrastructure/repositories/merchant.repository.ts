@@ -45,6 +45,10 @@ export class MerchantRepository {
     await this.apiClient.delete<void>(API_ENDPOINTS.MERCHANTS.DELETE(id));
   }
 
+  async setActive(id: number, isActive: boolean): Promise<void> {
+    await this.apiClient.putOrPatch<void>(API_ENDPOINTS.MERCHANTS.UPDATE_ACTIVE(id), { isActive });
+  }
+
   async getAdminPriceCurrencySummary(merchantId: number): Promise<any> {
     return await this.apiClient.post<any>('/dashboard/admin/merchant-price-currency-summary', { merchantId });
   }

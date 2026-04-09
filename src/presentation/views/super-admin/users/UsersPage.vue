@@ -7,6 +7,7 @@
       @create-user="openCreateModal"
       @create-merchant="goCreateMerchantUser"
       @delete="confirmDelete"
+      @toggle-status="handleToggleStatus"
       @filter-change="handleFilterChange"
       @page-change="handlePageChange"
     />
@@ -43,6 +44,7 @@ const {
   deleteUser,
   changePage,
   createUser,
+  toggleActive,
 } = useSuperAdminUsers();
 
 const { fetchRoles, roles } = useSuperAdminRoles();
@@ -91,6 +93,10 @@ const handleFilterChange = async (filters: UserFilterPayload) => {
     endDate: filters.endDate,
   };
   await fetchUsers(query);
+};
+
+const handleToggleStatus = async (user: import('@/domain/entities/user.entity').User) => {
+  await toggleActive(user.id, !user.isActive);
 };
 
 const handlePageChange = async (page: number, pageSize: number) => {

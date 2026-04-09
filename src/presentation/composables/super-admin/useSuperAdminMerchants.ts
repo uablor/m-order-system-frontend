@@ -128,6 +128,16 @@ export function useSuperAdminMerchants() {
     selectedMerchant.value = merchant;
   };
 
+  const toggleMerchantStatus = async (id: number, isActive: boolean) => {
+    try {
+      await merchantService.setActive(id, isActive);
+      await fetchMerchants(); // Refresh list to show updated status
+      message.success(isActive ? 'Merchant activated successfully' : 'Merchant deactivated successfully');
+    } catch (error) {
+      handleApiError(error, t);
+    }
+  };
+
   return {
     loading: computed(() => store.loading),
     merchants: computed(() => store.tableData),
@@ -137,6 +147,7 @@ export function useSuperAdminMerchants() {
     createMerchant,
     updateMerchant,
     deleteMerchant,
+    toggleMerchantStatus,
     changePage,
     setSelectedMerchant,
   };

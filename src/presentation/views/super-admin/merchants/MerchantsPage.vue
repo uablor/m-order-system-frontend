@@ -8,6 +8,7 @@
       @detail="goDetail"
       @edit="goEdit"
       @delete="confirmDelete"
+      @toggle-status="handleToggleStatus"
       @filter-change="handleFilterChange"
       @page-change="handlePageChange"
     />
@@ -28,6 +29,7 @@ const {
   pagination,
   fetchMerchants,
   deleteMerchant,
+  toggleMerchantStatus,
   changePage,
 } = useSuperAdminMerchants();
 
@@ -46,6 +48,11 @@ const goEdit = (merchant: import('@/domain/entities/user.entity').Merchant) => {
 
 const confirmDelete = async (merchant: import('@/domain/entities/user.entity').Merchant) => {
   await deleteMerchant(merchant.id);
+};
+
+const handleToggleStatus = async (merchant: import('@/domain/entities/user.entity').Merchant) => {
+  await toggleMerchantStatus(merchant.id, !merchant.isActive);
+  await fetchMerchants(); // Refresh list to show updated status
 };
 
 const handleFilterChange = async (filters: MerchantFilterPayload) => {

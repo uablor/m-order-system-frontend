@@ -134,18 +134,16 @@
           </template>
           <template v-else-if="column.key === 'actions'">
             <div class="flex items-center justify-end gap-2">
-              <a-popconfirm 
-                :title="record.isActive ? $t('users.confirmDeactivate') : $t('users.confirmActivate')" 
-                @confirm="$emit('toggle-status', record)"
+              <a-tooltip :title="record.isActive ? $t('users.deactivateUser') : $t('users.activateUser')">
+              <a-button 
+                type="text" 
+                size="small" 
+                :class="['icon-action', record.isActive ? 'status-active' : 'status-inactive']"
+                @click="$emit('toggle-status', record)"
               >
-                <a-button 
-                  type="text" 
-                  size="small" 
-                  :class="['icon-action', record.isActive ? 'status-active' : 'status-inactive']"
-                >
-                  <PoweroffOutlined />
-                </a-button>
-              </a-popconfirm>
+                <PoweroffOutlined />
+              </a-button>
+            </a-tooltip>
               <a-popconfirm :title="$t('users.confirmDelete')" @confirm="$emit('delete', record)">
                 <a-button type="text" danger class="icon-action"><DeleteOutlined /></a-button>
               </a-popconfirm>
@@ -202,18 +200,16 @@
                 <span class="detail-val">{{ formatDate(u.createdAt) }}</span>
               </div>
               <div class="detail-row border-none pt-2">
-                <a-popconfirm 
-                  :title="u.isActive ? $t('users.confirmDeactivate') : $t('users.confirmActivate')" 
-                  @confirm="$emit('toggle-status', u)"
-                >
+                <a-tooltip :title="u.isActive ? $t('users.deactivateUser') : $t('users.activateUser')">
                   <a-button 
                     type="text" 
                     size="small" 
                     :class="['delete-btn', u.isActive ? 'status-active' : 'status-inactive']"
+                    @click="$emit('toggle-status', u)"
                   >
                     <PoweroffOutlined /> {{ u.isActive ? $t('users.deactivate') : $t('users.activate') }}
                   </a-button>
-                </a-popconfirm>
+                </a-tooltip>
                 <a-popconfirm :title="$t('users.confirmDelete')" @confirm="$emit('delete', u)">
                   <a-button type="text" danger size="small" class="delete-btn">
                     <DeleteOutlined /> {{ $t('common.delete') }}

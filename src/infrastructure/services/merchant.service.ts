@@ -31,6 +31,10 @@ export class MerchantServiceImpl implements IMerchantService {
     return this.repository.delete(id);
   }
 
+  async setActive(id: number, isActive: boolean): Promise<void> {
+    return this.repository.setActive(id, isActive);
+  }
+
   async getAdminPriceCurrencySummary(merchantId: number): Promise<any> {
     return this.repository.getAdminPriceCurrencySummary(merchantId);
   }

@@ -8,5 +8,6 @@ export interface IMerchantService {
   getDetail(id: number): Promise<MerchantDetail>;
   getList(query: MerchantListQueryDto): Promise<BackendPaginatedResponse<Merchant>>;
   update(id: number, data: MerchantUpdateDto): Promise<void>;
+  setActive(id: number, isActive: boolean): Promise<void>;
   delete(id: number): Promise<void>;
 }
