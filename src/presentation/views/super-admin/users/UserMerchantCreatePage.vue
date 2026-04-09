@@ -398,12 +398,6 @@ const goBack = () => router.push('/super-admin/users');
   flex: 1; /* Equal width for both panels */
 }
 
-.panel-divider {
-  width: 1px;
-  background: #f0f0f0;
-  align-self: stretch;
-}
-
 /* Ensure merchant panel content is visible */
 .merchant-panel {
   min-height: 400px;
