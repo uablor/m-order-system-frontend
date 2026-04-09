@@ -507,11 +507,36 @@ const goBack = () => router.push('/super-admin/users');
 }
 
 /* ====== responsive ====== */
+
+/* Galaxy Tab S7 and tablets (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .page-title { font-size: 20px; }
+  
+  .two-panel-card {
+    flex-direction: column;
+  }
+  
+  .panel-divider {
+    display: none;
+  }
+  
+  .merchant-panel,
+  .user-panel {
+    width: 100%;
+  }
+  
+  .user-panel {
+    padding-bottom: 4px;
+    border-bottom: 8px solid #f5f7fa;
+  }
+}
+
+/* Mobile devices (max-width: 767px) */
 @media (max-width: 767px) {
   .page-title { font-size: 18px; }
 
   .two-panel-card {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     border-radius: 12px;
   }
 
@@ -526,6 +551,11 @@ const goBack = () => router.push('/super-admin/users');
 
   .panel {
     padding: 20px 16px;
+  }
+  
+  /* Ensure phone and email fields stack properly on mobile */
+  .ant-col {
+    margin-bottom: 0;
   }
 }
 </style>
