@@ -56,17 +56,24 @@
             />
           </a-form-item>
 
-          <a-form-item name="contactEmail">
-            <template #label>
-              <span class="field-label"><MailOutlined class="lbl-ico" />{{ $t('users.contactEmail') }}</span>
-            </template>
-            <a-input
-              v-model:value="formState.contactEmail"
-              :placeholder="$t('users.contactEmailPlaceholder')"
-              size="large"
-              style="border: 1px solid #d9d9d9 !important; box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;"
-            />
-          </a-form-item>
+          <!-- อีเมลติดต่อ -->
+          <a-row :gutter="12">
+            <a-col :xs="24" :sm="12">
+              <a-form-item name="contactEmail">
+                <template #label>
+                  <span class="field-label"><MailOutlined class="lbl-ico" />{{ $t('users.contactEmail') }}</span>
+                </template>
+                <a-input
+                  v-model:value="formState.contactEmail"
+                  :placeholder="$t('users.contactEmailPlaceholder')"
+                  size="large"
+                />
+              </a-form-item>
+            </a-col>
+            <a-col :xs="24" :sm="12">
+              <!-- สามารถเพิ่มฟิลด์อื่นๆ ที่นี่ได้ในอนาคต -->
+            </a-col>
+          </a-row>
 
           <!-- ที่อยู่ร้าน -->
           <a-form-item name="shopAddress">
