@@ -39,6 +39,8 @@
   "createSuccess": "Store created successfully!",
   "updateSuccess": "Store updated successfully!",
   "deleteSuccess": "Store deleted successfully!",
+  "activateMerchant": "Active",
+  "deactivateMerchant": "inactive",
   "detail": {
     "viewDetail": "Details",
     "pageTitle": "Store Detail",

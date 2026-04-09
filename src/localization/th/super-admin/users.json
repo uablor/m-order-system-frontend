@@ -14,6 +14,8 @@
   "lastLogin": "เข้าสู่ระบบครั้งล่าสุด",
   "createdAt": "สร้างเมื่อ",
   "actions": "การดำเนินการ",
+  "activateUser": "เปิดใช้งาน",
+  "deactivateUser": "ปิดการใช้งาน",
   "search": "ค้นหาด้วยชื่อหรืออีเมล",
   "noUsers": "ไม่พบผู้ใช้",
   "filterSearchField": "ค้นหาในฟิลด์",

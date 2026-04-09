@@ -28,6 +28,8 @@
   "createSuccess": "User created successfully!",
   "updateSuccess": "User updated successfully!",
   "deleteSuccess": "User deleted successfully!",
+  "activateUser": "Activate User",
+  "deactivateUser": "Deactivate User",
   "password": "Password",
   "passwordPlaceholder": "Set password (min. 8 characters)",
   "confirmPassword": "Confirm Password",

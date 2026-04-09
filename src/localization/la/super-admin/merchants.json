@@ -39,6 +39,9 @@
   "createSuccess": "ສ້າງຮ້ານຄ້າສຳເລັດ!",
   "updateSuccess": "ອັບເດດຮ້ານຄ້າສຳເລັດ!",
   "deleteSuccess": "ລຶບຮ້ານຄ້າສຳເລັດ!",
+  "activateMerchant":"ເປີດໃຊ້ງານ",
+  "deactivateMerchant":"ປິດໃຊ້ງານ",
+
   "detail": {
     "viewDetail": "ລາຍລະອຽດ",
     "pageTitle": "ລາຍລະອຽດຮ້ານຄ້າ",

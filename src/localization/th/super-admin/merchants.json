@@ -39,6 +39,8 @@
   "createSuccess": "สร้างร้านค้าสำเร็จ!",
   "updateSuccess": "อัปเดตร้านค้าสำเร็จ!",
   "deleteSuccess": "ลบร้านค้าสำเร็จ!",
+  "activateMerchant": "เปิดใช้งาน",
+  "deactivateMerchant": "ปิดการใช้งาน",
   "detail": {
     "viewDetail": "รายละเอียด",
     "pageTitle": "รายละเอียดร้านค้า",

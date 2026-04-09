@@ -46,7 +46,7 @@ export class MerchantRepository {
   }
 
   async setActive(id: number, isActive: boolean): Promise<void> {
-    await this.apiClient.putOrPatch<void>(API_ENDPOINTS.MERCHANTS.UPDATE_ACTIVE(id), { isActive });
+    await this.apiClient.putOrPatch<void>(API_ENDPOINTS.MERCHANTS.UPDATE_ACTIVE(id), { isActive }, 'PATCH');
   }
 
   async getAdminPriceCurrencySummary(merchantId: number): Promise<any> {

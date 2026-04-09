@@ -28,6 +28,8 @@
   "createSuccess": "ສ້າງຜູ້ໃຊ້ສຳເລັດ!",
   "updateSuccess": "ອັບເດດຜູ້ໃຊ້ສຳເລັດ!",
   "deleteSuccess": "ລຶບຜູ້ໃຊ້ສຳເລັດ!",
+  "activateUser": "ເປີດໃຊ້ງານ",
+  "deactivateUser": "ປິດໃຊ້ງານ",
   "password": "ລະຫັດຜ່ານ",
   "passwordPlaceholder": "ຕັ້ງລະຫັດຜ່ານ 8 ຕົວຂຶ້ນໄປ",
   "confirmPassword": "ຢືນຢັນລະຫັດຜ່ານ",
