@@ -339,6 +339,13 @@ const goBack = () => router.push('/super-admin/users');
   overflow: hidden;
 }
 
+/* Ensure merchant panel content is visible */
+.merchant-panel {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
 .panel {
   padding: 28px 28px 20px;
 }
