@@ -46,27 +46,32 @@
           </a-form-item>
 
           <!-- เบอร์โทร + อีเมลร้าน -->
-          <a-form-item name="contactPhone">
-            <template #label>
-              <span class="field-label"><PhoneOutlined class="lbl-ico" />{{ $t('users.contactPhone') }}</span>
-            </template>
-            <PhoneInputWithCountry
-              v-model="formState.contactPhone"
-              placeholder="20 89 48 48 48"
-            />
-          </a-form-item>
-
-          <a-form-item name="contactEmail">
-            <template #label>
-              <span class="field-label"><MailOutlined class="lbl-ico" />{{ $t('users.contactEmail') }}</span>
-            </template>
-            <a-input
-              v-model:value="formState.contactEmail"
-              :placeholder="$t('users.contactEmailPlaceholder')"
-              size="large"
-              style="border: 1px solid #d9d9d9; box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);"
-            />
-          </a-form-item>
+          <a-row :gutter="12">
+            <a-col :xs="24" :sm="12">
+              <a-form-item name="contactPhone">
+                <template #label>
+                  <span class="field-label"><PhoneOutlined class="lbl-ico" />{{ $t('users.contactPhone') }}</span>
+                </template>
+                <PhoneInputWithCountry
+                  v-model="formState.contactPhone"
+                  placeholder="20 89 48 48 48"
+                />
+              </a-form-item>
+            </a-col>
+            <a-col :xs="24" :sm="12">
+              <a-form-item name="contactEmail">
+                <template #label>
+                  <span class="field-label"><MailOutlined class="lbl-ico" />{{ $t('users.contactEmail') }}</span>
+                </template>
+                <a-input
+                  v-model:value="formState.contactEmail"
+                  :placeholder="$t('users.contactEmailPlaceholder')"
+                  size="large"
+                  style="border: 1px solid #d9d9d9; box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);"
+                />
+              </a-form-item>
+            </a-col>
+          </a-row>
 
           <!-- ที่อยู่ร้าน -->
           <a-form-item name="shopAddress">
@@ -82,9 +87,9 @@
             />
           </a-form-item>
 
-          <!-- สกุลเงิน + ลิงก์โลโก้ -->
+          <!-- สกุลเงิน -->
           <a-row :gutter="12">
-            <a-col :xs="24" :sm="12">
+            <a-col :xs="24">
               <a-form-item name="defaultCurrency">
                 <template #label>
                   <span class="field-label"><DollarOutlined class="lbl-ico" />{{ $t('users.defaultCurrency') }}</span>
@@ -100,7 +105,11 @@
                 </a-select>
               </a-form-item>
             </a-col>
-            <a-col :xs="24" :sm="12">
+          </a-row>
+          
+          <!-- ลิงก์โลโก้ (commented out) -->
+          <!-- <a-row :gutter="12">
+            <a-col :xs="24">
               <a-form-item name="shopLogoUrl">
                 <template #label>
                   <span class="field-label"><PictureOutlined class="lbl-ico" />{{ $t('users.shopLogoUrl') }} (URL)</span>
@@ -112,7 +121,7 @@
                 />
               </a-form-item>
             </a-col>
-          </a-row>
+          </a-row> -->
         </div>
         <!-- divider แนวตั้ง (desktop only) -->
         <div class="panel-divider" />
@@ -229,7 +238,6 @@ import {
   PhoneOutlined,
   HomeOutlined,
   DollarOutlined,
-  PictureOutlined,
 } from '@ant-design/icons-vue';
 import type { CurrencyCode, UserMerchantCreateDto } from '@/application/dto/user.dto';
 import { useSuperAdminUsers } from '@/presentation/composables/super-admin/useSuperAdminUsers';
