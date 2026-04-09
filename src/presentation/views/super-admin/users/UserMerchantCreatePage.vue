@@ -64,6 +64,7 @@
               v-model:value="formState.contactEmail"
               :placeholder="$t('users.contactEmailPlaceholder')"
               size="large"
+              style="border: 2px solid blue; background: #f0f8ff;"
             />
           </a-form-item>
 
@@ -325,13 +326,22 @@ const goBack = () => router.push('/super-admin/users');
 
 /* ====== 2-panel card ====== */
 .two-panel-card {
-  display: grid;
-  grid-template-columns: 1fr 1px 1fr;
-  gap: 0;
+  display: flex;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.07), 0 8px 24px rgba(15, 23, 42, 0.05);
   overflow: hidden;
+}
+
+.merchant-panel,
+.user-panel {
+  flex: 1; /* Equal width for both panels */
+}
+
+.panel-divider {
+  width: 1px;
+  background: #f0f0f0;
+  align-self: stretch;
 }
 
 /* Ensure merchant panel content is visible */
@@ -340,7 +350,8 @@ const goBack = () => router.push('/super-admin/users');
   display: flex;
   flex-direction: column;
   overflow: visible;   /*  ADD THIS */
-  /* border: 2px solid red; Debug border */
+  width: 100%; /* Ensure full width in grid */
+  border: 2px solid red; /* Debug border */
 }
 
 .panel {
