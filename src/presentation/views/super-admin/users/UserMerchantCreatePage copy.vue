@@ -1,5 +1,6 @@
 <template>
   <div class="sa-form-page">
+    <!-- หัวหน้า page -->
     <div class="page-head">
       <div class="title-block">
         <div class="page-title">{{ $t('users.createMerchantUser') }}</div>
@@ -13,9 +14,11 @@
       </div>
     </div>
 
+    <!-- ====== 2-panel card ====== -->
     <a-form ref="formRef" :model="formState" layout="vertical">
       <div class="two-panel-card">
-        
+
+        <!-- ========== ขวา: ข้อมูลร้านค้า ========== -->
         <div class="panel merchant-panel">
           <div class="panel-header">
             <span class="panel-icon merchant-icon"><ShopOutlined /></span>
@@ -28,7 +31,10 @@
             </div>
           </div>
 
-          <a-form-item name="shopName">
+          <!-- ชื่อร้าน -->
+          <a-form-item
+            name="shopName"
+          >
             <template #label>
               <span class="field-label"><ShopOutlined class="lbl-ico" />{{ $t('users.shopName') }}</span>
             </template>
@@ -39,6 +45,7 @@
             />
           </a-form-item>
 
+          <!-- เบอร์โทร + อีเมลร้าน -->
           <a-row :gutter="12">
             <a-col :xs="24" :sm="12">
               <a-form-item name="contactPhone">
@@ -61,11 +68,13 @@
                   type="email"
                   :placeholder="$t('users.contactEmailPlaceholder')"
                   size="large"
+
                 />
               </a-form-item>
             </a-col>
           </a-row>
 
+          <!-- ที่อยู่ร้าน -->
           <a-form-item name="shopAddress">
             <template #label>
               <span class="field-label"><HomeOutlined class="lbl-ico" />{{ $t('users.shopAddress') }}</span>
@@ -79,25 +88,48 @@
             />
           </a-form-item>
 
-          <a-form-item name="defaultCurrency">
-            <template #label>
-              <span class="field-label"><DollarOutlined class="lbl-ico" />{{ $t('users.defaultCurrency') }}</span>
-            </template>
-            <a-select
-              v-model:value="formState.defaultCurrency"
-              size="large"
-              style="width: 100%"
-            >
-              <a-select-option value="LAK">LAK</a-select-option>
-              <a-select-option value="THB">THB</a-select-option>
-              <a-select-option value="USD">USD</a-select-option>
-            </a-select>
-          </a-form-item>
+          <!-- สกุลเงิน -->
+          <a-row :gutter="12">
+            <a-col :xs="24">
+              <a-form-item name="defaultCurrency">
+                <template #label>
+                  <span class="field-label"><DollarOutlined class="lbl-ico" />{{ $t('users.defaultCurrency') }}</span>
+                </template>
+                <a-select
+                  v-model:value="formState.defaultCurrency"
+                  size="large"
+                  style="width: 100%"
+                >
+                  <a-select-option value="LAK">LAK</a-select-option>
+                  <a-select-option value="THB">THB</a-select-option>
+                  <a-select-option value="USD">USD</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+          </a-row>
+          
+          <!-- ลิงก์โลโก้ (commented out) -->
+          <!-- <a-row :gutter="12">
+            <a-col :xs="24">
+              <a-form-item name="shopLogoUrl">
+                <template #label>
+                  <span class="field-label"><PictureOutlined class="lbl-ico" />{{ $t('users.shopLogoUrl') }} (URL)</span>
+                </template>
+                <a-input
+                  v-model:value="formState.shopLogoUrl"
+                  :placeholder="$t('users.shopLogoUrlPlaceholder')"
+                  size="large"
+                />
+              </a-form-item>
+            </a-col>
+          </a-row> -->
         </div>
-
+        <!-- divider แนวตั้ง (desktop only) -->
         <div class="panel-divider" />
 
-        <div class="panel user-panel">
+        
+       <!-- ========== ซ้าย: ข้อมูลผู้ใช้งาน ========== -->
+       <div class="panel user-panel">
           <div class="panel-header">
             <span class="panel-icon user-icon"><UserOutlined /></span>
             <span class="panel-title">
@@ -106,6 +138,7 @@
             </span>
           </div>
 
+          <!-- ชื่อเต็ม -->
           <a-form-item
             name="fullName"
             :rules="[{ required: true, message: $t('users.fullName') + ' is required' }]"
@@ -120,6 +153,7 @@
             />
           </a-form-item>
 
+          <!-- อีเมล -->
           <a-form-item
             name="email"
             :rules="[
@@ -138,11 +172,12 @@
             />
           </a-form-item>
 
+          <!-- รหัสผ่าน -->
           <a-form-item
             name="password"
             :rules="[
               { required: true, message: $t('login.passwordRequired') },
-              { min: 8, message: $t('login.passwordMinLength') || 'Password must be 8 chars' },
+              { min: 8, message: $t('login.passwordMinLength') ?? 'Password must be at least 8 characters' },
             ]"
           >
             <template #label>
@@ -156,6 +191,7 @@
             />
           </a-form-item>
 
+          <!-- ยืนยันรหัสผ่าน -->
           <a-form-item
             name="confirmPassword"
             :rules="[
@@ -173,9 +209,11 @@
             />
           </a-form-item>
         </div>
+
       </div>
     </a-form>
 
+    <!-- Mobile: buttons ด้านล่าง -->
     <div v-if="isMobile" class="mobile-footer">
       <a-button block size="large" @click="goBack">{{ $t('common.cancel') }}</a-button>
       <a-button block size="large" type="primary" :loading="loading" @click="submitFromOutside">
@@ -209,9 +247,7 @@ const { t } = useI18n();
 const router = useRouter();
 const { isMobile } = useIsMobile();
 const { loading, createUserWithMerchant } = useSuperAdminUsers();
-
-// Ref setup
-const formRef = ref<FormInstance | null>(null);
+const formRef = ref<FormInstance>();
 
 const formState = reactive({
   email: '',
@@ -226,53 +262,52 @@ const formState = reactive({
   defaultCurrency: 'LAK' as CurrencyCode,
 });
 
-const validateConfirmPassword = async (_rule: any, value: string) => {
+const validateConfirmPassword = (_rule: unknown, value: string) => {
   if (!value) return Promise.resolve();
   if (value !== formState.password) return Promise.reject(new Error(t('users.passwordMismatch')));
   return Promise.resolve();
 };
 
 const retriggerConfirmValidation = () => {
-  if (formState.confirmPassword && formRef.value) {
-    formRef.value.validateFields(['confirmPassword']);
+  if (formState.confirmPassword) {
+    formRef.value?.validateFields(['confirmPassword']);
   }
 };
 
-const opt = (v: string) => (v && v.trim() ? v.trim() : undefined);
+const opt = (v: string) => (v.trim() ? v.trim() : undefined);
+
+// const handleEmailInput = (event: Event) => {
+//   const target = event.target as HTMLInputElement;
+//   formState.contactEmail = target.value;
+// };
 
 const submit = async () => {
-  if (!formRef.value) return;
-
-  try {
-    await formRef.value.validate();
-    const resolvedShopName = formState.shopName.trim() || formState.fullName.trim();
-    const payload: UserMerchantCreateDto = {
-      email: formState.email.trim(),
-      password: formState.password,
-      fullName: formState.fullName.trim(),
-      shopName: resolvedShopName,
-      shopLogoUrl: opt(formState.shopLogoUrl),
-      shopAddress: opt(formState.shopAddress),
-      contactPhone: opt(formState.contactPhone),
-      contactEmail: opt(formState.contactEmail),
-      defaultCurrency: formState.defaultCurrency,
-    };
-    
-    const ok = await createUserWithMerchant(payload);
-    if (ok) router.push('/super-admin/users');
-  } catch (error) {
-    console.error('Validation failed:', error);
-  }
+  await formRef.value?.validate();
+  const resolvedShopName = formState.shopName.trim() || formState.fullName.trim();
+  const payload: UserMerchantCreateDto = {
+    email: formState.email.trim(),
+    password: formState.password,
+    fullName: formState.fullName.trim(),
+    shopName: resolvedShopName,
+    shopLogoUrl: opt(formState.shopLogoUrl),
+    shopAddress: opt(formState.shopAddress),
+    contactPhone: opt(formState.contactPhone),
+    contactEmail: opt(formState.contactEmail),
+    defaultCurrency: formState.defaultCurrency || undefined,
+  };
+  const ok = await createUserWithMerchant(payload);
+  if (ok) router.push('/super-admin/users');
 };
 
-const submitFromOutside = () => {
-  submit();
+const submitFromOutside = async () => {
+  try { await submit(); } catch { /* form แสดง error เอง */ }
 };
 
 const goBack = () => router.push('/super-admin/users');
 </script>
 
 <style scoped>
+/* ====== page wrapper ====== */
 .sa-form-page {
   display: flex;
   flex-direction: column;
@@ -305,31 +340,91 @@ const goBack = () => router.push('/super-admin/users');
   gap: 8px;
 }
 
+/* ====== 2-panel card ====== */
 .two-panel-card {
   display: flex;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.07), 0 8px 24px rgba(15, 23, 42, 0.05);
-  overflow: visible;
+  overflow: hidden;
+}
+
+/* ====== Custom Form Styles ====== */
+.custom-form-item {
+  margin-bottom: 24px;
+}
+
+.custom-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #000000d9;
+  line-height: 1.5715;
+}
+
+.custom-label .lbl-ico {
+  margin-right: 4px;
+}
+
+.custom-input {
+  width: 100%;
+  height: 40px;
+  padding: 4px 11px;
+  color: #000000d9;
+  font-size: 14px;
+  line-height: 1.5715;
+  background-color: #ffffff;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  transition: all 0.3s;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.custom-input:hover {
+  border-color: #4096ff;
+  border-right-width: 1px;
+}
+
+.custom-input:focus {
+  border-color: #4096ff;
+  border-right-width: 1px;
+  box-shadow: 0 0 0 2px rgba(5, 145, 255, 0.1);
+}
+
+.custom-input::placeholder {
+  color: #bfbfbf;
+}
+
+.merchant-panel,
+.user-panel {
+  flex: 1; /* Equal width for both panels */
+}
+
+/* Ensure merchant panel content is visible */
+.merchant-panel {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;   /*  ADD THIS */
+  width: 100%; /* Ensure full width in grid */
 }
 
 .panel {
-  flex: 1;
   padding: 28px 28px 20px;
-  overflow: visible;
+   overflow: visible;  /* ✅ ADD */
 }
 
-.panel-divider {
-  width: 1px;
-  background: #f1f5f9;
-}
 
+/* ====== section header ====== */
 .panel-header {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 22px;
   padding-bottom: 14px;
+  /* border-bottom: 2px solid #f5f5f5; */
 }
 
 .panel-icon {
@@ -380,6 +475,7 @@ const goBack = () => router.push('/super-admin/users');
   line-height: 1.3;
 }
 
+/* ====== field label ====== */
 .field-label {
   display: inline-flex;
   align-items: center;
@@ -394,6 +490,7 @@ const goBack = () => router.push('/super-admin/users');
   color: #9ca3af;
 }
 
+/* ====== form spacing ====== */
 :deep(.ant-form-item) {
   margin-bottom: 16px;
 }
@@ -402,6 +499,7 @@ const goBack = () => router.push('/super-admin/users');
   padding-bottom: 4px;
 }
 
+/* ====== mobile footer ====== */
 .mobile-footer {
   display: flex;
   flex-direction: column;
@@ -409,16 +507,56 @@ const goBack = () => router.push('/super-admin/users');
   padding-bottom: 12px;
 }
 
+/* ====== responsive ====== */
+
+/* Galaxy Tab S7 and tablets (768px - 1024px) */
 @media (min-width: 768px) and (max-width: 1024px) {
-  .two-panel-card { flex-direction: column; }
-  .panel-divider { display: none; }
-  .user-panel { border-bottom: 8px solid #f5f7fa; }
+  .page-title { font-size: 20px; }
+  
+  .two-panel-card {
+    flex-direction: column;
+  }
+  
+  .panel-divider {
+    display: none;
+  }
+  
+  .merchant-panel,
+  .user-panel {
+    width: 100%;
+  }
+  
+  .user-panel {
+    padding-bottom: 4px;
+    border-bottom: 8px solid #f5f7fa;
+  }
 }
 
+/* Mobile devices (max-width: 767px) */
 @media (max-width: 767px) {
-  .two-panel-card { flex-direction: column; border-radius: 12px; }
-  .panel-divider { display: none; }
-  .user-panel { border-bottom: 8px solid #f5f7fa; }
-  .panel { padding: 20px 16px; }
+  .page-title { font-size: 18px; }
+
+  .two-panel-card {
+    flex-direction: column;
+    border-radius: 12px;
+  }
+
+  .panel-divider {
+    display: none;
+  }
+
+  .user-panel {
+    padding-bottom: 4px;
+    border-bottom: 8px solid #f5f7fa;
+  }
+
+  .panel {
+    padding: 20px 16px;
+  }
+  
+  /* Ensure phone and email fields stack properly on mobile */
+  .ant-col {
+    margin-bottom: 0;
+  }
 }
 </style>
