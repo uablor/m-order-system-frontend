@@ -189,18 +189,24 @@ const authStore = useAuthStore();
 useAuth();
 const { isMobile } = useIsMobile();
 
-// Payment notifications setup
+const currentLocale = computed(() => locale.value);
+const username = computed(() => authStore.user?.fullName || authStore.user?.email || 'Admin');
+const isSuperAdminRoute = computed(() => route.path.startsWith('/super-admin'));
+
+// Payment notifications setup - only for merchants, not super-admin
 const {
   unreadPayments,
   isLoading: isNotificationsLoading,
   notificationCount,
   fetchUnreadPayments: refreshNotifications,
   handleNotificationClick: handlePaymentNotificationClick,
-} = usePaymentNotifications();
-
-const currentLocale = computed(() => locale.value);
-const username = computed(() => authStore.user?.fullName || authStore.user?.email || 'Admin');
-const isSuperAdminRoute = computed(() => route.path.startsWith('/super-admin'));
+} = isSuperAdminRoute.value ? {
+  unreadPayments: ref([]),
+  isLoading: ref(false),
+  notificationCount: computed(() => 0),
+  fetchUnreadPayments: () => {},
+  handleNotificationClick: () => {},
+} : usePaymentNotifications();
 
 const { t } = useI18n();
 const superAdminMenuItems = computed(() => getMenuItems(t));
