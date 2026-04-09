@@ -56,28 +56,15 @@
             />
           </a-form-item>
 
-          <!-- TEST FIELD -->
-          <a-form-item name="testField">
-            <template #label>
-              <span class="field-label">TEST FIELD</span>
-            </template>
-            <a-input
-              v-model:value="formState.contactEmail"
-              placeholder="test@test.com"
-              size="large"
-              style="border: 3px solid green; background: yellow;"
-            />
-          </a-form-item>
-
           <a-form-item name="contactEmail">
             <template #label>
-              <span class="field-label"><MailOutlined class="lbl-ico" />{{ $t('users.contactEmail') }}</span>
+              <span class="field-label"><MailOutlined class="lbl-ico" />Contact Email</span>
             </template>
             <a-input
               v-model:value="formState.contactEmail"
-              :placeholder="$t('users.contactEmailPlaceholder')"
+              placeholder="shop@example.com"
               size="large"
-              style="border: 2px solid blue; background: #f0f8ff;"
+              style="border: 3px solid green; background: yellow;"
             />
           </a-form-item>
 
