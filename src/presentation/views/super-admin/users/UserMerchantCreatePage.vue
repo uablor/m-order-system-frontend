@@ -57,23 +57,17 @@
           </a-form-item>
 
           <!-- อีเมลติดต่อ -->
-          <a-row :gutter="12">
-            <a-col :xs="24" :sm="12">
-              <a-form-item name="contactEmail">
-                <template #label>
-                  <span class="field-label"><MailOutlined class="lbl-ico" />{{ $t('users.contactEmail') }}</span>
-                </template>
-                <a-input
-                  v-model:value="formState.contactEmail"
-                  :placeholder="$t('users.contactEmailPlaceholder')"
-                  size="large"
-                />
-              </a-form-item>
-            </a-col>
-            <a-col :xs="24" :sm="12">
-              <!-- สามารถเพิ่มฟิลด์อื่นๆ ที่นี่ได้ในอนาคต -->
-            </a-col>
-          </a-row>
+          <div class="custom-form-item">
+            <label class="custom-label">
+              <MailOutlined class="lbl-ico" />{{ $t('users.contactEmail') }}
+            </label>
+            <input
+              v-model="formState.contactEmail"
+              :placeholder="$t('users.contactEmailPlaceholder')"
+              class="custom-input"
+              type="email"
+            />
+          </div>
 
           <!-- ที่อยู่ร้าน -->
           <a-form-item name="shopAddress">
@@ -89,9 +83,9 @@
             />
           </a-form-item>
 
-          <!-- สกุลเงิน + ลิงก์โลโก้ -->
+          <!-- สกุลเงิน -->
           <a-row :gutter="12">
-            <a-col :xs="24" :sm="12">
+            <a-col :xs="24">
               <a-form-item name="defaultCurrency">
                 <template #label>
                   <span class="field-label"><DollarOutlined class="lbl-ico" />{{ $t('users.defaultCurrency') }}</span>
@@ -107,7 +101,11 @@
                 </a-select>
               </a-form-item>
             </a-col>
-            <a-col :xs="24" :sm="12">
+          </a-row>
+          
+          <!-- ลิงก์โลโก้ (commented out) -->
+          <!-- <a-row :gutter="12">
+            <a-col :xs="24">
               <a-form-item name="shopLogoUrl">
                 <template #label>
                   <span class="field-label"><PictureOutlined class="lbl-ico" />{{ $t('users.shopLogoUrl') }} (URL)</span>
@@ -119,7 +117,7 @@
                 />
               </a-form-item>
             </a-col>
-          </a-row>
+          </a-row> -->
         </div>
         <!-- divider แนวตั้ง (desktop only) -->
         <div class="panel-divider" />
@@ -236,7 +234,6 @@ import {
   PhoneOutlined,
   HomeOutlined,
   DollarOutlined,
-  PictureOutlined,
 } from '@ant-design/icons-vue';
 import type { CurrencyCode, UserMerchantCreateDto } from '@/application/dto/user.dto';
 import { useSuperAdminUsers } from '@/presentation/composables/super-admin/useSuperAdminUsers';
@@ -340,6 +337,54 @@ const goBack = () => router.push('/super-admin/users');
   border-radius: 16px;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.07), 0 8px 24px rgba(15, 23, 42, 0.05);
   overflow: hidden;
+}
+
+/* ====== Custom Form Styles ====== */
+.custom-form-item {
+  margin-bottom: 24px;
+}
+
+.custom-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #000000d9;
+  line-height: 1.5715;
+}
+
+.custom-label .lbl-ico {
+  margin-right: 4px;
+}
+
+.custom-input {
+  width: 100%;
+  height: 40px;
+  padding: 4px 11px;
+  color: #000000d9;
+  font-size: 14px;
+  line-height: 1.5715;
+  background-color: #ffffff;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  transition: all 0.3s;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.custom-input:hover {
+  border-color: #4096ff;
+  border-right-width: 1px;
+}
+
+.custom-input:focus {
+  border-color: #4096ff;
+  border-right-width: 1px;
+  box-shadow: 0 0 0 2px rgba(5, 145, 255, 0.1);
+}
+
+.custom-input::placeholder {
+  color: #bfbfbf;
 }
 
 .merchant-panel,
