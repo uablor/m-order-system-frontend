@@ -83,7 +83,7 @@
           </a-form-item>
 
           <!-- สกุลเงิน + ลิงก์โลโก้ -->
-          <!-- <a-row :gutter="12">
+          <a-row :gutter="12">
             <a-col :xs="24" :sm="12">
               <a-form-item name="defaultCurrency">
                 <template #label>
@@ -94,9 +94,9 @@
                   size="large"
                   style="width: 100%"
                 >
-                  <a-select-option value="LAK">🇱🇦 LAK</a-select-option>
-                  <a-select-option value="THB">🇹🇭 THB</a-select-option>
-                  <a-select-option value="USD">🇺🇸 USD</a-select-option>
+                  <a-select-option value="LAK">LAK</a-select-option>
+                  <a-select-option value="THB">THB</a-select-option>
+                  <a-select-option value="USD">USD</a-select-option>
                 </a-select>
               </a-form-item>
             </a-col>
@@ -112,7 +112,7 @@
                 />
               </a-form-item>
             </a-col>
-          </a-row> -->
+          </a-row>
         </div>
         <!-- divider แนวตั้ง (desktop only) -->
         <div class="panel-divider" />
@@ -228,6 +228,8 @@ import {
   ShopOutlined,
   PhoneOutlined,
   HomeOutlined,
+  DollarOutlined,
+  PictureOutlined,
 } from '@ant-design/icons-vue';
 import type { CurrencyCode, UserMerchantCreateDto } from '@/application/dto/user.dto';
 import { useSuperAdminUsers } from '@/presentation/composables/super-admin/useSuperAdminUsers';
