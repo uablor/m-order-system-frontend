@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { message as antMessage } from 'ant-design-vue';
 import { ArrowLeftOutlined, EllipsisOutlined } from '@ant-design/icons-vue';
@@ -116,6 +116,21 @@ watch(() => props.order?.id, () => {
   slipFile.value = null;
   slipPreview.value = '';
   isDragging.value = false;
+});
+
+// Check for saved modal state on component mount
+onMounted(() => {
+  const savedModalState = localStorage.getItem('paymentResultModal');
+  if (savedModalState) {
+    const parsed = JSON.parse(savedModalState);
+    // Only restore if it's recent (within 5 seconds)
+    if (Date.now() - parsed.timestamp < 5000) {
+      showModal.value = parsed.show;
+      modalType.value = parsed.type || 'success';
+    }
+    // Clean up old modal state
+    localStorage.removeItem('paymentResultModal');
+  }
 });
 
 const setFile = (file: File) => {
@@ -170,6 +185,14 @@ const handleSubmit = async () => {
     // Show success modal instead of toast
     modalType.value = 'success';
     showModal.value = true;
+    
+    // Save modal state to localStorage before refresh
+    const modalState = {
+      show: true,
+      type: 'success',
+      timestamp: Date.now()
+    };
+    localStorage.setItem('paymentResultModal', JSON.stringify(modalState));
     
     // Emit submitted event after a short delay to allow modal to show
     setTimeout(() => {

@@ -134,6 +134,18 @@
           </template>
           <template v-else-if="column.key === 'actions'">
             <div class="flex items-center justify-end gap-2">
+              <a-popconfirm 
+                :title="record.isActive ? $t('users.confirmDeactivate') : $t('users.confirmActivate')" 
+                @confirm="$emit('toggle-status', record)"
+              >
+                <a-button 
+                  type="text" 
+                  size="small" 
+                  :class="['icon-action', record.isActive ? 'status-active' : 'status-inactive']"
+                >
+                  <PoweroffOutlined />
+                </a-button>
+              </a-popconfirm>
               <a-popconfirm :title="$t('users.confirmDelete')" @confirm="$emit('delete', record)">
                 <a-button type="text" danger class="icon-action"><DeleteOutlined /></a-button>
               </a-popconfirm>
@@ -190,6 +202,18 @@
                 <span class="detail-val">{{ formatDate(u.createdAt) }}</span>
               </div>
               <div class="detail-row border-none pt-2">
+                <a-popconfirm 
+                  :title="u.isActive ? $t('users.confirmDeactivate') : $t('users.confirmActivate')" 
+                  @confirm="$emit('toggle-status', u)"
+                >
+                  <a-button 
+                    type="text" 
+                    size="small" 
+                    :class="['delete-btn', u.isActive ? 'status-active' : 'status-inactive']"
+                  >
+                    <PoweroffOutlined /> {{ u.isActive ? $t('users.deactivate') : $t('users.activate') }}
+                  </a-button>
+                </a-popconfirm>
                 <a-popconfirm :title="$t('users.confirmDelete')" @confirm="$emit('delete', u)">
                   <a-button type="text" danger size="small" class="delete-btn">
                     <DeleteOutlined /> {{ $t('common.delete') }}
@@ -226,6 +250,7 @@ import {
   DownOutlined,
   PlusOutlined,
   FilterOutlined,
+  PoweroffOutlined,
 } from '@ant-design/icons-vue';
 import type { User } from '@/domain/entities/user.entity';
 import { useI18n } from 'vue-i18n';
@@ -243,6 +268,7 @@ const emit = defineEmits<{
   (e: 'create-user'): void;
   (e: 'create-merchant'): void;
   (e: 'delete', user: User): void;
+  (e: 'toggle-status', user: User): void;
   (e: 'filter-change', filters: UserFilterPayload): void;
   (e: 'page-change', page: number, pageSize: number): void;
 }>();
@@ -568,6 +594,28 @@ const columns = computed<TableColumnsType>(() => [
 .detail-label { font-size: 12px; font-weight: 600; color: #94a3b8; }
 .detail-val { font-size: 13px; font-weight: 600; color: #1e293b; text-align: right; }
 .delete-btn { border-radius: 8px; font-size: 13px; }
+
+/* Status toggle button styles */
+.status-active {
+  color: #52c41a !important;
+  background: rgba(82, 196, 26, 0.1) !important;
+  border-color: rgba(82, 196, 26, 0.3) !important;
+}
+.status-active:hover {
+  background: rgba(82, 196, 26, 0.2) !important;
+  color: #389e0d !important;
+  border-color: rgba(82, 196, 26, 0.5) !important;
+}
+.status-inactive {
+  color: #8c8c8c !important;
+  background: rgba(140, 140, 140, 0.1) !important;
+  border-color: rgba(140, 140, 140, 0.3) !important;
+}
+.status-inactive:hover {
+  background: rgba(140, 140, 140, 0.2) !important;
+  color: #595959 !important;
+  border-color: rgba(140, 140, 140, 0.5) !important;
+}
 
 .pagination-row {
   display: flex; justify-content: center;

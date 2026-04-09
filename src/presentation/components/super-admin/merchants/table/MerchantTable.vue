@@ -125,6 +125,18 @@
               <a-button type="text" size="small" class="icon-action" @click="$emit('edit', record)">
                 <EditOutlined />
               </a-button>
+              <a-popconfirm 
+                :title="record.isActive ? $t('merchants.confirmDeactivate') : $t('merchants.confirmActivate')" 
+                @confirm="$emit('toggle-status', record)"
+              >
+                <a-button 
+                  type="text" 
+                  size="small" 
+                  :class="['icon-action', record.isActive ? 'status-active' : 'status-inactive']"
+                >
+                  <PoweroffOutlined />
+                </a-button>
+              </a-popconfirm>
               <a-popconfirm :title="$t('merchants.confirmDelete')" @confirm="$emit('delete', record)">
                 <a-button type="text" size="small" danger class="icon-action"><DeleteOutlined /></a-button>
               </a-popconfirm>
@@ -193,6 +205,18 @@
                 <a-button type="default" size="small" class="action-btn" @click="$emit('edit', m)">
                   <EditOutlined /> {{ $t('common.edit') }}
                 </a-button>
+                <a-popconfirm 
+                  :title="m.isActive ? $t('merchants.confirmDeactivate') : $t('merchants.confirmActivate')" 
+                  @confirm="$emit('toggle-status', m)"
+                >
+                  <a-button 
+                    type="text" 
+                    size="small" 
+                    :class="['action-btn', m.isActive ? 'status-active' : 'status-inactive']"
+                  >
+                    <PoweroffOutlined /> {{ m.isActive ? $t('merchants.deactivate') : $t('merchants.activate') }}
+                  </a-button>
+                </a-popconfirm>
                 <a-popconfirm :title="$t('merchants.confirmDelete')" @confirm="$emit('delete', m)">
                   <a-button type="text" danger size="small" class="action-btn">
                     <DeleteOutlined /> {{ $t('common.delete') }}
@@ -230,6 +254,7 @@ import {
   DownOutlined,
   EyeOutlined,
   FilterOutlined,
+  PoweroffOutlined,
 } from '@ant-design/icons-vue';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import type { Merchant } from '@/domain/entities/user.entity';
@@ -246,6 +271,7 @@ const emit = defineEmits<{
   (e: 'detail', merchant: Merchant): void;
   (e: 'edit', merchant: Merchant): void;
   (e: 'delete', merchant: Merchant): void;
+  (e: 'toggle-status', merchant: Merchant): void;
   (e: 'filter-change', filters: MerchantFilterPayload): void;
   (e: 'page-change', page: number, pageSize: number): void;
 }>();
@@ -580,6 +606,28 @@ const columns = computed<TableColumnsType>(() => [
 .detail-label { font-size: 12px; font-weight: 600; color: #94a3b8; flex-shrink: 0; }
 .detail-val { font-size: 13px; font-weight: 600; color: #1e293b; text-align: right; }
 .action-btn { border-radius: 8px; font-size: 13px; }
+
+/* Status toggle button styles */
+.status-active {
+  color: #52c41a !important;
+  background: rgba(82, 196, 26, 0.1) !important;
+  border-color: rgba(82, 196, 26, 0.3) !important;
+}
+.status-active:hover {
+  background: rgba(82, 196, 26, 0.2) !important;
+  color: #389e0d !important;
+  border-color: rgba(82, 196, 26, 0.5) !important;
+}
+.status-inactive {
+  color: #8c8c8c !important;
+  background: rgba(140, 140, 140, 0.1) !important;
+  border-color: rgba(140, 140, 140, 0.3) !important;
+}
+.status-inactive:hover {
+  background: rgba(140, 140, 140, 0.2) !important;
+  color: #595959 !important;
+  border-color: rgba(140, 140, 140, 0.5) !important;
+}
 
 .pagination-row {
   display: flex; justify-content: center;

@@ -257,8 +257,16 @@ const onSelectOrder = async (order: CustomerOrder) => {
 
 /* --- After payment submitted: re-fetch list --- */
 const onSubmitted = async () => {
-  selectedOrder.value = null;
+  // Don't close the detail panel, just refresh the data
   await fetchOrders();
+  
+  // Find and update the selected order with fresh data
+  if (selectedOrder.value) {
+    const freshOrder = orders.value.find((o: CustomerOrder) => o.id === selectedOrder.value?.id);
+    if (freshOrder) {
+      selectedOrder.value = freshOrder;
+    }
+  }
 };
 
 const onPageChange = (newPage: number, newLimit?: number) => {
