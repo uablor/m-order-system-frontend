@@ -275,6 +275,11 @@ const retriggerConfirmValidation = () => {
 
 const opt = (v: string) => (v.trim() ? v.trim() : undefined);
 
+// const handleEmailInput = (event: Event) => {
+//   const target = event.target as HTMLInputElement;
+//   formState.contactEmail = target.value;
+// };
+
 const submit = async () => {
   await formRef.value?.validate();
   const resolvedShopName = formState.shopName.trim() || formState.fullName.trim();
@@ -343,15 +348,57 @@ const goBack = () => router.push('/super-admin/users');
   overflow: hidden;
 }
 
+/* ====== Custom Form Styles ====== */
+.custom-form-item {
+  margin-bottom: 24px;
+}
+
+.custom-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #000000d9;
+  line-height: 1.5715;
+}
+
+.custom-label .lbl-ico {
+  margin-right: 4px;
+}
+
+.custom-input {
+  width: 100%;
+  height: 40px;
+  padding: 4px 11px;
+  color: #000000d9;
+  font-size: 14px;
+  line-height: 1.5715;
+  background-color: #ffffff;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  transition: all 0.3s;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.custom-input:hover {
+  border-color: #4096ff;
+  border-right-width: 1px;
+}
+
+.custom-input:focus {
+  border-color: #4096ff;
+  border-right-width: 1px;
+  box-shadow: 0 0 0 2px rgba(5, 145, 255, 0.1);
+}
+
+.custom-input::placeholder {
+  color: #bfbfbf;
+}
+
 .merchant-panel,
 .user-panel {
   flex: 1; /* Equal width for both panels */
-}
-
-.panel-divider {
-  width: 1px;
-  background: #f0f0f0;
-  align-self: stretch;
 }
 
 /* Ensure merchant panel content is visible */
