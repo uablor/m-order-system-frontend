@@ -51,7 +51,8 @@
                 />
               </a-form-item>
             </a-col>
-            <a-col :xs="24" :sm="12">
+            <!-- Email input removed - will use user email for shop contact -->
+            <!-- <a-col :xs="24" :sm="12">
               <a-form-item name="contactEmail">
                 <template #label>
                   <span class="field-label"><MailOutlined class="lbl-ico" />{{ $t('users.contactEmail') }}</span>
@@ -63,7 +64,7 @@
                   size="large"
                 />
               </a-form-item>
-            </a-col>
+            </a-col> -->
           </a-row>
 
           <a-form-item name="shopAddress">
@@ -254,7 +255,7 @@ const submit = async () => {
       shopLogoUrl: opt(formState.shopLogoUrl),
       shopAddress: opt(formState.shopAddress),
       contactPhone: opt(formState.contactPhone),
-      contactEmail: opt(formState.contactEmail),
+      contactEmail: formState.email.trim(), // Use user email for shop contact
       defaultCurrency: formState.defaultCurrency,
     };
     
