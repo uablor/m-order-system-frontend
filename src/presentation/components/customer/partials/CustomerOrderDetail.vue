@@ -12,6 +12,7 @@
         </div>
         <div class="detail-scroll">
           <DetailBody
+            ref="detailBodyRef"
             :order="order"
             :message="message"
             :slip-file="slipFile"
@@ -38,6 +39,7 @@
     <div v-if="order" class="detail-panel">
       <div class="detail-scroll">
         <DetailBody
+          ref="detailBodyRef"
           :order="order"
           :message="message"
           :slip-file="slipFile"
@@ -91,6 +93,9 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+
+// Ref for DetailBody component
+const detailBodyRef = ref();
 
 const message = ref('');
 const slipFile = ref<File | null>(null);
@@ -193,6 +198,11 @@ const handleSubmit = async () => {
       timestamp: Date.now()
     };
     localStorage.setItem('paymentResultModal', JSON.stringify(modalState));
+    
+    // Refresh payment data to show slip image immediately
+    if (detailBodyRef.value?.fetchPaymentData) {
+      await detailBodyRef.value.fetchPaymentData();
+    }
     
     // Emit submitted event after a short delay to allow modal to show
     setTimeout(() => {

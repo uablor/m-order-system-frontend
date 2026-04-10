@@ -10,7 +10,7 @@
       @delete="confirmDelete"
       @toggle-status="handleToggleStatus"
       @filter-change="handleFilterChange"
-      @page-change="handlePageChange"
+      @pageChange="handlePageChange"
     />
   </div>
 </template>

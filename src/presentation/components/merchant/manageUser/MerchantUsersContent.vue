@@ -133,7 +133,22 @@
           </template>
           <template v-else-if="column.key === 'actions'">
             <div class="flex items-center justify-end gap-2">
-              <a-popconfirm :title="$t('merchant.teamMembers.confirmDelete')" @confirm="handleDelete(record.id)">
+              <a-tooltip :title="$t('merchants.changePassword')">
+                <a-button type="text" size="small" class="icon-action" @click="() => handleChangePassword(record)">
+                  <KeyOutlined />
+                </a-button>
+              </a-tooltip>
+              <a-tooltip :title="record.isActive ? $t('merchant.teamMembers.deactivateUser') : $t('merchant.teamMembers.activateUser')">
+                <a-button 
+                  type="text" 
+                  size="small" 
+                  :class="['icon-action', record.isActive ? 'status-active' : 'status-inactive']"
+                  @click="() => toggleActive(record)"
+                >
+                  <PoweroffOutlined />
+                </a-button>
+              </a-tooltip>
+              <a-popconfirm v-if="record.roleName !== 'admin_merchant'" :title="$t('merchant.teamMembers.confirmDelete')" @confirm="handleDelete(record.id)">
                 <a-button type="text" danger class="icon-action"><DeleteOutlined /></a-button>
               </a-popconfirm>
             </div>
@@ -187,8 +202,23 @@
                 <span class="detail-val">{{ formatDate(u.createdAt) }}</span>
               </div>
               <div class="detail-row border-none pt-2">
-                <a-popconfirm :title="$t('merchant.teamMembers.confirmDelete')" @confirm="handleDelete(u.id)">
-                  <a-button type="text" danger size="small" class="delete-btn">
+                <a-tooltip :title="$t('merchants.changePassword')">
+                  <a-button type="default" size="small" class="action-btn" @click="() => handleChangePassword(u)">
+                    <KeyOutlined /> {{ $t('merchants.changePassword') }}
+                  </a-button>
+                </a-tooltip>
+                <a-tooltip :title="u.isActive ? $t('merchant.teamMembers.deactivateUser') : $t('merchant.teamMembers.activateUser')">
+                  <a-button 
+                    type="text" 
+                    size="small" 
+                    :class="['action-btn', u.isActive ? 'status-active' : 'status-inactive']"
+                    @click="() => toggleActive(u)"
+                  >
+                    <PoweroffOutlined /> {{ u.isActive ? $t('merchant.teamMembers.deactivate') : $t('merchant.teamMembers.activate') }}
+                  </a-button>
+                </a-tooltip>
+                <a-popconfirm v-if="u.roleName !== 'admin_merchant'" :title="$t('merchant.teamMembers.confirmDelete')" @confirm="handleDelete(u.id)">
+                  <a-button type="text" danger size="small" class="action-btn">
                     <DeleteOutlined /> {{ $t('common.delete') }}
                   </a-button>
                 </a-popconfirm>
@@ -249,6 +279,13 @@
         </a-form-item>
       </a-form>
     </a-modal>
+
+    <!-- Change Password Modal -->
+    <ChangePasswordModal
+      v-model:visible="showChangePasswordModal"
+      :user="selectedUser"
+      @success="handlePasswordChangeSuccess"
+    />
   </div>
 </template>
 
@@ -268,11 +305,14 @@ import {
   TeamOutlined,
   UserOutlined,
   StopOutlined,
+  KeyOutlined,
+  PoweroffOutlined,
 } from '@ant-design/icons-vue';
 import { userRepository } from '@/infrastructure/repositories/user.repository';
 import type { User } from '@/domain/entities/user.entity';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import { handleApiError } from '@/shared/utils/error';
+import ChangePasswordModal from '@/presentation/components/super-admin/users/ChangePasswordModal.vue';
 
 const { t } = useI18n();
 const { isMobile } = useIsMobile();
@@ -301,6 +341,8 @@ const filters = reactive<{
 });
 
 const showCreateModal = ref(false);
+const showChangePasswordModal = ref(false);
+const selectedUser = ref<User | null>(null);
 const creating = ref(false);
 const createFormRef = ref<FormInstance>();
 const createForm = reactive({
@@ -333,7 +375,7 @@ const columns = computed<TableColumnsType>(() => [
   { title: t('merchant.teamMembers.colStatus'), key: 'isActive', dataIndex: 'isActive', width: 120, align: 'center' as const },
   { title: t('merchant.teamMembers.colLastLogin'), key: 'lastLogin', dataIndex: 'lastLogin', width: 160 },
   { title: t('merchant.teamMembers.colCreatedAt'), key: 'createdAt', dataIndex: 'createdAt', width: 160 },
-  { title: t('merchant.teamMembers.colActions'), key: 'actions', fixed: 'right' as const, width: 80, align: 'right' as const },
+  { title: t('merchant.teamMembers.colActions'), key: 'actions', fixed: 'right' as const, width: 120, align: 'right' as const },
 ]);
 
 const paginationConfig = computed(() => ({
@@ -482,6 +524,15 @@ const resetCreateForm = () => {
   createForm.fullName = '';
 };
 
+const handleChangePassword = (user: User) => {
+  selectedUser.value = user;
+  showChangePasswordModal.value = true;
+};
+
+const handlePasswordChangeSuccess = () => {
+  message.success(t('merchant.teamMembers.changePasswordSuccess'));
+};
+
 onMounted(() => {
   fetchUsers();
 });
@@ -614,6 +665,12 @@ onMounted(() => {
 .detail-label { font-size: 12px; font-weight: 600; color: #94a3b8; }
 .detail-val { font-size: 13px; font-weight: 600; color: #1e293b; text-align: right; }
 .delete-btn { border-radius: 8px; font-size: 13px; }
+.action-btn { border-radius: 8px; font-size: 13px; margin-right: 8px; }
+.action-btn:last-child { margin-right: 0; }
+.status-active { color: #22c55e !important; }
+.status-active:hover { background: rgba(34, 197, 94, 0.1) !important; }
+.status-inactive { color: #ef4444 !important; }
+.status-inactive:hover { background: rgba(239, 68, 68, 0.1) !important; }
 
 .pagination-row {
   display: flex; justify-content: center; margin-top: 16px; padding-top: 12px;

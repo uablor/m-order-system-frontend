@@ -891,6 +891,12 @@ watch(() => props.order.id, (newOrderId, oldOrderId) => {
   fetchPaymentData();
 });
 
+// Watch for order payment status changes to refresh payment data
+watch(() => [props.order.paymentStatus, props.order.hasPendingPayment], () => {
+  console.log('Order payment status changed, refreshing payment data');
+  fetchPaymentData();
+}, { deep: true });
+
 // Watch for modal open/close to reset image states
 watch([showPaymentImageModal, showItemImageModal], (newValue) => {
   if (newValue.some(val => val)) {
@@ -939,6 +945,11 @@ const fetchPaymentData = async () => {
     paymentLoading.value = false;
   }
 };
+
+// Expose fetchPaymentData for parent component to call after payment creation
+defineExpose({
+  fetchPaymentData
+});
 
 // Initial fetch
 fetchPaymentData();

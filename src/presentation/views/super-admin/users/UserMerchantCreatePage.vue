@@ -40,7 +40,7 @@
           </a-form-item>
 
           <a-row :gutter="12">
-            <a-col :xs="24" :sm="12">
+            <a-col :xs="24" :sm="12" :md="12">
               <a-form-item name="contactPhone">
                 <template #label>
                   <span class="field-label"><PhoneOutlined class="lbl-ico" />{{ $t('users.contactPhone') }}</span>
@@ -51,20 +51,22 @@
                 />
               </a-form-item>
             </a-col>
-            <!-- Email input removed - will use user email for shop contact -->
-            <!-- <a-col :xs="24" :sm="12">
-              <a-form-item name="contactEmail">
+            <a-col :xs="24" :sm="12" :md="12">
+              <a-form-item name="defaultCurrency">
                 <template #label>
-                  <span class="field-label"><MailOutlined class="lbl-ico" />{{ $t('users.contactEmail') }}</span>
+                  <span class="field-label"><DollarOutlined class="lbl-ico" />{{ $t('users.defaultCurrency') }}</span>
                 </template>
-                <a-input
-                  v-model:value="formState.contactEmail"
-                  type="email"
-                  :placeholder="$t('users.contactEmailPlaceholder')"
+                <a-select
+                  v-model:value="formState.defaultCurrency"
                   size="large"
-                />
+                  style="width: 100%"
+                >
+                  <a-select-option value="LAK">LAK</a-select-option>
+                  <a-select-option value="THB">THB</a-select-option>
+                  <a-select-option value="USD">USD</a-select-option>
+                </a-select>
               </a-form-item>
-            </a-col> -->
+            </a-col>
           </a-row>
 
           <a-form-item name="shopAddress">
@@ -78,21 +80,6 @@
               style="resize: none"
               size="large"
             />
-          </a-form-item>
-
-          <a-form-item name="defaultCurrency">
-            <template #label>
-              <span class="field-label"><DollarOutlined class="lbl-ico" />{{ $t('users.defaultCurrency') }}</span>
-            </template>
-            <a-select
-              v-model:value="formState.defaultCurrency"
-              size="large"
-              style="width: 100%"
-            >
-              <a-select-option value="LAK">LAK</a-select-option>
-              <a-select-option value="THB">THB</a-select-option>
-              <a-select-option value="USD">USD</a-select-option>
-            </a-select>
           </a-form-item>
         </div>
 
@@ -408,6 +395,35 @@ const goBack = () => router.push('/super-admin/users');
   flex-direction: column;
   gap: 10px;
   padding-bottom: 12px;
+}
+
+/* Responsive improvements for phone and currency fields */
+@media (max-width: 575.98px) {
+  :deep(.ant-row) {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  
+  :deep(.ant-col) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  /* Better spacing for mobile */
+  :deep(.ant-form-item) {
+    margin-bottom: 20px;
+  }
+}
+
+/* Galaxy Tab S7 specific adjustments */
+@media (min-width: 576px) and (max-width: 768px) {
+  :deep(.ant-select-selector) {
+    height: 40px !important;
+  }
+  
+  :deep(.ant-input) {
+    height: 40px !important;
+  }
 }
 
 @media (min-width: 768px) and (max-width: 1024px) {

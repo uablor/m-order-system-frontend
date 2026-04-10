@@ -125,6 +125,11 @@
               <a-button type="text" size="small" class="icon-action" @click="$emit('edit', record)">
                 <EditOutlined />
               </a-button>
+              <a-tooltip :title="$t('merchants.changePassword')">
+                <a-button type="text" size="small" class="icon-action" @click="$emit('changePassword', record)">
+                  <KeyOutlined />
+                </a-button>
+              </a-tooltip>
               <a-tooltip :title="record.isActive ? $t('merchants.deactivateMerchant') : $t('merchants.activateMerchant')">
                 <a-button 
                   type="text" 
@@ -197,23 +202,28 @@
                 <span class="detail-val">{{ formatDate(m.createdAt) }}</span>
               </div>
               <div class="detail-row border-none pt-2">
-                <a-button type="primary" ghost size="small" class="action-btn" @click="$emit('detail', m)">
+                <a-button type="primary" ghost size="small" class="action-btn" @click="() => $emit('detail', m)">
                   <EyeOutlined /> {{ $t('merchants.detail.viewDetail') }}
                 </a-button>
-                <a-button type="default" size="small" class="action-btn" @click="$emit('edit', m)">
+                <a-button type="default" size="small" class="action-btn" @click="() => $emit('edit', m)">
                   <EditOutlined /> {{ $t('common.edit') }}
                 </a-button>
+                <a-tooltip :title="$t('merchants.changePassword')">
+                  <a-button type="default" size="small" class="action-btn" @click="() => $emit('changePassword', m)">
+                    <KeyOutlined /> {{ $t('merchants.changePassword') }}
+                  </a-button>
+                </a-tooltip>
                 <a-tooltip :title="m.isActive ? $t('merchants.deactivateMerchant') : $t('merchants.activateMerchant')">
                   <a-button 
                     type="text" 
                     size="small" 
                     :class="['action-btn', m.isActive ? 'status-active' : 'status-inactive']"
-                    @click="$emit('toggle-status', m)"
+                    @click="() => $emit('toggle-status', m)"
                   >
                     <PoweroffOutlined /> {{ m.isActive ? $t('merchants.deactivate') : $t('merchants.activate') }}
                   </a-button>
                 </a-tooltip>
-                <a-popconfirm :title="$t('merchants.confirmDelete')" @confirm="$emit('delete', m)">
+                <a-popconfirm :title="$t('merchants.confirmDelete')" @confirm="() => $emit('delete', m)">
                   <a-button type="text" danger size="small" class="action-btn">
                     <DeleteOutlined /> {{ $t('common.delete') }}
                   </a-button>
@@ -229,7 +239,7 @@
             :page-size="props.pagination.limit"
             :total="props.pagination.total"
             simple
-            @change="(p: number, s: number) => emit('page-change', p, s)"
+            @change="(p: number, s: number) => emit('pageChange', p, s)"
           />
         </div>
       </a-spin>
@@ -251,10 +261,12 @@ import {
   EyeOutlined,
   FilterOutlined,
   PoweroffOutlined,
+  KeyOutlined,
 } from '@ant-design/icons-vue';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import type { Merchant } from '@/domain/entities/user.entity';
 import { useI18n } from 'vue-i18n';
+// import type { m } from 'vue-router/dist/index-DvGaX1AX.mjs';
 
 export interface MerchantFilterPayload {
   search?: string;
@@ -268,8 +280,9 @@ const emit = defineEmits<{
   (e: 'edit', merchant: Merchant): void;
   (e: 'delete', merchant: Merchant): void;
   (e: 'toggle-status', merchant: Merchant): void;
-  (e: 'filter-change', filters: MerchantFilterPayload): void;
-  (e: 'page-change', page: number, pageSize: number): void;
+  (e: 'changePassword', merchant: Merchant): void;
+  (e: 'pageChange', page: number, pageSize: number): void;
+  (e: 'filter', payload: MerchantFilterPayload): void;
 }>();
 
 const props = defineProps<{
@@ -313,7 +326,7 @@ const hasActiveFilters = computed(
 
 /* ===== Emit current filter state ===== */
 const emitFilter = () => {
-  emit('filter-change', {
+  emit('filter', {
     search: q.value || undefined,
     searchField: searchField.value || undefined,
     sort: filterSort.value,
@@ -346,7 +359,7 @@ const paginationConfig = computed(() => ({
 watch(() => props.pagination.page, (v) => { mobilePage.value = v; });
 
 const handleTableChange = (p: TablePaginationConfig) => {
-  if (p.current && p.pageSize) emit('page-change', p.current, p.pageSize);
+  if (p.current && p.pageSize) emit('pageChange', p.current, p.pageSize);
 };
 
 /* ===== Columns ===== */

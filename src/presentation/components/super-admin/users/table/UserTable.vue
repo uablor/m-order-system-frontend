@@ -134,6 +134,11 @@
           </template>
           <template v-else-if="column.key === 'actions'">
             <div class="flex items-center justify-end gap-2">
+              <a-tooltip :title="$t('users.changePassword')">
+                <a-button type="text" size="small" class="icon-action" @click="$emit('changePassword', record)">
+                  <KeyOutlined />
+                </a-button>
+              </a-tooltip>
               <a-tooltip :title="record.isActive ? $t('users.deactivateUser') : $t('users.activateUser')">
               <a-button 
                 type="text" 
@@ -200,17 +205,22 @@
                 <span class="detail-val">{{ formatDate(u.createdAt) }}</span>
               </div>
               <div class="detail-row border-none pt-2">
+                <a-tooltip :title="$t('users.changePassword')">
+                  <a-button type="default" size="small" class="delete-btn" @click="() => $emit('changePassword', u)">
+                    <KeyOutlined /> {{ $t('users.changePassword') }}
+                  </a-button>
+                </a-tooltip>
                 <a-tooltip :title="u.isActive ? $t('users.deactivateUser') : $t('users.activateUser')">
                   <a-button 
                     type="text" 
                     size="small" 
                     :class="['delete-btn', u.isActive ? 'status-active' : 'status-inactive']"
-                    @click="$emit('toggle-status', u)"
+                    @click="() => $emit('toggle-status', u)"
                   >
                     <PoweroffOutlined /> {{ u.isActive ? $t('users.deactivate') : $t('users.activate') }}
                   </a-button>
                 </a-tooltip>
-                <a-popconfirm :title="$t('users.confirmDelete')" @confirm="$emit('delete', u)">
+                <a-popconfirm :title="$t('users.confirmDelete')" @confirm="() => $emit('delete', u)">
                   <a-button type="text" danger size="small" class="delete-btn">
                     <DeleteOutlined /> {{ $t('common.delete') }}
                   </a-button>
@@ -247,6 +257,7 @@ import {
   PlusOutlined,
   FilterOutlined,
   PoweroffOutlined,
+  KeyOutlined,
 } from '@ant-design/icons-vue';
 import type { User } from '@/domain/entities/user.entity';
 import { useI18n } from 'vue-i18n';
@@ -265,6 +276,7 @@ const emit = defineEmits<{
   (e: 'create-merchant'): void;
   (e: 'delete', user: User): void;
   (e: 'toggle-status', user: User): void;
+  (e: 'changePassword', user: User): void;
   (e: 'filter-change', filters: UserFilterPayload): void;
   (e: 'page-change', page: number, pageSize: number): void;
 }>();
