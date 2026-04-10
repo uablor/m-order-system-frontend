@@ -57,5 +57,17 @@
   "contactEmail": "อีเมลติดต่อ",
   "contactEmailPlaceholder": "shop@example.com",
   "defaultCurrency": "สกุลเงินเริ่มต้น",
-  "subtitle": "จัดการบัญชีผู้ใช้ บทบาท และสถานะการใช้งาน"
+  "subtitle": "จัดการบัญชีผู้ใช้ บทบาท และสถานะการใช้งาน",
+  "changePassword": "เปลี่ยนรหัสผ่าน",
+  "currentPassword": "รหัสผ่านปัจจุบัน",
+  "currentPasswordPlaceholder": "ใส่รหัสผ่านปัจจุบัน",
+  "newPassword": "รหัสผ่านใหม่",
+  "newPasswordPlaceholder": "ใส่รหัสผ่านใหม่",
+  "confirmNewPassword": "ยืนยันรหัสผ่านใหม่",
+  "confirmNewPasswordPlaceholder": "ใส่รหัสผ่านใหม่อีกครั้ง",
+  "currentPasswordRequired": "กรุณาใส่รหัสผ่านปัจจุบัน",
+  "passwordMinLength": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
+  "newPasswordRequired": "กรุณาใส่รหัสผ่านใหม่",
+  "changePasswordSuccess": "เปลี่ยนรหัสผ่านสำเร็จ!",
+  "changePasswordError": "การเปลี่ยนรหัสผ่านล้มเหลว"
 }

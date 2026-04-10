@@ -57,5 +57,17 @@
   "contactEmail": "ອີເມວຕິດຕໍ່",
   "contactEmailPlaceholder": "shop@example.com",
   "defaultCurrency": "ສະກຸນເງິນເລີ່ມຕົ້ນ",
-  "subtitle": "ຈັດການບັນຊີຜູ້ໃຊ້, ບົດບາດ ແລະ ສະຖານະ."
+  "subtitle": "ຈັດການບັນຊີຜູ້ໃຊ້, ບົດບາດ ແລະ ສະຖານະ.",
+  "changePassword": "ປ່ຽນລະຫັດຜ່ານ",
+  "currentPassword": "ລະຫັດຜ່ານປັດຈຸບັນ",
+  "currentPasswordPlaceholder": "ໃສ່ລະຫັດຜ່ານປັດຈຸບັນ",
+  "newPassword": "ລະຫັດຜ່ານໃໝ່",
+  "newPasswordPlaceholder": "ໃສ່ລະຫັດຜ່ານໃໝ່",
+  "confirmNewPassword": "ຢືນຢັນລະຫັດຜ່ານໃໝ່",
+  "confirmNewPasswordPlaceholder": "ໃສ່ລະຫັດຜ່ານໃໝ່ອີກຄັ້ງ",
+  "currentPasswordRequired": "ກະລຸນາໃສ່ລະຫັດຜ່ານປັດຈຸບັນ",
+  "passwordMinLength": "ລະຫັດຜ່ານຕ້ອງມີຢ່າງໜ້ອຍ 6 ຕົວ",
+  "newPasswordRequired": "ກະລຸນາໃສ່ລະຫັດຜ່ານໃໝ່",
+  "changePasswordSuccess": "ປ່ຽນລະຫັດຜ່ານສຳເລັດ!",
+  "changePasswordError": "ການປ່ຽນລະຫັດຜ່ານລົ້ມເຫລວ"
 }

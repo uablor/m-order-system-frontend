@@ -57,5 +57,17 @@
   "contactEmail": "Contact Email",
   "contactEmailPlaceholder": "shop@example.com",
   "defaultCurrency": "Default Currency",
-  "subtitle": "Manage user accounts, roles and statuses."
+  "subtitle": "Manage user accounts, roles and statuses.",
+  "changePassword": "Change Password",
+  "currentPassword": "Current Password",
+  "currentPasswordPlaceholder": "Enter current password",
+  "newPassword": "New Password",
+  "newPasswordPlaceholder": "Enter new password",
+  "confirmNewPassword": "Confirm New Password",
+  "confirmNewPasswordPlaceholder": "Re-enter new password",
+  "currentPasswordRequired": "Please enter current password",
+  "passwordMinLength": "Password must be at least 6 characters",
+  "newPasswordRequired": "Please enter new password",
+  "changePasswordSuccess": "Password changed successfully!",
+  "changePasswordError": "Failed to change password"
 }
