@@ -10,6 +10,13 @@
       @toggle-status="handleToggleStatus"
       @filter-change="handleFilterChange"
       @page-change="handlePageChange"
+      @changePassword="handleChangePassword"
+    />
+
+    <!-- Change Password Modal -->
+    <ChangePasswordModal
+      v-model:visible="showChangePasswordModal"
+      :user="selectedUser"
     />
 
     <!-- Create User Modal -->
@@ -29,6 +36,7 @@ import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import UserTable from '@/presentation/components/super-admin/users/table/UserTable.vue';
 import UserFormModal from '@/presentation/components/super-admin/users/modal/UserFormModal.vue';
+import ChangePasswordModal from '@/presentation/components/super-admin/users/ChangePasswordModal.vue';
 import { useSuperAdminUsers } from '@/presentation/composables/super-admin/useSuperAdminUsers';
 import { useSuperAdminRoles } from '@/presentation/composables/super-admin/useSuperAdminRoles';
 import type { UserCreateDto, UserListQueryDto } from '@/application/dto/user.dto';
@@ -51,6 +59,13 @@ const { fetchRoles, roles } = useSuperAdminRoles();
 
 const showCreateModal = ref(false);
 const modalLoading = ref(false);
+const showChangePasswordModal = ref(false);
+const selectedUser = ref<import('@/domain/entities/user.entity').User | null>(null);
+
+const handleChangePassword = (user: import('@/domain/entities/user.entity').User) => {
+  selectedUser.value = user;
+  showChangePasswordModal.value = true;
+};
 
 const openCreateModal = () => {
   showCreateModal.value = true;

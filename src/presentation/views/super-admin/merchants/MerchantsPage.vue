@@ -11,18 +11,35 @@
       @toggle-status="handleToggleStatus"
       @filter-change="handleFilterChange"
       @pageChange="handlePageChange"
+      @changePassword="handleChangePassword"
+    />
+
+    <!-- Change Password Modal -->
+    <ChangePasswordModal
+      v-model:visible="showChangePasswordModal"
+      :merchant="selectedMerchant"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import MerchantTable from '@/presentation/components/super-admin/merchants/table/MerchantTable.vue';
+import ChangePasswordModal from '@/presentation/components/super-admin/merchants/ChangePasswordModal.vue';
 import { useSuperAdminMerchants } from '@/presentation/composables/super-admin/useSuperAdminMerchants';
 import type { MerchantFilterPayload } from '@/presentation/components/super-admin/merchants/table/MerchantTable.vue';
 
 const router = useRouter();
+
+const showChangePasswordModal = ref(false);
+const selectedMerchant = ref<import('@/domain/entities/user.entity').Merchant | null>(null);
+
+const handleChangePassword = (merchant: import('@/domain/entities/user.entity').Merchant) => {
+  selectedMerchant.value = merchant;
+  showChangePasswordModal.value = true;
+};
+
 const {
   loading,
   merchants,
