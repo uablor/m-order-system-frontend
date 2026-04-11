@@ -594,7 +594,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 import { DeleteOutlined, PlusOutlined, UserAddOutlined, CalculatorOutlined, CaretLeftOutlined, CaretRightOutlined, EyeOutlined, CameraOutlined } from '@ant-design/icons-vue';
 import { message } from 'ant-design-vue';
 import { fmtNumber, numFormatter, numParser } from '@/shared/utils/format';
@@ -645,6 +645,29 @@ const uid = () => String(Date.now()) + Math.random().toString(36).slice(2, 6);
 
 // Variant management
 const currentVariantIndex = ref(0);
+
+// localStorage key for persisting variant selection
+const getLocalStorageKey = () => `order-item-${props.item.uid}-variant-index`;
+
+// Save variant index to localStorage
+const saveVariantIndex = (index: number) => {
+  try {
+    localStorage.setItem(getLocalStorageKey(), index.toString());
+  } catch (error) {
+    console.warn('Failed to save variant index to localStorage:', error);
+  }
+};
+
+// Load variant index from localStorage
+const loadVariantIndex = (): number => {
+  try {
+    const saved = localStorage.getItem(getLocalStorageKey());
+    return saved ? parseInt(saved, 10) : 0;
+  } catch (error) {
+    console.warn('Failed to load variant index from localStorage:', error);
+    return 0;
+  }
+};
 
 // Image upload state
 const imageUploading = ref(false);
@@ -737,12 +760,14 @@ const addVariant = () => {
     customers: []
   });
   currentVariantIndex.value = props.item.variants.length - 1;
+  saveVariantIndex(currentVariantIndex.value);
   triggerVariantAnimation('new');
 };
 
 const previousVariant = () => {
   if (currentVariantIndex.value > 0) {
     currentVariantIndex.value--;
+    saveVariantIndex(currentVariantIndex.value);
     triggerVariantAnimation('previous');
   }
 };
@@ -750,6 +775,7 @@ const previousVariant = () => {
 const nextVariant = () => {
   if (currentVariantIndex.value < (props.item.variants?.length || 0) - 1) {
     currentVariantIndex.value++;
+    saveVariantIndex(currentVariantIndex.value);
     triggerVariantAnimation('next');
   }
 };
@@ -764,6 +790,7 @@ const getVariantColor = (variantIndex: number) => {
 const switchToVariant = (variantIndex: number) => {
   if (variantIndex >= 0 && variantIndex < (props.item.variants?.length || 0)) {
     currentVariantIndex.value = variantIndex;
+    saveVariantIndex(currentVariantIndex.value);
     triggerVariantAnimation('next');
   }
 };
@@ -778,6 +805,7 @@ const removeVariant = (variantIndex: number) => {
       currentVariantIndex.value = props.item.variants.length - 1;
     }
     
+    saveVariantIndex(currentVariantIndex.value);
     message.success('Variant removed successfully');
   }
 };
@@ -1021,6 +1049,20 @@ if (currentVariant.value) {
 if (props.item.discountValue === undefined || props.item.discountValue === null) {
   props.item.discountValue = 0;
 }
+
+// Restore variant selection from localStorage on component mount
+onMounted(() => {
+  const savedIndex = loadVariantIndex();
+  // Validate that the saved index is within bounds
+  if (savedIndex >= 0 && savedIndex < (props.item.variants?.length || 1)) {
+    currentVariantIndex.value = savedIndex;
+  }
+});
+
+// Watch for variant index changes and save to localStorage
+watch(currentVariantIndex, (newIndex) => {
+  saveVariantIndex(newIndex);
+}, { immediate: false });
 </script>
 
 <style scoped>
