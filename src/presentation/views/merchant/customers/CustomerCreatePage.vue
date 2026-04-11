@@ -194,6 +194,7 @@ import MerchantLayout from '@/components/layouts/merchant-layouts/AppLayout.vue'
 import type { CustomerType, PreferredContactMethod } from '@/domain/entities/user.entity';
 import { useMerchantCustomers } from '@/presentation/composables/merchant/useMerchantCustomers';
 import PhoneInputWithCountry from '@/shared/components/PhoneInputWithCountry.vue';
+import { onMounted } from 'vue';
 import {
   UserOutlined,
   IdcardOutlined,
@@ -212,6 +213,32 @@ const route = useRoute();
 const router = useRouter();
 const { isMobile } = useIsMobile();
 const { loading, createCustomer } = useMerchantCustomers();
+
+// SKU context restoration
+const restoreSkuContext = () => {
+  const saved = localStorage.getItem('stock_order_sku_context');
+  if (saved) {
+    const context = JSON.parse(saved);
+    // Only restore if recent (within 30 minutes) and valid
+    if (Date.now() - context.timestamp < 30 * 60 * 1000) {
+      const itemIndex = parseInt(context.itemIndex);
+      if (itemIndex >= 0) {
+        // Trigger variant selection after restoration
+        setTimeout(() => {
+          const variantSelector = document.querySelector('.variant-selector');
+          if (variantSelector) {
+            (variantSelector as any).value = itemIndex.toString();
+          }
+        }, 100);
+      }
+    }
+    localStorage.removeItem('stock_order_sku_context');
+  }
+};
+
+onMounted(() => {
+  restoreSkuContext();
+});
 
 const fromStockOrder = computed(() => route.query.from === 'stock-order');
 const itemUid = computed(() => (route.query.itemUid as string) || '');

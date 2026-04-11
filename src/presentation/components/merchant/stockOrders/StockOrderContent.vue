@@ -130,6 +130,7 @@ import { useOrderItems } from './composables/useOrderItems';
 import { useItemCustomers } from './composables/useItemCustomers';
 import { useDraftStorage } from './composables/useDraftStorage';
 import { useOrderSubmit } from './composables/useOrderSubmit';
+import { getSavedSkuContext } from './composables/useCustomerOrders';
 
 const emit = defineEmits<{ 
   (e: 'openRateModal', data: {
@@ -144,6 +145,24 @@ const openRateModal = (data: {
 }) => {
   emit('openRateModal', data);
 };
+
+onMounted(() => {
+  const skuContext = getSavedSkuContext();
+  if (skuContext) {
+    const itemIndex = parseInt(skuContext.itemIndex);
+    if (itemIndex >= 0 && items.value[itemIndex]) {
+      // Navigate to the saved SKU item
+      setTimeout(() => {
+        const itemScrollRef = document.querySelector('.swipe-container');
+        if (itemScrollRef) {
+          const slideWidth = itemScrollRef.firstElementChild ? (itemScrollRef.firstElementChild as HTMLElement).offsetWidth : 1;
+          const targetScrollLeft = itemIndex * slideWidth;
+          itemScrollRef.scrollLeft = targetScrollLeft;
+        }
+      }, 100);
+    }
+  }
+});
 
 const { isMobile } = useIsMobile();
 const orderCode = ref('');

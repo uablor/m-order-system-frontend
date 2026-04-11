@@ -11,6 +11,7 @@ import { fmtNumber } from '@/shared/utils/format';
 import type { ItemForm, CoItemForm, CustomerOrderForm } from '../types';
 
 const LS_NEW_CUSTOMER_KEY = 'stock_order_new_customer';
+const SKU_CONTEXT_KEY = 'stock_order_sku_context';
 
 export function useCustomerOrders(
   items: Ref<ItemForm[]>,
@@ -157,9 +158,43 @@ export function useCustomerOrders(
     }
   };
 
+  // Save current SKU context before customer creation
+  const saveCurrentSkuContext = (variantIndex: number, variantUid: string) => {
+    localStorage.setItem(SKU_CONTEXT_KEY, JSON.stringify({
+      variantIndex,
+      variantUid,
+      timestamp: Date.now()
+    }));
+  };
+
+  // Get saved SKU context
+  const getSavedSkuContext = () => {
+    const saved = localStorage.getItem(SKU_CONTEXT_KEY);
+    return saved ? JSON.parse(saved) : null;
+  };
+
+  // Clear SKU context
+  const clearSkuContext = () => {
+    localStorage.removeItem(SKU_CONTEXT_KEY);
+  };
+
   const goCreateCustomer = (coUid: string) => {
     saveDraft();
-    router.push({ path: '/merchant/customers/create', query: { from: 'stock-order', coUid } });
+    // Save current SKU context before navigating
+    const currentVariantIndex = items.value.findIndex(item => 
+      item.variants?.some(v => v.uid === item.variants?.[0]?.uid) || false
+    );
+    const firstVariantUid = items.value[0]?.variants?.[0]?.uid || '';
+    saveCurrentSkuContext(currentVariantIndex, firstVariantUid);
+    
+    router.push({ 
+      path: '/merchant/customers/create', 
+      query: { 
+        from: 'stock-order', 
+        coUid,
+        itemIndex: currentVariantIndex.toString()
+      } 
+    });
   };
 
   const handleNewCustomerReturn = () => {
@@ -200,5 +235,14 @@ export function useCustomerOrders(
     fetchCustomers,
     goCreateCustomer,
     handleNewCustomerReturn,
+    getSavedSkuContext,
+    saveCurrentSkuContext,
+    clearSkuContext,
   };
 }
+
+// Export SKU context functions for external use
+export const getSavedSkuContext = () => {
+  const saved = localStorage.getItem(SKU_CONTEXT_KEY);
+  return saved ? JSON.parse(saved) : null;
+};
