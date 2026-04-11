@@ -116,6 +116,7 @@
               class="currency-select"
               show-search
               :filter-option="(input: string, option: any) => option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0"
+              @change="handleSellBaseCurrencyChange"
             />
           </a-form-item>
           <a-form-item
@@ -167,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed } from 'vue';
+import { reactive, ref, computed, watch } from 'vue';
 import type { FormInstance } from 'ant-design-vue';
 import { SwapOutlined, CheckOutlined } from '@ant-design/icons-vue';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
@@ -193,6 +194,9 @@ const sellFormRef = ref<FormInstance>();
 const buyForm = reactive({ baseCurrency: 'LAK', targetCurrency: 'LAK', rate: null as number | null });
 const sellForm = reactive({ baseCurrency: 'LAK', targetCurrency: 'LAK', rate: null as number | null });
 
+// Track if user has manually changed sell form base currency
+const sellFormManuallyChanged = ref(false);
+
 /* ฟอร์มไหนถูกแสดง */
 const showBuy = computed(() => mode.value === 'both' || mode.value === 'buy-only');
 const showSell = computed(() => mode.value === 'both' || mode.value === 'sell-only');
@@ -210,6 +214,7 @@ const resetForms = () => {
   sellForm.baseCurrency = 'LAK';
   sellForm.targetCurrency = 'LAK';
   sellForm.rate = null;
+  sellFormManuallyChanged.value = false;
   buyFormRef.value?.clearValidate();
   sellFormRef.value?.clearValidate();
 };
@@ -237,6 +242,8 @@ const open = (openMode: ModalMode = 'both', initialData?: EditRateInitialData) =
       sellForm.baseCurrency = initialData.sell.baseCurrency || 'LAK';
       sellForm.targetCurrency = initialData.sell.targetCurrency || 'LAK';
       sellForm.rate = initialData.sell.rate ?? null;
+      // If initial data is provided for sell form, mark it as manually changed
+      sellFormManuallyChanged.value = true;
     }
   }
   isOpen.value = true;
@@ -274,6 +281,18 @@ const handleSubmit = async () => {
     close();
     emit('submitted');
   }
+};
+
+// Watch BUY form base currency changes and auto-sync to SELL form
+watch(() => buyForm.baseCurrency, (newCurrency) => {
+  if (mode.value === 'both' && !sellFormManuallyChanged.value) {
+    sellForm.baseCurrency = newCurrency;
+  }
+});
+
+// Handle manual change in SELL form base currency
+const handleSellBaseCurrencyChange = () => {
+  sellFormManuallyChanged.value = true;
 };
 
 defineExpose({ open, close });

@@ -23,7 +23,7 @@
     </a-drawer>
 
     <!-- Content area: push margin on desktop when sidebar is fixed -->
-    <a-layout :style="{ marginLeft: contentMarginLeft, transition: 'margin-left 0.2s' }">
+    <a-layout :style="{ marginLeft: contentMarginLeft }">
       <HeaderWithLayoutSwitcher
         :collapsed="collapsed"
         :page-title="pageTitle"
@@ -156,12 +156,10 @@ const toggleSidebar = () => { collapsed.value = !collapsed.value; };
 
 .content {
   margin: 5px 10px;
+  padding: 24px;
   min-height: calc(100vh - 64px - 70px - 48px);
   background: #fff;
-  border-radius: 12px;
-  padding: 10px 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  transition: all 0.3s ease;
+  border-radius: 8px;
 }
 
 .content-wrapper { max-width: 1400px; margin: 0 auto; }
