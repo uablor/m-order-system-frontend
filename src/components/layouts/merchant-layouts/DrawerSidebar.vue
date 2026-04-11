@@ -10,6 +10,7 @@
       mode="inline" 
       @click="handleMenuClick"
       class="custom-menu"
+      :selectable="true"
     >
       <a-menu-item v-for="item in menuItems" :key="item.key">
         <component :is="item.icon" />
@@ -51,9 +52,21 @@ watch(() => route.path, (newPath) => {
   selectedKeys.value = [getMenuKeyFromPath(newPath)];
 });
 
-const handleMenuClick = (info: any) => {
+const handleMenuClick = async (info: any) => {
   const menuItem = menuItems.value.find((m) => m.key === info.key);
-  if (menuItem) router.push(menuItem.path);
+  if (menuItem) {
+    // Prevent any default navigation behavior
+    if (info.domEvent) {
+      info.domEvent.preventDefault();
+      info.domEvent.stopPropagation();
+    }
+    // Use router.push for smooth SPA navigation
+    try {
+      await router.push(menuItem.path);
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  }
   // ไม่ปิด drawer เมื่อ navigate — ปิดได้แค่กดปุ่มปิดเท่านั้น
 };
 </script>

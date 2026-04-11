@@ -102,10 +102,8 @@ const closeMobileDrawer = () => {
   collapsed.value = true;
 };
 
-// บน mobile/tablet: ปิด drawer เมื่อเปลี่ยน route (หลังคลิกเมนู)
-watch(() => route.path, () => {
-  if (!isDesktop.value) collapsed.value = true;
-});
+// Mobile drawer should stay open until user explicitly closes it
+// Removed auto-close on route change to allow manual control
 
 // Desktop: margin-left follows collapsed state
 // Tablet / Mobile: 0 (drawer is overlay, doesn't push content)

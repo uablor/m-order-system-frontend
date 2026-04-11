@@ -41,6 +41,7 @@ body {
   min-height: 100vh;
   background: #f0f2f5;
   display: block; /* IMPORTANT: allow normal page scroll */
+  transition: background-color 0s; /* Prevent flash during navigation */
 }
 
 a {
@@ -51,6 +52,7 @@ a {
 /* Ant Design Vue customizations */
 .ant-layout {
   background: #f0f2f5;
+  transition: background-color 0s; /* Prevent flash during navigation */
 }
 
 .ant-card {
