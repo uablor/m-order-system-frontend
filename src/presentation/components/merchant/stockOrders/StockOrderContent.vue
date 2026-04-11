@@ -57,7 +57,7 @@
         />
       </template>
       <template v-else-if="items.length > 0">
-        <div ref="itemScrollRef" class="swipe-container" @scroll="onItemScroll">
+        <div ref="itemScrollRef" class="swipe-container" @scroll="onItemScrollWithSave">
           <div v-for="(item, idx) in items" :key="item.uid" class="swipe-slide">
             <OrderItemForm
               :item="item" :index="idx" :is-mobile="true"
@@ -130,7 +130,6 @@ import { useOrderItems } from './composables/useOrderItems';
 import { useItemCustomers } from './composables/useItemCustomers';
 import { useDraftStorage } from './composables/useDraftStorage';
 import { useOrderSubmit } from './composables/useOrderSubmit';
-import { getSavedSkuContext } from './composables/useCustomerOrders';
 
 const emit = defineEmits<{ 
   (e: 'openRateModal', data: {
@@ -147,22 +146,29 @@ const openRateModal = (data: {
 };
 
 onMounted(() => {
-  const skuContext = getSavedSkuContext();
-  if (skuContext) {
-    const itemIndex = parseInt(skuContext.itemIndex);
+  // Restore from simple localStorage key
+  const saved = localStorage.getItem('stock_order_active_item');
+  if (saved) {
+    const context = JSON.parse(saved);
+    const itemIndex = context.itemIndex;
     if (itemIndex >= 0 && items.value[itemIndex]) {
       // Navigate to the saved SKU item
       setTimeout(() => {
-        const itemScrollRef = document.querySelector('.swipe-container');
-        if (itemScrollRef) {
-          const slideWidth = itemScrollRef.firstElementChild ? (itemScrollRef.firstElementChild as HTMLElement).offsetWidth : 1;
-          const targetScrollLeft = itemIndex * slideWidth;
-          itemScrollRef.scrollLeft = targetScrollLeft;
-        }
+        scrollToItem(itemIndex);
       }, 100);
     }
   }
 });
+
+// Save current item index to localStorage when scrolling
+const onItemScrollWithSave = () => {
+  onItemScroll();
+  // Save current active item index to localStorage
+  localStorage.setItem('stock_order_active_item', JSON.stringify({
+    itemIndex: activeItemIdx.value,
+    timestamp: Date.now()
+  }));
+};
 
 const { isMobile } = useIsMobile();
 const orderCode = ref('');
