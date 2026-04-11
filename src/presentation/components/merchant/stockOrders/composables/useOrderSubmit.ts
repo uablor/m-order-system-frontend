@@ -10,7 +10,7 @@ import type { ItemForm } from '../types';
 export function useOrderSubmit(
   orderCode: Ref<string>,
   items: Ref<ItemForm[]>,
-  clearDraft: () => void,
+  onSuccess: () => void,
 ) {
   const { t } = useI18n();
   const submitting = ref(false);
@@ -227,7 +227,7 @@ export function useOrderSubmit(
       clearAllErrors();
       orderCode.value = '';
       items.value = [];
-      clearDraft();
+      onSuccess(); // Call the success callback which handles clearing
     } catch (err: unknown) {
       const axiosErr = err as {
         response?: {

@@ -189,7 +189,7 @@ const {
 // Silence unused template refs
 void itemScrollRef;
 
-const { saveDraft, restoreDraft, clearDraft } = useDraftStorage(orderCode, items);
+const { saveDraft, restoreDraft, clearDraft, clearOrderCode } = useDraftStorage(orderCode, items);
 
 const {
   customerOptions, customerSearching,
@@ -197,7 +197,10 @@ const {
   goCreateCustomer, handleNewCustomerReturn,
 } = useItemCustomers(items, saveDraft);
 
-const { submitting, fieldErrors, clearFieldError, handleSubmit } = useOrderSubmit(orderCode, items, clearDraft);
+const { submitting, fieldErrors, clearFieldError, handleSubmit } = useOrderSubmit(orderCode, items, () => {
+    clearDraft();
+    clearOrderCode(); // Also clear the order code after successful submission
+  });
 
 const getItemErrors = (idx: number): Record<string, string> => {
   const prefix = `items.${idx}.`;
@@ -229,6 +232,7 @@ const refreshRates = () => fetchTodayRates();
 defineExpose({ refreshRates });
 
 onMounted(async () => {
+  // Use intelligent draft restoration - only restore if there's meaningful data
   restoreDraft();
   if (items.value.length === 0) addItem();
   fetchTodayRates();
