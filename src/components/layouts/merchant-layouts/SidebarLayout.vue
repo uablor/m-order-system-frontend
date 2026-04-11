@@ -21,6 +21,7 @@
       mode="inline" 
       @click="handleMenuClick"
       class="custom-menu"
+      :selectable="true"
     >
       <a-menu-item v-for="item in menuItems" :key="item.key">
         <component :is="item.icon" />
@@ -66,9 +67,21 @@ watch(() => route.path, (newPath) => {
   selectedKeys.value = [getMenuKeyFromPath(newPath)];
 });
 
-const handleMenuClick = (item: any) => {
+const handleMenuClick = async (item: any) => {
   const menuItem = menuItems.value.find((m) => m.key === item.key);
-  if (menuItem) router.push(menuItem.path);
+  if (menuItem) {
+    // Prevent any default navigation behavior
+    if (item.domEvent) {
+      item.domEvent.preventDefault();
+      item.domEvent.stopPropagation();
+    }
+    // Use router.push for smooth SPA navigation
+    try {
+      await router.push(menuItem.path);
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  }
 };
 </script>
 

@@ -146,6 +146,7 @@
               :parser="numParser"
               size="large"
               style="width:100%"
+              @change="handleSellRateChange"
             />
           </a-form-item>
         </a-form>
@@ -197,6 +198,9 @@ const sellForm = reactive({ baseCurrency: 'LAK', targetCurrency: 'LAK', rate: nu
 // Track if user has manually changed sell form base currency
 const sellFormManuallyChanged = ref(false);
 
+// Track if user has manually changed sell form rate
+const sellRateManuallyChanged = ref(false);
+
 /* ฟอร์มไหนถูกแสดง */
 const showBuy = computed(() => mode.value === 'both' || mode.value === 'buy-only');
 const showSell = computed(() => mode.value === 'both' || mode.value === 'sell-only');
@@ -215,6 +219,7 @@ const resetForms = () => {
   sellForm.targetCurrency = 'LAK';
   sellForm.rate = null;
   sellFormManuallyChanged.value = false;
+  sellRateManuallyChanged.value = false;
   buyFormRef.value?.clearValidate();
   sellFormRef.value?.clearValidate();
 };
@@ -290,9 +295,28 @@ watch(() => buyForm.baseCurrency, (newCurrency) => {
   }
 });
 
+// Watch BUY form rate changes and auto-sync to SELL form when base currencies match
+watch(() => buyForm.rate, (newRate) => {
+  if (mode.value === 'both' && !sellRateManuallyChanged.value && buyForm.baseCurrency === sellForm.baseCurrency) {
+    sellForm.rate = newRate;
+  }
+});
+
+// Watch SELL form rate changes and auto-sync to BUY form when base currencies match
+watch(() => sellForm.rate, (newRate) => {
+  if (mode.value === 'both' && !sellRateManuallyChanged.value && buyForm.baseCurrency === sellForm.baseCurrency) {
+    buyForm.rate = newRate;
+  }
+});
+
 // Handle manual change in SELL form base currency
 const handleSellBaseCurrencyChange = () => {
   sellFormManuallyChanged.value = true;
+};
+
+// Handle manual change in SELL form rate
+const handleSellRateChange = () => {
+  sellRateManuallyChanged.value = true;
 };
 
 defineExpose({ open, close });
