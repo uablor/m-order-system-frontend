@@ -556,9 +556,9 @@
                 </div>
               </div>
               <div class="variant-item-details">
-                <div class="variant-item-name">
+                <!-- <div class="variant-item-name">
                   {{ variant.variant || $t('merchant.orders.items.sizeDefault', { number: vIdx + 1 }) }}
-                </div>
+                </div> -->
                 <div class="variant-item-prices">
                   <span class="variant-price">{{ getCcySymbol(sellBaseCcy) }} {{ fmtNumber(variant.sellingPriceForeign) }}</span>
                   <span class="variant-qty-badge">{{ $t('merchant.orders.items.variantQty', { qty: getVariantTotalQty(variant) }) }}</span>

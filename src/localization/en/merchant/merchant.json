@@ -196,7 +196,7 @@
       "productVariants": "Product Variants ({count})",
       "variantNumber": "Variant {number}",
       "sizeDefault": "Size {number}",
-      "customerCount": "{count} customer(s)",
+      "customerCount": "{count} customer",
       "variantQty": "Qty: {qty}",
       "itemOf": "Item {current} of {total}"
     },
