@@ -197,6 +197,7 @@
       "variantNumber": "ຮູບແບບ {number}",
       "sizeDefault": "ຂະໜາດ {number}",
       "customerCount": "ລູກຄ້າ {count} ຄົນ",
+      "variantQty": "ຈຳນວນ: {qty}",
       "itemOf": "ສິນຄ້າ {current} ຈາກ {total}"
     },
     "customerOrders": {

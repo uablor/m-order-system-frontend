@@ -560,8 +560,8 @@
                   {{ variant.variant || $t('merchant.orders.items.sizeDefault', { number: vIdx + 1 }) }}
                 </div>
                 <div class="variant-item-prices">
-                  <span class="variant-price">{{ sellBaseCcy }}{{ fmtNumber(variant.sellingPriceForeign) }}</span>
-                  <span class="variant-qty-badge">x{{ getVariantTotalQty(variant) }}</span>
+                  <span class="variant-price">{{ getCcySymbol(sellBaseCcy) }} {{ fmtNumber(variant.sellingPriceForeign) }}</span>
+                  <span class="variant-qty-badge">{{ $t('merchant.orders.items.variantQty', { qty: getVariantTotalQty(variant) }) }}</span>
                   <span class="variant-customers">{{ $t('merchant.orders.items.customerCount', { count: variant.customers.length }) }}</span>
                 </div>
               </div>
@@ -581,9 +581,9 @@
           <span :style="{ color: getVariantColor(modalVariantIndex) }">
             {{ $t('merchant.orders.items.variantNumber', { number: modalVariantIndex + 1 }) }}
           </span>
-          <span v-if="modalVariant" style="color: #374151; font-weight: 500; margin-left: 6px;">
+          <!-- <span v-if="modalVariant" style="color: #374151; font-weight: 500; margin-left: 6px;">
             – {{ modalVariant.variant || $t('merchant.orders.items.sizeDefault', { number: modalVariantIndex + 1 }) }}
-          </span>
+          </span> -->
         </template>
         <div v-if="modalVariant" class="variant-customers-modal-content">
           <div class="variant-customers-modal-header">
@@ -602,7 +602,7 @@
             >
               <span class="variant-customer-index">{{ cIdx + 1 }}.</span>
               <span class="variant-customer-name">{{ getCustomerName(cust.customerId) }}</span>
-              <span class="variant-customer-qty">x{{ cust.qty }}</span>
+              <span class="variant-customer-qty">{{ $t('merchant.orders.items.variantQty', { qty: cust.qty }) }}</span>
             </div>
           </div>
         </div>
@@ -1069,6 +1069,17 @@ const getVariantTotalQty = (variant: ProductVariant): number => {
 };
 
 const modalVariant = computed(() => props.item.variants?.[modalVariantIndex.value]);
+
+const getCcySymbol = (code: string): string => {
+  const map: Record<string, string> = {
+    LAK: '₭',
+    THB: '฿',
+    USD: '$',
+    USDT: '$',
+    CNY: '¥',
+  };
+  return map[code] ?? code;
+};
 
 const onFieldChange = (field: string) => {
   if (props.errors[field]) {

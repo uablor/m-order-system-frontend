@@ -197,6 +197,7 @@
       "variantNumber": "รูปแบบ {number}",
       "sizeDefault": "ขนาด {number}",
       "customerCount": "ลูกค้า {count} คน",
+      "variantQty": "จำนวน: {qty}",
       "itemOf": "สินค้า {current} จาก {total}"
     },
     "customerOrders": {
