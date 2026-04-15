@@ -131,7 +131,7 @@
                   {{ variant.variantName || $t('merchant.orders.summary.variantFallback', { number: vIdx + 1 }) }}
                 </span>
                 <span class="detail-variant-qty-badge">
-                  {{ $t('merchant.orders.summary.qtyUnit', { qty: variant.totalQty }) }}
+                  <!-- {{ $t('merchant.orders.summary.qtyUnit', { qty: variant.totalQty }) }} -->
                 </span>
               </div>
 
