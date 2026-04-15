@@ -228,7 +228,15 @@
       "sellingTotalForeign": "รวมราคาขาย",
       "sellingTotalLak": "รวมราคาขาย",
       "profitForeign": "กำไร",
-      "profitLak": "กำไร"
+      "profitLak": "กำไร",
+      "detailTitle": "รายละเอียดออเดอร์",
+      "orderCodeLabel": "รหัสออเดอร์",
+      "productFallback": "สินค้า {number}",
+      "totalQtyLabel": "ทั้งหมด: {qty}",
+      "variantFallback": "Variant {number}",
+      "qtyUnit": "{qty} ชิ้น",
+      "customerQtyLabel": "จำนวน {qty}",
+      "unknownCustomer": "ไม่ระบุ"
     },
     "validation": {
       "orderCodeRequired": "กรุณากรอกรหัสออเดอร์ก่อนส่ง",

@@ -228,7 +228,15 @@
       "sellingTotalForeign": "Total Selling",
       "sellingTotalLak": "Total Selling ",
       "profitForeign": "Profit",
-      "profitLak": "Profit"
+      "profitLak": "Profit",
+      "detailTitle": "Order Detail",
+      "orderCodeLabel": "Order Code",
+      "productFallback": "Product {number}",
+      "totalQtyLabel": "Total: {qty}",
+      "variantFallback": "Variant {number}",
+      "qtyUnit": "{qty} pcs",
+      "customerQtyLabel": "Qty {qty}",
+      "unknownCustomer": "Unknown"
     },
     "validation": {
       "orderCodeRequired": "Please enter the Order Code before submitting.",

@@ -92,7 +92,7 @@
       <!-- Header row with order code -->
       <div class="detail-header">
         <UnorderedListOutlined class="detail-header-icon" />
-        <span class="detail-header-title">ລາຍລະອຽດອໍເດີ້</span>
+        <span class="detail-header-title">{{ $t('merchant.orders.summary.detailTitle') }}</span>
         <span v-if="orderCode" class="order-code-badge">
           <TagOutlined class="order-code-icon" />
           {{ orderCode }}
@@ -109,8 +109,12 @@
           <!-- Product name row -->
           <div class="detail-product-row">
             <span class="detail-item-num">{{ iIdx + 1 }}</span>
-            <span class="detail-product-name">{{ row.productName || `ສິນຄ້າ ${iIdx + 1}` }}</span>
-            <span class="detail-item-total-qty">ທັງໝົດ: {{ row.totalQty }}</span>
+            <span class="detail-product-name">
+              {{ row.productName || $t('merchant.orders.summary.productFallback', { number: iIdx + 1 }) }}
+            </span>
+            <span class="detail-item-total-qty">
+              {{ $t('merchant.orders.summary.totalQtyLabel', { qty: row.totalQty }) }}
+            </span>
           </div>
 
           <!-- Variants under this product -->
@@ -123,8 +127,12 @@
               <!-- Variant label (size/name) -->
               <div class="detail-variant-label">
                 <span class="variant-dot" :style="{ background: getVariantColor(vIdx) }" />
-                <span class="detail-variant-name">{{ variant.variantName || `Variant ${vIdx + 1}` }}</span>
-                <span class="detail-variant-qty-badge">{{ variant.totalQty }} ອັນ</span>
+                <span class="detail-variant-name">
+                  {{ variant.variantName || $t('merchant.orders.summary.variantFallback', { number: vIdx + 1 }) }}
+                </span>
+                <span class="detail-variant-qty-badge">
+                  {{ $t('merchant.orders.summary.qtyUnit', { qty: variant.totalQty }) }}
+                </span>
               </div>
 
               <!-- Customers under this variant -->
@@ -136,7 +144,7 @@
                 >
                   <span class="cust-index">{{ cIdx + 1 }}.</span>
                   <span class="cust-name">{{ cust.customerName }}</span>
-                  <span class="cust-qty">× {{ cust.qty }}</span>
+                  <span class="cust-qty">{{ $t('merchant.orders.summary.customerQtyLabel', { qty: cust.qty }) }}</span>
                 </div>
               </div>
             </div>
@@ -149,6 +157,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { CalculatorOutlined, UnorderedListOutlined, TagOutlined } from '@ant-design/icons-vue';
 import { fmtNumber } from '@/shared/utils/format';
 import type { ItemForm } from '../types';
@@ -172,6 +181,7 @@ const props = defineProps<{
   customerOptions?: Customer[];
 }>();
 
+const { t } = useI18n();
 const fmtNum = fmtNumber;
 
 const isBuySameCurrency = computed(() => props.buyBaseCcy === props.buyTargetCcy);
@@ -182,7 +192,7 @@ const getVariantColor = (idx: number) => VARIANT_COLORS[idx % VARIANT_COLORS.len
 
 /** Resolve customer name from customerOptions, fallback to ID string */
 const getCustomerName = (customerId: number | undefined): string => {
-  if (!customerId) return 'ບໍ່ລະບຸ';
+  if (!customerId) return t('merchant.orders.summary.unknownCustomer');
   const found = props.customerOptions?.find(c => c.id === customerId);
   return found?.customerName ?? `#${customerId}`;
 };

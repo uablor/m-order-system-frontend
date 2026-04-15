@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx vue-tsc *)"
+      "Bash(npx vue-tsc *)",
+      "Bash(xargs grep *)",
+      "Bash(sed -n '224,235p' \"D:/web_out_side/m_order_system/m-order-system-frontend/src/localization/en/merchant/merchant.json\")",
+      "Bash(sed -n '224,235p' \"D:/web_out_side/m_order_system/m-order-system-frontend/src/localization/la/merchant/merchant.json\")",
+      "Bash(sed -n '224,235p' \"D:/web_out_side/m_order_system/m-order-system-frontend/src/localization/th/merchant/merchant.json\")"
     ]
   }
 }
