@@ -560,7 +560,7 @@
                   {{ variant.variant || $t('merchant.orders.items.sizeDefault', { number: vIdx + 1 }) }}
                 </div> -->
                 <div class="variant-item-prices">
-                  <span class="variant-price">{{ getCcySymbol(sellBaseCcy) }} {{ fmtNumber(variant.sellingPriceForeign) }}</span>
+                  <span class="variant-price">{{ getCcySymbol(sellBaseCcy) }} {{ fmtNumber(variant.sellingPriceForeign ?? 0) }}</span>
                   <span class="variant-qty-badge">{{ $t('merchant.orders.items.variantQty', { qty: getVariantTotalQty(variant) }) }}</span>
                   <span class="variant-customers">{{ $t('merchant.orders.items.customerCount', { count: variant.customers.length }) }}</span>
                 </div>
@@ -1090,12 +1090,16 @@ const onFieldChange = (field: string) => {
 // Sync current variant data back to main item for validation
 watch(currentVariant, (newVariant) => {
   if (newVariant && props.item.variants) {
+    // Coerce null/undefined numeric fields to 0 (prevents fmtNumber crash when input is cleared)
+    if (newVariant.sellingPriceForeign == null) newVariant.sellingPriceForeign = 0;
+    if (newVariant.purchasePrice == null) newVariant.purchasePrice = 0;
+
     // Update the variant in the variants array
     const variantIndex = props.item.variants.findIndex(v => v.uid === newVariant.uid);
     if (variantIndex !== -1 && props.item.variants[variantIndex] !== newVariant) {
       props.item.variants[variantIndex] = { ...newVariant };
     }
-    
+
     // Also sync to main item for parent validation (backward compatibility)
     // Only update if values are different to avoid recursion
     if (props.item.purchasePrice !== (newVariant.purchasePrice || 0)) {

@@ -1,6 +1,7 @@
 /**
  * Format number with comma separators.
  * Removes trailing .00 but keeps meaningful decimals.
+ * Returns "0" for null, undefined, or NaN values.
  *
  * Examples:
  *   1000     → "1,000"
@@ -8,8 +9,10 @@
  *   1000.00  → "1,000"
  *   44.55    → "44.55"
  *   0        → "0"
+ *   null     → "0"
  */
-export const fmtNumber = (val: number): string => {
+export const fmtNumber = (val: number | null | undefined): string => {
+  if (val == null || isNaN(val as number)) return '0';
   return val.toLocaleString('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,

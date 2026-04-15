@@ -99,6 +99,9 @@
       :selling-total-lak="summarySellingTotalLak"
       :profit-foreign="summaryProfitForeign"
       :profit-lak="summaryProfitLak"
+      :order-code="orderCode"
+      :items="items"
+      :customer-options="customerOptions"
     />
 
     <!-- Submit -->
