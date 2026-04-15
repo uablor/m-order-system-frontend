@@ -533,22 +533,35 @@
                 <span class="variant-item-number" :style="{ color: getVariantColor(vIdx) }">
                   {{ $t('merchant.orders.items.variantNumber', { number: vIdx + 1 }) }}
                 </span>
-                <a-button 
-                  type="text" 
-                  danger 
-                  size="small" 
-                  class="variant-delete-btn"
-                  @click.stop="removeVariant(vIdx)"
-                >
-                  <DeleteOutlined />
-                </a-button>
+                <div class="variant-item-header-actions">
+                  <a-tooltip title="ເບິ່ງລູກຄ້າ" placement="top">
+                    <a-button
+                      type="text"
+                      size="small"
+                      class="variant-customers-btn"
+                      @click.stop="openVariantCustomersModal(vIdx, $event)"
+                    >
+                      <TeamOutlined />
+                    </a-button>
+                  </a-tooltip>
+                  <a-button
+                    type="text"
+                    danger
+                    size="small"
+                    class="variant-delete-btn"
+                    @click.stop="removeVariant(vIdx)"
+                  >
+                    <DeleteOutlined />
+                  </a-button>
+                </div>
               </div>
               <div class="variant-item-details">
                 <div class="variant-item-name">
                   {{ variant.variant || $t('merchant.orders.items.sizeDefault', { number: vIdx + 1 }) }}
                 </div>
                 <div class="variant-item-prices">
-                  <span class="variant-price">${{ fmtNumber(variant.sellingPriceForeign) }}</span>
+                  <span class="variant-price">{{ sellBaseCcy }}{{ fmtNumber(variant.sellingPriceForeign) }}</span>
+                  <span class="variant-qty-badge">x{{ getVariantTotalQty(variant) }}</span>
                   <span class="variant-customers">{{ $t('merchant.orders.items.customerCount', { count: variant.customers.length }) }}</span>
                 </div>
               </div>
@@ -556,6 +569,44 @@
           </div>
         </div>
       </div>
+
+      <!-- Variant Customers Modal -->
+      <a-modal
+        v-model:open="showVariantCustomersModal"
+        :footer="null"
+        width="420px"
+        destroy-on-close
+      >
+        <template #title>
+          <span :style="{ color: getVariantColor(modalVariantIndex) }">
+            {{ $t('merchant.orders.items.variantNumber', { number: modalVariantIndex + 1 }) }}
+          </span>
+          <span v-if="modalVariant" style="color: #374151; font-weight: 500; margin-left: 6px;">
+            – {{ modalVariant.variant || $t('merchant.orders.items.sizeDefault', { number: modalVariantIndex + 1 }) }}
+          </span>
+        </template>
+        <div v-if="modalVariant" class="variant-customers-modal-content">
+          <div class="variant-customers-modal-header">
+            <span class="variant-customers-modal-total">
+              {{ $t('merchant.orders.items.totalQtyLabel') }}: {{ getVariantTotalQty(modalVariant) }}
+            </span>
+          </div>
+          <div v-if="modalVariant.customers.length === 0" class="variant-customers-empty">
+            ຍັງບໍ່ມີລູກຄ້າ
+          </div>
+          <div v-else class="variant-customers-list">
+            <div
+              v-for="(cust, cIdx) in modalVariant.customers"
+              :key="cust.uid"
+              class="variant-customer-row"
+            >
+              <span class="variant-customer-index">{{ cIdx + 1 }}.</span>
+              <span class="variant-customer-name">{{ getCustomerName(cust.customerId) }}</span>
+              <span class="variant-customer-qty">x{{ cust.qty }}</span>
+            </div>
+          </div>
+        </div>
+      </a-modal>
 
       <!-- ADD VARIANT BUTTON AND NAVIGATION -->
       <div class="variant-controls">
@@ -595,12 +646,12 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue';
-import { DeleteOutlined, PlusOutlined, UserAddOutlined, CalculatorOutlined, CaretLeftOutlined, CaretRightOutlined, EyeOutlined, CameraOutlined } from '@ant-design/icons-vue';
+import { DeleteOutlined, PlusOutlined, UserAddOutlined, CalculatorOutlined, CaretLeftOutlined, CaretRightOutlined, EyeOutlined, CameraOutlined, TeamOutlined } from '@ant-design/icons-vue';
 import { message } from 'ant-design-vue';
 import { fmtNumber, numFormatter, numParser } from '@/shared/utils/format';
 import { useItemCalculations } from '../composables/useItemCalculations';
 import type { Customer } from '@/domain/entities/user.entity';
-import type { ItemForm } from '../types';
+import type { ItemForm, ProductVariant } from '../types';
 import { uploadFilesForMerchant, deleteFile } from '@/infrastructure/repositories/upload.repository';
 
 const props = defineProps<{
@@ -986,6 +1037,38 @@ const addVariantCustomer = () => {
 const removeVariantCustomer = (customerUid: string) => {
   currentVariant.value.customers = currentVariant.value.customers.filter(c => c.uid !== customerUid);
 };
+
+// ---- Customer name cache (customerOptions are search-based so we cache names as they load) ----
+const customerNameCache = ref<Map<number, string>>(new Map());
+
+watch(() => props.customerOptions, (options) => {
+  if (options && options.length > 0) {
+    options.forEach(c => {
+      customerNameCache.value.set(c.id, c.customerName);
+    });
+  }
+}, { immediate: true, deep: true });
+
+const getCustomerName = (customerId: number | undefined): string => {
+  if (!customerId) return '-';
+  return customerNameCache.value.get(customerId) || `#${customerId}`;
+};
+
+// ---- Variant customers modal ----
+const showVariantCustomersModal = ref(false);
+const modalVariantIndex = ref(0);
+
+const openVariantCustomersModal = (vIdx: number, event: Event) => {
+  event.stopPropagation();
+  modalVariantIndex.value = vIdx;
+  showVariantCustomersModal.value = true;
+};
+
+const getVariantTotalQty = (variant: ProductVariant): number => {
+  return variant.customers.reduce((sum, c) => sum + (c.qty || 0), 0);
+};
+
+const modalVariant = computed(() => props.item.variants?.[modalVariantIndex.value]);
 
 const onFieldChange = (field: string) => {
   if (props.errors[field]) {
@@ -1783,6 +1866,102 @@ watch(currentVariantIndex, (newIndex) => {
   background: #f3f4f6;
   padding: 2px 6px;
   border-radius: 4px;
+}
+
+.variant-qty-badge {
+  font-weight: 700;
+  color: #1d4ed8;
+  background: #eff6ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.variant-item-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.variant-customers-btn {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  padding: 2px;
+  min-width: 24px;
+  border-radius: 2px;
+  height: 16px !important;
+  color: #1d4ed8;
+}
+
+.variant-item:hover .variant-customers-btn {
+  opacity: 1;
+}
+
+/* Variant Customers Modal */
+.variant-customers-modal-content {
+  padding: 4px 0;
+}
+
+.variant-customers-modal-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.variant-customers-modal-total {
+  font-size: 13px;
+  font-weight: 700;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 4px 14px;
+  border-radius: 12px;
+}
+
+.variant-customers-empty {
+  text-align: center;
+  color: #9ca3af;
+  padding: 32px;
+  font-size: 13px;
+}
+
+.variant-customers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.variant-customer-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.variant-customer-index {
+  font-size: 12px;
+  color: #9ca3af;
+  min-width: 20px;
+}
+
+.variant-customer-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.variant-customer-qty {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1d4ed8;
+  background: #eff6ff;
+  padding: 3px 12px;
+  border-radius: 8px;
 }
 
 /* Navigation button styles */
