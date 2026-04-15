@@ -109,7 +109,7 @@
             <a-row :gutter="[16, 0]">
               <a-col :span="12">
                 <a-form-item :label="`${$t('merchant.orders.items.shippingPrice')} (${buyBaseCcy})`">
-                  <a-input-number v-model:value="item.shippingPrice"  :formatter="numFormatter" :parser="numParser" class="w-full" />
+                  <a-input-number v-model:value="item.shippingPrice" :formatter="numFormatter" :parser="numParser" class="w-full" />
                 </a-form-item>
               </a-col>
               <a-col v-if="!isBuySameCurrency" :span="12">
@@ -130,7 +130,7 @@
               </a-col>
               <a-col :span="12">
                 <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
-                  <a-input-number v-model:value="item.discountValue"  :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType" />
+                  <a-input-number v-model:value="item.discountValue" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType" />
                 </a-form-item>
               </a-col>
             </a-row>
@@ -231,7 +231,7 @@
         
         <!-- Mobile Shipping and Discount Fields -->
         <a-form-item :label="`${$t('merchant.orders.items.shippingPrice')} (${buyBaseCcy})`">
-          <a-input-number v-model:value="item.shippingPrice"  :formatter="numFormatter" :parser="numParser" class="w-full" />
+          <a-input-number v-model:value="item.shippingPrice" :formatter="numFormatter" :parser="numParser" class="w-full" />
         </a-form-item>
         <a-form-item v-if="!isBuySameCurrency" :label="`${$t('merchant.orders.items.shippingKip')} (${buyTargetCcy})`">
           <a-input :value="fmtNum(calc.calcShippingLak(variantForCalculation))" disabled class="w-full" />
@@ -243,7 +243,7 @@
           </a-select>
         </a-form-item>
         <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
-          <a-input-number v-model:value="item.discountValue"  :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType" />
+          <a-input-number v-model:value="item.discountValue" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType" />
         </a-form-item>
         <a-form-item v-if="!isBuySameCurrency" :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
           <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
