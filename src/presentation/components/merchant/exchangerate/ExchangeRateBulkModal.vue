@@ -77,7 +77,7 @@
           >
             <a-input-number
               v-model:value="buyForm.rate"
-              :placeholder="$t('merchant.exchangeRates.bulkModal.ratePlaceholder')"
+              :placeholder="isBuySameCurrency ? $t('merchant.exchangeRates.bulkModal.ratePlaceholderSameCurrency') : $t('merchant.exchangeRates.bulkModal.ratePlaceholder')"
               :min="0"
               :precision="4"
               :formatter="numFormatter"
@@ -139,7 +139,7 @@
           >
             <a-input-number
               v-model:value="sellForm.rate"
-              :placeholder="$t('merchant.exchangeRates.bulkModal.ratePlaceholder')"
+              :placeholder="isSellSameCurrency ? $t('merchant.exchangeRates.bulkModal.ratePlaceholderSameCurrency') : $t('merchant.exchangeRates.bulkModal.ratePlaceholder')"
               :min="0"
               :precision="4"
               :formatter="numFormatter"

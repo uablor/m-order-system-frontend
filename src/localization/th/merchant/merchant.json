@@ -349,6 +349,7 @@
       "rate": "อัตราแลกเปลี่ยน",
       "rateSameCurrency": "ป้อนจำนวนเงินอัตราแลกเปลี่ยน",
       "ratePlaceholder": "กรอกอัตราแลกเปลี่ยน",
+      "ratePlaceholderSameCurrency": "ป้อนจำนวนเงินอัตราแลกเปลี่ยน",
       "baseCurrencyRequired": "กรุณากรอกสกุลเงินต้นทาง",
       "targetCurrencyRequired": "กรุณากรอกสกุลเงินปลายทาง",
       "rateRequired": "กรุณากรอกอัตราแลกเปลี่ยน",

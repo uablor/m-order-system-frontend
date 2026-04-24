@@ -349,6 +349,7 @@
       "rate": "ອັດຕາແລກປ່ຽນ",
       "rateSameCurrency": "ປ້ອນອັດຕາຈຳນວນເງີນ",
       "ratePlaceholder": "ໃສ່ອັດຕາແລກປ່ຽນ",
+      "ratePlaceholderSameCurrency": "ປ້ອນອັດຕາຈຳນວນເງີນ",
       "baseCurrencyRequired": "ກະລຸນາໃສ່ສະກຸນເງິນຕົ້ນທາງ",
       "targetCurrencyRequired": "ກະລຸນາໃສ່ສະກຸນເງິນປາຍທາງ",
       "rateRequired": "ກະລຸນາໃສ່ອັດຕາແລກປ່ຽນ",

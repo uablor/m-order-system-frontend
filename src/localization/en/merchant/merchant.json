@@ -346,6 +346,7 @@
       "rate": "Rate",
       "rateSameCurrency": "Enter exchange rate amount",
       "ratePlaceholder": "Enter exchange rate",
+      "ratePlaceholderSameCurrency": "Enter exchange rate amount",
       "baseCurrencyRequired": "Base currency is required",
       "targetCurrencyRequired": "Target currency is required",
       "rateRequired": "Rate is required",
