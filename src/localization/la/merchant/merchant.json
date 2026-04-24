@@ -281,7 +281,7 @@
     "showFilters": "ຕົວກອງ",
     "hideFilters": "ເຊື່ອງຕົວກອງ",
     "filter": {
-      "searchPlaceholder": "ຄົ້ນຫາຕາມລະຫັດສະກຸນເງິນ (ຕ.ຢ. CNY, THB)",
+     
       "baseCurrency": "ສະກຸນເງິນຕົ້ນທາງ",
       "targetCurrency": "ສະກຸນເງິນປາຍທາງ",
       "status": "ສະຖານະ",
@@ -347,6 +347,7 @@
       "targetCurrency": "ສະກຸນເງິນປາຍທາງ",
       "targetCurrencyPlaceholder": "ເຊັ່ນ LAK",
       "rate": "ອັດຕາແລກປ່ຽນ",
+      "rateSameCurrency": "ປ້ອນອັດຕາຈຳນວນເງີນ",
       "ratePlaceholder": "ໃສ່ອັດຕາແລກປ່ຽນ",
       "baseCurrencyRequired": "ກະລຸນາໃສ່ສະກຸນເງິນຕົ້ນທາງ",
       "targetCurrencyRequired": "ກະລຸນາໃສ່ສະກຸນເງິນປາຍທາງ",
@@ -462,11 +463,11 @@
     "purchaseInformation": "ຂານຊື້ສິນຄາຂ",
     "sellingInformation": "ຂານຊື້ຂາຍ",
     "profitInformation": "ກຳໄລ",
-    "purchasePrice": "ລາຄາຊື້ສິນຄ້າ",
+   
     "purchaseTotal": "ລວາມລາຄາຊື້",
     "exchangeRate": "ອັດຕາແລປ່ຽນທີ່ໃຊ້",
-    "sellingPrice": "ລາຄາຂາຍສິນຄ້າ",
-    "sellingTotal": "ລວາມລາຄາຂາຍ",
+   
+ 
     "profit": "ກຳໄລ",
     "sellingAmountLak": "ຍອດຂາຍ",
     "sellingPriceLak": "ລາຄາຂາຍ",

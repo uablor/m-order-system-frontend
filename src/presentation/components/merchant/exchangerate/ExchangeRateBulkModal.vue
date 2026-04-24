@@ -71,7 +71,7 @@
             />
           </a-form-item>
           <a-form-item
-            :label="$t('merchant.exchangeRates.bulkModal.rate')"
+            :label="isBuySameCurrency ? $t('merchant.exchangeRates.bulkModal.rateSameCurrency') : $t('merchant.exchangeRates.bulkModal.rate')"
             name="rate"
             :rules="[{ required: true, message: $t('merchant.exchangeRates.bulkModal.rateRequired') }]"
           >
@@ -133,7 +133,7 @@
             />
           </a-form-item>
           <a-form-item
-            :label="$t('merchant.exchangeRates.bulkModal.rate')"
+            :label="isSellSameCurrency ? $t('merchant.exchangeRates.bulkModal.rateSameCurrency') : $t('merchant.exchangeRates.bulkModal.rate')"
             name="rate"
             :rules="[{ required: true, message: $t('merchant.exchangeRates.bulkModal.rateRequired') }]"
           >
@@ -204,6 +204,10 @@ const sellRateManuallyChanged = ref(false);
 /* ฟอร์มไหนถูกแสดง */
 const showBuy = computed(() => mode.value === 'both' || mode.value === 'buy-only');
 const showSell = computed(() => mode.value === 'both' || mode.value === 'sell-only');
+
+/* Check if base and target currencies are the same */
+const isBuySameCurrency = computed(() => buyForm.baseCurrency === buyForm.targetCurrency);
+const isSellSameCurrency = computed(() => sellForm.baseCurrency === sellForm.targetCurrency);
 
 /* ปรับขนาด modal — single form แคบกว่า */
 const modalWidth = computed(() => {

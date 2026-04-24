@@ -344,6 +344,7 @@
       "targetCurrency": "Target Currency",
       "targetCurrencyPlaceholder": "e.g. LAK",
       "rate": "Rate",
+      "rateSameCurrency": "Enter exchange rate amount",
       "ratePlaceholder": "Enter exchange rate",
       "baseCurrencyRequired": "Base currency is required",
       "targetCurrencyRequired": "Target currency is required",

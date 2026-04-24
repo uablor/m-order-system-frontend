@@ -347,6 +347,7 @@
       "targetCurrency": "สกุลเงินปลายทาง",
       "targetCurrencyPlaceholder": "เช่น LAK",
       "rate": "อัตราแลกเปลี่ยน",
+      "rateSameCurrency": "ป้อนจำนวนเงินอัตราแลกเปลี่ยน",
       "ratePlaceholder": "กรอกอัตราแลกเปลี่ยน",
       "baseCurrencyRequired": "กรุณากรอกสกุลเงินต้นทาง",
       "targetCurrencyRequired": "กรุณากรอกสกุลเงินปลายทาง",
