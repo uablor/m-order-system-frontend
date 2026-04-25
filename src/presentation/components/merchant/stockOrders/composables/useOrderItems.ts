@@ -33,12 +33,12 @@ export function useOrderItems(isMobile: Ref<boolean>) {
   const addItem = () => {
     items.value.push({
       uid: uid(), productName: '', variant: '',
-      purchasePrice: 0, shippingPrice: 0,
+      purchasePrice: 0, shippingPrice: 0, shippingCurrency: 'buy',
       discountType: undefined, discountValue: 0, sellingPriceForeign: 0,
       customers: [],
       quantity: 0,
-      productImage: '', // Initialize productImage
-      imageId: undefined, // Initialize imageId
+      productImage: '',
+      imageId: undefined,
     });
     if (isMobile.value) nextTick(() => scrollToItem(items.value.length - 1));
   };

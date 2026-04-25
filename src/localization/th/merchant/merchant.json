@@ -164,6 +164,7 @@
       "variantPh": "เช่น ไซส์ L / สีแดง",
       "quantity": "จำนวน",
       "purchasePrice": "ราคาซื้อต่อจำนวน",
+      "shippingCurrencyType": "สกุลเงินค่าขนส่ง",
       "shippingPrice": "ค่าส่ง",
       "sellingPrice": "ราคาขายต่อจำนวน",
       "sellingPriceForeign": "ราคาขายต่อจำนวน",

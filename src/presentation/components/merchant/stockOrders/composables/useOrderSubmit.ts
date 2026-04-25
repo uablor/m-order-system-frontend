@@ -132,6 +132,7 @@ export function useOrderSubmit(
         discountValue?: number;
         imageId?: number;
         shippingPrice?: number;
+        shippingCurrency?: 'BUY' | 'SELL';
       }> = [];
       
       items.value.forEach((item) => {
@@ -166,11 +167,12 @@ export function useOrderSubmit(
           expandedItems.push({
             Index: orderItemIndex++,
             productName: item.productName.trim(),
-            skus: skus, // ✅ Multiple SKUs in one order item
-            discountType: item.discountType === 'percent' ? 'PERCENT' : (item.discountType === 'cash' ? 'FIX' : undefined), // ✅ Use item level
-            discountValue: item.discountType ? item.discountValue : undefined, // ✅ Use item level
+            skus: skus,
+            discountType: item.discountType === 'percent' ? 'PERCENT' : (item.discountType === 'cash' ? 'FIX' : undefined),
+            discountValue: item.discountType ? item.discountValue : undefined,
             ...(item.imageId && { imageId: item.imageId }),
-            shippingPrice: item.shippingPrice || undefined // ✅ Use item level
+            shippingPrice: item.shippingPrice || undefined,
+            shippingCurrency: item.shippingCurrency === 'sell' ? 'SELL' : 'BUY',
           });
         } else {
           // No variants - create single order item as before
@@ -183,13 +185,14 @@ export function useOrderSubmit(
               quantity: item.customers.reduce((sum, c) => sum + (c.qty || 0), 0),
               purchasePrice: item.purchasePrice,
               sellingPriceForeign: item.sellingPriceForeign,
-              exchangeRateBuyId: 1, // Default value - you may want to get this from UI
-              exchangeRateSellId: 2 // Default value - you may want to get this from UI
+              exchangeRateBuyId: 1,
+              exchangeRateSellId: 2,
             }],
-            discountType: item.discountType === 'percent' ? 'PERCENT' : (item.discountType === 'cash' ? 'FIX' : undefined), // ✅ Use item level
-            discountValue: item.discountType ? item.discountValue : undefined, // ✅ Use item level
+            discountType: item.discountType === 'percent' ? 'PERCENT' : (item.discountType === 'cash' ? 'FIX' : undefined),
+            discountValue: item.discountType ? item.discountValue : undefined,
             ...(item.imageId && { imageId: item.imageId }),
-            shippingPrice: item.shippingPrice || undefined // ✅ Use item level
+            shippingPrice: item.shippingPrice || undefined,
+            shippingCurrency: item.shippingCurrency === 'sell' ? 'SELL' : 'BUY',
           });
           
           // Map customers for this item

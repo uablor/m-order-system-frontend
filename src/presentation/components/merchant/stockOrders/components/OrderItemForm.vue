@@ -105,16 +105,22 @@
               />
             </a-form-item>
             
-            <!-- Shipping and Discount Row -->
+            <!-- Shipping Currency + Price -->
+            <a-form-item :label="$t('merchant.orders.items.shippingCurrencyType')">
+              <a-select v-model:value="item.shippingCurrency" class="w-full" size="small">
+                <a-select-option value="buy">BUY — {{ buyBaseCcy }}</a-select-option>
+                <a-select-option value="sell">SELL — {{ sellBaseCcy }}</a-select-option>
+              </a-select>
+            </a-form-item>
             <a-row :gutter="[16, 0]">
               <a-col :span="12">
-                <a-form-item :label="`${$t('merchant.orders.items.shippingPrice')} (${buyBaseCcy})`">
+                <a-form-item :label="`${$t('merchant.orders.items.shippingPrice')} (${shippingCcy})`">
                   <a-input-number v-model:value="item.shippingPrice" :formatter="numFormatter" :parser="numParser" class="w-full" />
                 </a-form-item>
               </a-col>
-              <a-col v-if="!isBuySameCurrency" :span="12">
-                <a-form-item :label="`${$t('merchant.orders.items.shippingKip')} (${buyTargetCcy})`">
-                  <a-input :value="fmtNum(calc.calcShippingLak(variantForCalculation))" disabled class="w-full" />
+              <a-col v-if="!shippingIsSameCurrency" :span="12">
+                <a-form-item :label="`${$t('merchant.orders.items.shippingKip')} (${shippingTargetCcy})`">
+                  <a-input :value="fmtNum(calcShippingConverted)" disabled class="w-full" />
                 </a-form-item>
               </a-col>
             </a-row>
@@ -230,11 +236,17 @@
         </a-form-item>
         
         <!-- Mobile Shipping and Discount Fields -->
-        <a-form-item :label="`${$t('merchant.orders.items.shippingPrice')} (${buyBaseCcy})`">
+        <a-form-item :label="$t('merchant.orders.items.shippingCurrencyType')">
+          <a-select v-model:value="item.shippingCurrency" class="w-full">
+            <a-select-option value="buy">BUY — {{ buyBaseCcy }}</a-select-option>
+            <a-select-option value="sell">SELL — {{ sellBaseCcy }}</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item :label="`${$t('merchant.orders.items.shippingPrice')} (${shippingCcy})`">
           <a-input-number v-model:value="item.shippingPrice" :formatter="numFormatter" :parser="numParser" class="w-full" />
         </a-form-item>
-        <a-form-item v-if="!isBuySameCurrency" :label="`${$t('merchant.orders.items.shippingKip')} (${buyTargetCcy})`">
-          <a-input :value="fmtNum(calc.calcShippingLak(variantForCalculation))" disabled class="w-full" />
+        <a-form-item v-if="!shippingIsSameCurrency" :label="`${$t('merchant.orders.items.shippingKip')} (${shippingTargetCcy})`">
+          <a-input :value="fmtNum(calcShippingConverted)" disabled class="w-full" />
         </a-form-item>
         <a-form-item :label="$t('merchant.orders.items.discountType')">
           <a-select v-model:value="item.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full">
@@ -690,6 +702,16 @@ const halfCol = computed(() => props.isMobile ? { span: 24 } : { sm: 12, md: 8 }
 
 const isBuySameCurrency = computed(() => props.buyBaseCcy === props.buyTargetCcy);
 const isSellSameCurrency = computed(() => props.sellBaseCcy === props.sellTargetCcy);
+
+// Shipping currency helpers (default to 'buy' for drafts that predate this field)
+const shippingMode = computed(() => props.item.shippingCurrency ?? 'buy');
+const shippingCcy = computed(() => shippingMode.value === 'sell' ? props.sellBaseCcy : props.buyBaseCcy);
+const shippingTargetCcy = computed(() => shippingMode.value === 'sell' ? props.sellTargetCcy : props.buyTargetCcy);
+const shippingIsSameCurrency = computed(() => shippingCcy.value === shippingTargetCcy.value);
+const calcShippingConverted = computed(() => {
+  const amount = variantForCalculation.value.shippingPrice || 0;
+  return shippingMode.value === 'sell' ? amount * props.getSellRate() : amount * props.getBuyRate();
+});
 
 // Helper function to generate unique IDs
 const uid = () => String(Date.now()) + Math.random().toString(36).slice(2, 6);

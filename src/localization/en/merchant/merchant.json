@@ -164,6 +164,7 @@
       "variantPh": "e.g. Size L / Red",
       "quantity": "Qty",
       "purchasePrice": "Purchase Price Per Unit",
+      "shippingCurrencyType": "Shipping Currency",
       "shippingPrice": "Shipping",
       "sellingPrice": "Selling Price Per Unit",
       "sellingPriceForeign": "Selling Price Per Unit",

@@ -22,6 +22,7 @@ export interface ItemForm {
   variant: string;
   purchasePrice: number;
   shippingPrice: number; // ✅ Move to item level
+  shippingCurrency?: 'buy' | 'sell'; // which exchange rate the shipping is priced in
   discountType: 'percent' | 'cash' | undefined; // ✅ Move to item level
   discountValue: number; // ✅ Move to item level
   sellingPriceForeign: number;
