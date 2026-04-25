@@ -171,7 +171,7 @@
       "discountType": "ປະເພດສ່ວນຫຼຸດ",
       "noDiscount": "ບໍ່ມີສ່ວນຫຼຸດ",
       "cash": "ເງິນສົດ",
-      "discountValue": "ມູນຄ່າສ່ວນຫຼຸດ",
+      "discountValue": "ສ່ວນຫຼຸດ",
       "sectionPurchase": "ລາຄາຊື້",
       "sectionSelling": "ລາຄາຂາຍ",
       "sectionDiscount": "ສ່ວນຫຼຸດ",
@@ -355,7 +355,8 @@
       "rateRequired": "ກະລຸນາໃສ່ອັດຕາແລກປ່ຽນ",
       "submit": "ບັນທຶກອັດຕາ",
       "cancel": "ຍົກເລີກ",
-      "skipText": "ຂ້າມກ່ອນ"
+      "skipText": "ຂ້າມກ່ອນ",
+      "copyFromBuy": "ຄັດລອກຈາກ BUY ໄປ SELL"
     }
   },
   "orderList": {
@@ -445,7 +446,7 @@
     "shippingLak": "ຄ່າສົ່ງ",
     "costBeforeDiscount": "ກ່ອນສ່ວນຫຼຸດ",
     "discountType": "ປະເພດສ່ວນຫຼຸດ",
-    "discountValue": "ມູນຄ່າສ່ວນຫຼຸດ",
+    "discountValue": "ສ່ວນຫຼຸດ",
     "discountAmount": "ຈຳນວນສ່ວນຫຼຸດ",
     "finalCostLak": "ຕົ້ນທຶນສຸດທິ",
     "finalCostThb": "ຕົ້ນທຶນສຸດທິ",

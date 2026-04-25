@@ -355,7 +355,8 @@
       "rateRequired": "กรุณากรอกอัตราแลกเปลี่ยน",
       "submit": "บันทึกอัตรา",
       "cancel": "ยกเลิก",
-      "skipText": "ข้ามก่อน"
+      "skipText": "ข้ามก่อน",
+      "copyFromBuy": "คัดลอกจาก BUY ไป SELL"
     }
   },
   "orderList": {

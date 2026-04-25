@@ -32,6 +32,14 @@
     <!-- Scrollable area: forms + footer -->
     <div class="modal-scroll-body">
 
+    <!-- Copy from BUY button (only when both cards are visible) -->
+    <div v-if="showBuy && showSell" class="copy-btn-wrap">
+      <a-button class="copy-from-buy-btn" @click="copyFromBuy">
+        <template #icon><CopyOutlined /></template>
+        {{ $t('merchant.exchangeRates.bulkModal.copyFromBuy') }}
+      </a-button>
+    </div>
+
     <!-- Forms grid — แสดงฟอร์มตาม mode -->
     <div class="forms-grid">
 
@@ -71,13 +79,14 @@
             />
           </a-form-item>
           <a-form-item
-            :label="isBuySameCurrency ? $t('merchant.exchangeRates.bulkModal.rateSameCurrency') : $t('merchant.exchangeRates.bulkModal.rate')"
+            v-if="!isBuySameCurrency"
+            :label="$t('merchant.exchangeRates.bulkModal.rate')"
             name="rate"
             :rules="[{ required: true, message: $t('merchant.exchangeRates.bulkModal.rateRequired') }]"
           >
             <a-input-number
               v-model:value="buyForm.rate"
-              :placeholder="isBuySameCurrency ? $t('merchant.exchangeRates.bulkModal.ratePlaceholderSameCurrency') : $t('merchant.exchangeRates.bulkModal.ratePlaceholder')"
+              :placeholder="$t('merchant.exchangeRates.bulkModal.ratePlaceholder')"
               :min="0"
               :precision="4"
               :formatter="numFormatter"
@@ -116,8 +125,7 @@
               class="currency-select"
               show-search
               :filter-option="(input: string, option: any) => option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0"
-              @change="handleSellBaseCurrencyChange"
-            />
+              />
           </a-form-item>
           <a-form-item
             :label="$t('merchant.exchangeRates.bulkModal.targetCurrency')"
@@ -133,20 +141,20 @@
             />
           </a-form-item>
           <a-form-item
-            :label="isSellSameCurrency ? $t('merchant.exchangeRates.bulkModal.rateSameCurrency') : $t('merchant.exchangeRates.bulkModal.rate')"
+            v-if="!isSellSameCurrency"
+            :label="$t('merchant.exchangeRates.bulkModal.rate')"
             name="rate"
             :rules="[{ required: true, message: $t('merchant.exchangeRates.bulkModal.rateRequired') }]"
           >
             <a-input-number
               v-model:value="sellForm.rate"
-              :placeholder="isSellSameCurrency ? $t('merchant.exchangeRates.bulkModal.ratePlaceholderSameCurrency') : $t('merchant.exchangeRates.bulkModal.ratePlaceholder')"
+              :placeholder="$t('merchant.exchangeRates.bulkModal.ratePlaceholder')"
               :min="0"
               :precision="4"
               :formatter="numFormatter"
               :parser="numParser"
               size="large"
               style="width:100%"
-              @change="handleSellRateChange"
             />
           </a-form-item>
         </a-form>
@@ -171,7 +179,7 @@
 <script setup lang="ts">
 import { reactive, ref, computed, watch } from 'vue';
 import type { FormInstance } from 'ant-design-vue';
-import { SwapOutlined, CheckOutlined } from '@ant-design/icons-vue';
+import { SwapOutlined, CheckOutlined, CopyOutlined } from '@ant-design/icons-vue';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import { useMerchantExchangeRates } from '@/presentation/composables/merchant/useMerchantExchangeRates';
 import { numFormatter, numParser } from '@/shared/utils/format';
@@ -195,12 +203,6 @@ const sellFormRef = ref<FormInstance>();
 const buyForm = reactive({ baseCurrency: 'LAK', targetCurrency: 'LAK', rate: null as number | null });
 const sellForm = reactive({ baseCurrency: 'LAK', targetCurrency: 'LAK', rate: null as number | null });
 
-// Track if user has manually changed sell form base currency
-const sellFormManuallyChanged = ref(false);
-
-// Track if user has manually changed sell form rate
-const sellRateManuallyChanged = ref(false);
-
 /* ฟอร์มไหนถูกแสดง */
 const showBuy = computed(() => mode.value === 'both' || mode.value === 'buy-only');
 const showSell = computed(() => mode.value === 'both' || mode.value === 'sell-only');
@@ -218,12 +220,10 @@ const modalWidth = computed(() => {
 const resetForms = () => {
   buyForm.baseCurrency = 'LAK';
   buyForm.targetCurrency = 'LAK';
-  buyForm.rate = null;
+  buyForm.rate = 1000; // LAK=LAK same currency default
   sellForm.baseCurrency = 'LAK';
   sellForm.targetCurrency = 'LAK';
-  sellForm.rate = null;
-  sellFormManuallyChanged.value = false;
-  sellRateManuallyChanged.value = false;
+  sellForm.rate = 1000; // LAK=LAK same currency default
   buyFormRef.value?.clearValidate();
   sellFormRef.value?.clearValidate();
 };
@@ -245,14 +245,14 @@ const open = (openMode: ModalMode = 'both', initialData?: EditRateInitialData) =
     if (initialData.buy && (openMode === 'both' || openMode === 'buy-only')) {
       buyForm.baseCurrency = initialData.buy.baseCurrency || 'LAK';
       buyForm.targetCurrency = initialData.buy.targetCurrency || 'LAK';
-      buyForm.rate = initialData.buy.rate ?? null;
+      const isSameCurr = buyForm.baseCurrency === buyForm.targetCurrency;
+      buyForm.rate = initialData.buy.rate ?? (isSameCurr ? 1000 : null);
     }
     if (initialData.sell && (openMode === 'both' || openMode === 'sell-only')) {
       sellForm.baseCurrency = initialData.sell.baseCurrency || 'LAK';
       sellForm.targetCurrency = initialData.sell.targetCurrency || 'LAK';
-      sellForm.rate = initialData.sell.rate ?? null;
-      // If initial data is provided for sell form, mark it as manually changed
-      sellFormManuallyChanged.value = true;
+      const isSameCurr = sellForm.baseCurrency === sellForm.targetCurrency;
+      sellForm.rate = initialData.sell.rate ?? (isSameCurr ? 1000 : null);
     }
   }
   isOpen.value = true;
@@ -292,35 +292,21 @@ const handleSubmit = async () => {
   }
 };
 
-// Watch BUY form base currency changes and auto-sync to SELL form
-watch(() => buyForm.baseCurrency, (newCurrency) => {
-  if (mode.value === 'both' && !sellFormManuallyChanged.value) {
-    sellForm.baseCurrency = newCurrency;
-  }
+// Auto-set rate to 1000 when base and target currency are the same
+watch(isBuySameCurrency, (same) => {
+  if (same) buyForm.rate = 1000;
+  else buyForm.rate = null;
 });
 
-// Watch BUY form rate changes and auto-sync to SELL form when base currencies match
-watch(() => buyForm.rate, (newRate) => {
-  if (mode.value === 'both' && !sellRateManuallyChanged.value && buyForm.baseCurrency === sellForm.baseCurrency) {
-    sellForm.rate = newRate;
-  }
+watch(isSellSameCurrency, (same) => {
+  if (same) sellForm.rate = 1000;
+  else sellForm.rate = null;
 });
 
-// Watch SELL form rate changes and auto-sync to BUY form when base currencies match
-watch(() => sellForm.rate, (newRate) => {
-  if (mode.value === 'both' && !sellRateManuallyChanged.value && buyForm.baseCurrency === sellForm.baseCurrency) {
-    buyForm.rate = newRate;
-  }
-});
-
-// Handle manual change in SELL form base currency
-const handleSellBaseCurrencyChange = () => {
-  sellFormManuallyChanged.value = true;
-};
-
-// Handle manual change in SELL form rate
-const handleSellRateChange = () => {
-  sellRateManuallyChanged.value = true;
+// Copy all buy values into sell form on button click
+const copyFromBuy = () => {
+  sellForm.baseCurrency = buyForm.baseCurrency;
+  sellForm.rate = buyForm.rate;
 };
 
 defineExpose({ open, close });
@@ -364,6 +350,23 @@ defineExpose({ open, close });
 }
 .modal-title { font-size: 18px; font-weight: 700; line-height: 1.25; color: white; }
 .modal-subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+
+/* Copy from BUY button */
+.copy-btn-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 16px 28px 0;
+}
+.copy-from-buy-btn {
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #357df1;
+  border-color: #357df1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
 /* Forms grid */
 .forms-grid {

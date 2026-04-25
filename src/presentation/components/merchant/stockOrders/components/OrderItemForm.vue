@@ -129,15 +129,15 @@
                 </a-form-item>
               </a-col>
               <a-col :span="12">
-                <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
+                <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${sellBaseCcy})`">
                   <a-input-number v-model:value="item.discountValue" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType" />
                 </a-form-item>
               </a-col>
             </a-row>
-            
-            <a-row v-if="!isBuySameCurrency" :gutter="[16, 0]">
+
+            <a-row v-if="!isSellSameCurrency" :gutter="[16, 0]">
               <a-col :span="24">
-                <a-form-item :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
+                <a-form-item :label="`${$t('merchant.orders.items.discountKip')} (${sellTargetCcy})`">
                   <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
                 </a-form-item>
               </a-col>
@@ -242,10 +242,10 @@
             <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
+        <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${sellBaseCcy})`">
           <a-input-number v-model:value="item.discountValue" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType" />
         </a-form-item>
-        <a-form-item v-if="!isBuySameCurrency" :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
+        <a-form-item v-if="!isSellSameCurrency" :label="`${$t('merchant.orders.items.discountKip')} (${sellTargetCcy})`">
           <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
         </a-form-item>
       </template>

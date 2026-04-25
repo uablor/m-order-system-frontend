@@ -226,6 +226,11 @@ export function useOrderSubmit(
       message.success(t('merchant.orders.toast.createSuccess'));
       clearAllErrors();
       orderCode.value = '';
+      // Clear per-item variant-index keys from localStorage before wiping items array
+      items.value.forEach(item => {
+        try { localStorage.removeItem(`order-item-${item.uid}-variant-index`); } catch { /* ignore */ }
+      });
+      try { localStorage.removeItem('stock_order_active_item'); } catch { /* ignore */ }
       items.value = [];
       onSuccess(); // Call the success callback which handles clearing
     } catch (err: unknown) {

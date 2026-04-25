@@ -18,9 +18,15 @@
       
       <!-- Dashboard Content -->
       <template v-else>
-      <div class="page-header !mt-5">
-        <div class="page-titlek">{{ $t('merchant.dashboard.sectionOrderStats') }}</div>
-        <div class="page-subtitle">{{ $t('merchant.dashboard.sectionOrderStatsDesc') }}</div>
+      <div class="page-header dashboard-top-header !mt-5">
+        <div>
+          <div class="page-titlek">{{ $t('merchant.dashboard.sectionOrderStats') }}</div>
+          <div class="page-subtitle">{{ $t('merchant.dashboard.sectionOrderStatsDesc') }}</div>
+        </div>
+        <a-button type="primary" class="create-order-btn" @click="goCreateOrder">
+          <template #icon><PlusOutlined /></template>
+          {{ $t('merchant.orders.buttons.createOrder') }}
+        </a-button>
       </div>
       <!-- Row 1: Summary Stat Cards -->
       <a-row :gutter="[16, 16]" class="stats-row">
@@ -251,7 +257,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
 import {
   ShoppingCartOutlined,
   CheckCircleOutlined,
@@ -260,13 +266,17 @@ import {
   AppstoreOutlined,
   UserOutlined,
   TrophyOutlined,
+  PlusOutlined,
 } from '@ant-design/icons-vue';
 import { useMerchantDashboard } from '../../../composables/merchant/useMerchantDashboard';
 import { orderItemRepository } from '@/infrastructure/repositories/order-item.repository';
 import type { OrderItem } from '@/domain/entities/user.entity';
 import PriceCurrencyChart from './PriceCurrencyChart.vue';
 
+const router = useRouter();
 const { loading, dashboard, fetchDashboard } = useMerchantDashboard();
+
+const goCreateOrder = () => router.push({ name: 'merchant-stock-order' });
 const error = ref<string | null>(null);
 const latestOrderItems = ref<OrderItem[]>([]);
 const latestOrderItemsLoading = ref(false);
@@ -373,6 +383,19 @@ function parseCurrencyString(val: string | number): number {
 .m-dashboard { padding: 0; }
 
 .page-header { margin-bottom: 20px; }
+.dashboard-top-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.create-order-btn {
+  border-radius: 10px;
+  font-weight: 700;
+  height: 38px;
+  padding: 0 18px;
+  flex-shrink: 0;
+}
 .page-title { font-size: 22px; font-weight: 600; color: #0f172a; line-height: 1.25; }
 .page-titlek { font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.25; }
 .page-subtitle { font-size: 13px; color: #64748b; margin-top: 2px; }

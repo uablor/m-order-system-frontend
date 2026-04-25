@@ -352,7 +352,8 @@
       "rateRequired": "Rate is required",
       "submit": "Save Rates",
       "cancel": "Cancel",
-      "skipText": "Skip for now"
+      "skipText": "Skip for now",
+      "copyFromBuy": "Copy from BUY to SELL"
     }
   },
   "orderList": {
