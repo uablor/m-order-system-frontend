@@ -4,26 +4,40 @@ import { exchangeRateRepository } from '@/infrastructure/repositories/exchange-r
 import { extractArrayResult } from '@/shared/types/backend-response.types';
 import type { ExchangeRate } from '@/domain/entities/user.entity';
 
+// Lao Kip is stored as 'KIP' in some legacy records but the ISO code is 'LAK'.
+// Normalize at read time so the rest of the UI always sees 'LAK'.
+const normCcy = (code: string | undefined): string =>
+  !code ? 'LAK' : code.toUpperCase() === 'KIP' ? 'LAK' : code;
+
+const rateDisplay = (rate: ExchangeRate | null, notSetLabel: string): string => {
+  if (!rate) return notSetLabel;
+  const base = normCcy(rate.baseCurrency);
+  const target = normCcy(rate.targetCurrency);
+  const rateNum = Number(rate.rate).toLocaleString();
+  // When both currencies are the same (e.g. LAK/LAK) show "1,000 LAK = 1,000 LAK"
+  // instead of the misleading "1 LAK = 1,000 LAK".
+  if (base === target) return `${rateNum} ${base} = ${rateNum} ${target}`;
+  return `1 ${base} = ${rateNum} ${target}`;
+};
+
 export function useExchangeRates() {
   const { t } = useI18n();
 
   const todayBuyRate = ref<ExchangeRate | null>(null);
   const todaySellRate = ref<ExchangeRate | null>(null);
 
-  const buyRateDisplay = computed(() => {
-    if (!todayBuyRate.value) return t('merchant.orders.exchangeRate.notSet');
-    return `1 ${todayBuyRate.value.baseCurrency} = ${Number(todayBuyRate.value.rate).toLocaleString()} ${todayBuyRate.value.targetCurrency}`;
-  });
+  const buyRateDisplay = computed(() =>
+    rateDisplay(todayBuyRate.value, t('merchant.orders.exchangeRate.notSet')),
+  );
 
-  const sellRateDisplay = computed(() => {
-    if (!todaySellRate.value) return t('merchant.orders.exchangeRate.notSet');
-    return `1 ${todaySellRate.value.baseCurrency} = ${Number(todaySellRate.value.rate).toLocaleString()} ${todaySellRate.value.targetCurrency}`;
-  });
+  const sellRateDisplay = computed(() =>
+    rateDisplay(todaySellRate.value, t('merchant.orders.exchangeRate.notSet')),
+  );
 
-  const buyBaseCcy = computed(() => todayBuyRate.value?.baseCurrency ?? 'USDT');
-  const buyTargetCcy = computed(() => todayBuyRate.value?.targetCurrency ?? 'KIP');
-  const sellBaseCcy = computed(() => todaySellRate.value?.baseCurrency ?? 'USDT');
-  const sellTargetCcy = computed(() => todaySellRate.value?.targetCurrency ?? 'KIP');
+  const buyBaseCcy = computed(() => normCcy(todayBuyRate.value?.baseCurrency) || 'USDT');
+  const buyTargetCcy = computed(() => normCcy(todayBuyRate.value?.targetCurrency));
+  const sellBaseCcy = computed(() => normCcy(todaySellRate.value?.baseCurrency) || 'USDT');
+  const sellTargetCcy = computed(() => normCcy(todaySellRate.value?.targetCurrency));
 
   const getBuyRate = () => Number(todayBuyRate.value?.rate ?? 0);
   const getSellRate = () => Number(todaySellRate.value?.rate ?? 0);

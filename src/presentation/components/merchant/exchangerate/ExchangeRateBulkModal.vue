@@ -184,6 +184,10 @@ import { useIsMobile } from '@/shared/composables/useIsMobile';
 import { useMerchantExchangeRates } from '@/presentation/composables/merchant/useMerchantExchangeRates';
 import { numFormatter, numParser } from '@/shared/utils/format';
 
+// Normalize legacy 'KIP' records to the ISO code 'LAK'
+const normalizeCcy = (code: string | undefined): string =>
+  !code ? 'LAK' : code.toUpperCase() === 'KIP' ? 'LAK' : code;
+
 const CURRENCY_OPTIONS = ['CNY', 'USDT', 'LAK', 'THB', 'JPY', 'KRW'];
 
 /** mode กำหนดว่าจะแสดงฟอร์มไหน */
@@ -243,14 +247,14 @@ const open = (openMode: ModalMode = 'both', initialData?: EditRateInitialData) =
   resetForms();
   if (initialData) {
     if (initialData.buy && (openMode === 'both' || openMode === 'buy-only')) {
-      buyForm.baseCurrency = initialData.buy.baseCurrency || 'LAK';
-      buyForm.targetCurrency = initialData.buy.targetCurrency || 'LAK';
+      buyForm.baseCurrency = normalizeCcy(initialData.buy.baseCurrency) || 'LAK';
+      buyForm.targetCurrency = normalizeCcy(initialData.buy.targetCurrency) || 'LAK';
       const isSameCurr = buyForm.baseCurrency === buyForm.targetCurrency;
       buyForm.rate = initialData.buy.rate ?? (isSameCurr ? 1000 : null);
     }
     if (initialData.sell && (openMode === 'both' || openMode === 'sell-only')) {
-      sellForm.baseCurrency = initialData.sell.baseCurrency || 'LAK';
-      sellForm.targetCurrency = initialData.sell.targetCurrency || 'LAK';
+      sellForm.baseCurrency = normalizeCcy(initialData.sell.baseCurrency) || 'LAK';
+      sellForm.targetCurrency = normalizeCcy(initialData.sell.targetCurrency) || 'LAK';
       const isSameCurr = sellForm.baseCurrency === sellForm.targetCurrency;
       sellForm.rate = initialData.sell.rate ?? (isSameCurr ? 1000 : null);
     }
