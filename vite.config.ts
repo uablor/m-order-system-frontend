@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [vue(), tailwindcss()],
   resolve: {
     alias: {
@@ -21,7 +21,15 @@ export default defineConfig({
       },
     },
   },
+  // Strip all console.* and debugger statements from the production bundle so
+  // the payload structure, endpoint strings, and error details are not logged
+  // in the browser console of the deployed app.
+  esbuild: {
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
+  },
   build: {
+    // Never ship source maps — they let anyone reconstruct the original source.
+    sourcemap: false,
     // Ant Design Vue is large; we still code-split it, but raise warning threshold.
     chunkSizeWarningLimit: 1500,
     rollupOptions: {
@@ -44,4 +52,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))

@@ -5,13 +5,49 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>m-order-system</title>
+
+    <!--
+      Content Security Policy
+      ────────────────────────────────────────────────────────────────────────
+      script-src 'self'       → only scripts from THIS origin may execute;
+                                blocks any injected <script> from another host
+      connect-src 'self' …    → XHR/fetch/WebSocket only to our own origin
+                                and the API server; nothing else can be called
+      img-src  'self' data: blob: … → images from self, inline data URIs,
+                                blob URLs (camera/canvas), and API server (product images)
+      style-src 'self' 'unsafe-inline' → Ant Design Vue injects runtime styles
+      font-src  'self' data:  → local fonts + base64 encoded fonts
+      frame-ancestors 'none'  → prevents clickjacking (this page cannot be iframed)
+      base-uri  'self'        → blocks <base href> injection
+      form-action 'self'      → forms can only submit to our own origin
+      ────────────────────────────────────────────────────────────────────────
+      http://159.223.82.122:4000 is replaced by Vite at build time from .env
+    -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self';
+      connect-src 'self' http://159.223.82.122:4000;
+      img-src 'self' data: blob: http://159.223.82.122:4000;
+      style-src 'self' 'unsafe-inline';
+      font-src 'self' data:;
+      frame-ancestors 'none';
+      base-uri 'self';
+      form-action 'self';
+    ">
+
+    <!-- Prevent MIME-type sniffing attacks -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+    <!-- Do not send Referer header to external pages -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
     <link rel="preload" href="/NotoSansLao-VariableFont_wdth,wght.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-    <script type="module" crossorigin src="/assets/index-C-eZn7gt.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/vue-C377jzbg.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-CQ6rzmOs.js">
-    <link rel="modulepreload" crossorigin href="/assets/antd-icons-CdBWdhJ3.js">
-    <link rel="modulepreload" crossorigin href="/assets/antd-BIDQ6Zv2.js">
-    <link rel="modulepreload" crossorigin href="/assets/i18n-CgDSU-Xr.js">
+    <script type="module" crossorigin src="/assets/index-C7me3LTR.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vue-eo2Rw_10.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-BPvwzPRL.js">
+    <link rel="modulepreload" crossorigin href="/assets/antd-icons-Di3OSvFa.js">
+    <link rel="modulepreload" crossorigin href="/assets/antd-BpIDd_04.js">
+    <link rel="modulepreload" crossorigin href="/assets/i18n-B0X8Lu0d.js">
     <link rel="stylesheet" crossorigin href="/assets/antd-B6snAd4S.css">
     <link rel="stylesheet" crossorigin href="/assets/index-BNzhvcAd.css">
   </head>

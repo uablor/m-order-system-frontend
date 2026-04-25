@@ -107,7 +107,7 @@
             
             <!-- Shipping Currency + Price -->
             <a-form-item :label="$t('merchant.orders.items.shippingCurrencyType')">
-              <a-select v-model:value="item.shippingCurrency" class="w-full" size="small">
+              <a-select v-model:value="item.shippingCurrency" class="w-full">
                 <a-select-option value="buy">BUY — {{ buyBaseCcy }}</a-select-option>
                 <a-select-option value="sell">SELL — {{ sellBaseCcy }}</a-select-option>
               </a-select>

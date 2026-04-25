@@ -23,7 +23,6 @@ export interface CreateFullOrderItemDto {
   discountValue?: number;
   imageId?: number;
   shippingPrice?: number;
-  shippingCurrency?: 'BUY' | 'SELL';
 }
 
 export interface CreateFullCustomerOrderItemDto {
@@ -40,6 +39,7 @@ export interface CreateFullCustomerOrderDto {
 
 export interface CreateFullOrderDto {
   orderCode: string;
+  shippingExchangeRateId?: number;
   items: CreateFullOrderItemDto[];
   customerOrders: CreateFullCustomerOrderDto[];
 }

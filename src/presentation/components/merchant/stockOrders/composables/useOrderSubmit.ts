@@ -132,47 +132,57 @@ export function useOrderSubmit(
         discountValue?: number;
         imageId?: number;
         shippingPrice?: number;
-        shippingCurrency?: 'BUY' | 'SELL';
       }> = [];
+      // Collect shippingCurrency per item to derive the order-level shippingExchangeRateId
+      const shippingCurrencies: Array<'buy' | 'sell'> = [];
       
       items.value.forEach((item) => {
+        shippingCurrencies.push(item.shippingCurrency ?? 'buy');
+
         if (item.variants && item.variants.length > 0) {
           // Create ONE order item with multiple SKUs for all variants
-          const skus = item.variants.map((variant, variantIndex) => {
-            const variantTotalQty = variant.customers.reduce((sum, c) => sum + (c.qty || 0), 0);
-            
-            // Map customers for this variant
-            variant.customers.forEach(c => {
-              if (!c.customerId) return;
-              if (!customerMap.has(c.customerId)) customerMap.set(c.customerId, []);
-              customerMap.get(c.customerId)!.push({
-                orderItemIndex: orderItemIndex, // ✅ Always 0 for single order item
-                skuIndex: variantIndex, // ✅ Use variant index as skuIndex
-                quantity: c.qty,
-                sellingPriceForeign: variant.sellingPriceForeign,
+          let skuIndex = 0;
+          const skus = item.variants
+            .map((variant) => {
+              const variantTotalQty = variant.customers.reduce((sum, c) => sum + (c.qty || 0), 0);
+
+              // Skip variants with no quantity — backend requires quantity >= 1
+              if (variantTotalQty < 1) return null;
+
+              const currentSkuIndex = skuIndex++;
+
+              // Map customers for this variant
+              variant.customers.forEach(c => {
+                if (!c.customerId) return;
+                if (!customerMap.has(c.customerId)) customerMap.set(c.customerId, []);
+                customerMap.get(c.customerId)!.push({
+                  orderItemIndex: orderItemIndex,
+                  skuIndex: currentSkuIndex,
+                  quantity: c.qty,
+                  sellingPriceForeign: variant.sellingPriceForeign,
+                });
               });
-            });
-            
-            return {
-              orderItemSkuIndex: variantIndex, // ✅ Use variant index
-              variant: variant.variant.trim() || '',
-              quantity: variantTotalQty,
-              purchasePrice: variant.purchasePrice,
-              sellingPriceForeign: variant.sellingPriceForeign,
-              exchangeRateBuyId: 1, // Default value - you may want to get this from UI
-              exchangeRateSellId: 2 // Default value - you may want to get this from UI
-            };
-          });
-          
+
+              return {
+                orderItemSkuIndex: currentSkuIndex,
+                variant: variant.variant.trim() || '',
+                quantity: variantTotalQty,
+                purchasePrice: variant.purchasePrice,
+                sellingPriceForeign: variant.sellingPriceForeign,
+                exchangeRateBuyId: 1,
+                exchangeRateSellId: 2,
+              };
+            })
+            .filter((s): s is NonNullable<typeof s> => s !== null);
+
           expandedItems.push({
             Index: orderItemIndex++,
             productName: item.productName.trim(),
-            skus: skus,
+            skus,
             discountType: item.discountType === 'percent' ? 'PERCENT' : (item.discountType === 'cash' ? 'FIX' : undefined),
             discountValue: item.discountType ? item.discountValue : undefined,
             ...(item.imageId && { imageId: item.imageId }),
             shippingPrice: item.shippingPrice || undefined,
-            shippingCurrency: item.shippingCurrency === 'sell' ? 'SELL' : 'BUY',
           });
         } else {
           // No variants - create single order item as before
@@ -192,16 +202,15 @@ export function useOrderSubmit(
             discountValue: item.discountType ? item.discountValue : undefined,
             ...(item.imageId && { imageId: item.imageId }),
             shippingPrice: item.shippingPrice || undefined,
-            shippingCurrency: item.shippingCurrency === 'sell' ? 'SELL' : 'BUY',
           });
-          
+
           // Map customers for this item
           item.customers.forEach(c => {
             if (!c.customerId) return;
             if (!customerMap.has(c.customerId)) customerMap.set(c.customerId, []);
             customerMap.get(c.customerId)!.push({
               orderItemIndex: expandedItems.length - 1,
-              skuIndex: 0, // Always 0 for single variant items
+              skuIndex: 0,
               quantity: c.qty,
               sellingPriceForeign: item.sellingPriceForeign,
             });
@@ -209,8 +218,15 @@ export function useOrderSubmit(
         }
       });
 
+      // Derive shippingExchangeRateId from items' shippingCurrency selections.
+      // Buy currency uses rate ID 1; sell currency uses rate ID 2.
+      // If any item uses sell, prefer the sell rate for the order.
+      const usesSell = shippingCurrencies.some(c => c === 'sell');
+      const shippingExchangeRateId = usesSell ? 2 : 1;
+
       const payload: CreateFullOrderDto = {
         orderCode: orderCode.value.trim(),
+        shippingExchangeRateId,
         items: expandedItems,
         customerOrders: Array.from(customerMap.entries()).map(([customerId, custItems]) => ({
           customerId,
