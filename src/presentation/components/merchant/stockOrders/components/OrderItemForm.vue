@@ -781,6 +781,7 @@ const variantForCalculation = computed(() => {
     variant: variant.variant,
     purchasePrice: variant.purchasePrice,
     shippingPrice: props.item.shippingPrice, // ✅ Use item level
+    shippingCurrency: props.item.shippingCurrency, // ✅ Forward so calc functions use the correct rate
     discountType: props.item.discountType || undefined as 'percent' | 'cash' | undefined, // ✅ Use item level
     discountValue: props.item.discountValue || 0, // ✅ Use item level
     sellingPriceForeign: variant.sellingPriceForeign,

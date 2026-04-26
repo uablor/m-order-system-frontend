@@ -10,9 +10,24 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
   const calcPurchaseTotalForeign = (item: ItemForm) => item.purchasePrice * getItemTotalQty(item);
   const calcPurchaseUnitLak = (item: ItemForm) => item.purchasePrice * getBuyRate();
   const calcPurchaseTotalLak = (item: ItemForm) => item.purchasePrice * getItemTotalQty(item) * getBuyRate();
-  const calcShippingLak = (item: ItemForm) => item.shippingPrice * getBuyRate();
-  const calcPurchaseAndShipForeign = (item: ItemForm) => (item.purchasePrice * getItemTotalQty(item)) + item.shippingPrice;
-  const calcPurchaseAndShipLak = (item: ItemForm) => ((item.purchasePrice * getItemTotalQty(item)) + item.shippingPrice) * getBuyRate();
+
+  // Shipping converted to LAK, respecting which exchange rate the shipping price is denominated in
+  const calcShippingLak = (item: ItemForm) => {
+    if (item.shippingCurrency === 'sell') return item.shippingPrice * getSellRate();
+    return item.shippingPrice * getBuyRate(); // default: 'buy' (foreign currency)
+  };
+
+  // Shipping expressed in buy-base foreign currency (e.g. CNY) for the "Foreign" display fields
+  const calcShippingForeign = (item: ItemForm) => {
+    const shippingLak = calcShippingLak(item);
+    const rate = getBuyRate();
+    return rate === 0 ? 0 : shippingLak / rate;
+  };
+
+  const calcPurchaseAndShipForeign = (item: ItemForm) =>
+    (item.purchasePrice * getItemTotalQty(item)) + calcShippingForeign(item);
+  const calcPurchaseAndShipLak = (item: ItemForm) =>
+    calcPurchaseTotalLak(item) + calcShippingLak(item);
   const calcSubtotalLak = (item: ItemForm) => calcPurchaseTotalLak(item) + calcShippingLak(item);
 
   const calcDiscountLak = (item: ItemForm) => {
@@ -28,7 +43,7 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
   };
 
   const calcNetCostForeign = (item: ItemForm) =>
-    item.purchasePrice * getItemTotalQty(item) + item.shippingPrice - calcDiscountForeign(item);
+    item.purchasePrice * getItemTotalQty(item) + calcShippingForeign(item) - calcDiscountForeign(item);
 
   const calcNetCostLak = (item: ItemForm) => calcSubtotalLak(item) - calcDiscountLak(item);
 
@@ -47,7 +62,7 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
       const variantQty = getVariantTotalQty(variant);
       return sum + (variant.purchasePrice * variantQty);
     }, 0);
-    
+
     return variantsTotal;
   };
 
@@ -60,13 +75,13 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
     if (!item.variants || item.variants.length === 0) {
       return calcSellingTotalForeign(item);
     }
-    
+
     // Sum across all variants
     const variantsTotal = item.variants.reduce((sum, variant) => {
       const variantQty = getVariantTotalQty(variant);
       return sum + (variant.sellingPriceForeign * variantQty);
     }, 0);
-    
+
     return variantsTotal;
   };
 
@@ -77,9 +92,9 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
 
   const calcNetCostForeignWithVariants = (item: ItemForm) => {
     const variantsPurchaseTotal = calcPurchaseTotalForeignWithVariants(item);
-    const shippingForeign = item.shippingPrice || 0;
+    const shippingForeign = calcShippingForeign(item);
     const discountForeign = calcDiscountForeign(item);
-    
+
     return variantsPurchaseTotal + shippingForeign - discountForeign;
   };
 
