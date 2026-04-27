@@ -33,7 +33,8 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
   const calcDiscountLak = (item: ItemForm) => {
     const subtotal = calcSubtotalLak(item);
     if (item.discountType === 'percent') return subtotal * (item.discountValue / 100);
-    if (item.discountType === 'cash') return item.discountValue * getBuyRate();
+    // Cash discount is entered in sellBaseCcy (as labeled in the UI), so convert with sellRate
+    if (item.discountType === 'cash') return item.discountValue * getSellRate();
     return 0;
   };
 
@@ -90,10 +91,27 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
     return foreignTotal * getSellRate();
   };
 
+  // Variant-aware discount: uses all-variants purchase total as base for percent discount
+  const calcDiscountLakWithVariants = (item: ItemForm) => {
+    if (!item.discountType) return 0;
+    const variantsPurchaseLak = calcPurchaseTotalLakWithVariants(item);
+    const shippingLak = calcShippingLak(item);
+    const allVariantsSubtotal = variantsPurchaseLak + shippingLak;
+    if (item.discountType === 'percent') return allVariantsSubtotal * (item.discountValue / 100);
+    // Cash discount is entered in sellBaseCcy
+    if (item.discountType === 'cash') return item.discountValue * getSellRate();
+    return 0;
+  };
+
+  const calcDiscountForeignWithVariants = (item: ItemForm) => {
+    const rate = getBuyRate();
+    return rate === 0 ? 0 : calcDiscountLakWithVariants(item) / rate;
+  };
+
   const calcNetCostForeignWithVariants = (item: ItemForm) => {
     const variantsPurchaseTotal = calcPurchaseTotalForeignWithVariants(item);
     const shippingForeign = calcShippingForeign(item);
-    const discountForeign = calcDiscountForeign(item);
+    const discountForeign = calcDiscountForeignWithVariants(item);
 
     return variantsPurchaseTotal + shippingForeign - discountForeign;
   };
@@ -101,8 +119,8 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
   const calcNetCostLakWithVariants = (item: ItemForm) => {
     const variantsPurchaseLak = calcPurchaseTotalLakWithVariants(item);
     const shippingLak = calcShippingLak(item);
-    const discountLak = calcDiscountLak(item);
-    
+    const discountLak = calcDiscountLakWithVariants(item);
+
     return variantsPurchaseLak + shippingLak - discountLak;
   };
 
