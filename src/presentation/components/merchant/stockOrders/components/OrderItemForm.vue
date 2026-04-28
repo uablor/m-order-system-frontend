@@ -135,15 +135,15 @@
                 </a-form-item>
               </a-col>
               <a-col :span="12">
-                <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${sellBaseCcy})`">
+                <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
                   <a-input-number v-model:value="item.discountValue" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType" />
                 </a-form-item>
               </a-col>
             </a-row>
 
-            <a-row v-if="!isSellSameCurrency" :gutter="[16, 0]">
+            <a-row v-if="!isBuySameCurrency" :gutter="[16, 0]">
               <a-col :span="24">
-                <a-form-item :label="`${$t('merchant.orders.items.discountKip')} (${sellTargetCcy})`">
+                <a-form-item :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
                   <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
                 </a-form-item>
               </a-col>
@@ -254,10 +254,10 @@
             <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${sellBaseCcy})`">
+        <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
           <a-input-number v-model:value="item.discountValue" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType" />
         </a-form-item>
-        <a-form-item v-if="!isSellSameCurrency" :label="`${$t('merchant.orders.items.discountKip')} (${sellTargetCcy})`">
+        <a-form-item v-if="!isBuySameCurrency" :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
           <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
         </a-form-item>
       </template>
@@ -810,7 +810,7 @@ const itemTotalSellingForeign = computed(() => calc.calcSellingTotalForeignWithV
 const itemTotalSellingLak = computed(() => calc.calcSellingTotalLakWithVariants(props.item));
 const itemTotalProfitLak = computed(() => itemTotalSellingLak.value - itemTotalNetCostLak.value);
 const itemTotalProfitForeign = computed(() => {
-  const rate = props.getSellRate();
+  const rate = getEffectiveSellRate();
   return rate === 0 ? 0 : itemTotalProfitLak.value / rate;
 });
 

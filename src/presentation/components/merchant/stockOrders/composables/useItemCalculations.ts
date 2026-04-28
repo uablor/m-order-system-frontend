@@ -39,8 +39,8 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
   const calcDiscountLak = (item: ItemForm) => {
     const subtotal = calcSubtotalLak(item);
     if (item.discountType === 'percent') return subtotal * (item.discountValue / 100);
-    // Cash discount is entered in sellBaseCcy (as labeled in the UI), so convert with sellRate
-    if (item.discountType === 'cash') return item.discountValue * getSellRate();
+    // Cash discount is entered in buyBaseCcy, convert to KIP with buyRate
+    if (item.discountType === 'cash') return item.discountValue * getBuyRate();
     return 0;
   };
 
@@ -104,8 +104,8 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
     const shippingLak = calcShippingLak(item);
     const allVariantsSubtotal = variantsPurchaseLak + shippingLak;
     if (item.discountType === 'percent') return allVariantsSubtotal * (item.discountValue / 100);
-    // Cash discount is entered in sellBaseCcy
-    if (item.discountType === 'cash') return item.discountValue * getSellRate();
+    // Cash discount is entered in buyBaseCcy, convert to KIP with buyRate
+    if (item.discountType === 'cash') return item.discountValue * getBuyRate();
     return 0;
   };
 
