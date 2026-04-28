@@ -131,7 +131,7 @@
             <div class="finance-item discount">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalDiscount') }}</span>
               <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalDiscount) }} {{ buyCurrency }}</template>
-                <span class="finance-value num-truncate">-{{ truncNum(order.totalDiscount) }} <span class="fin-currency">{{ buyCurrency }}</span></span>
+                <span class="finance-value num-truncate">{{ truncNum(order.totalDiscount) }} <span class="fin-currency">{{ buyCurrency }}</span></span>
               </a-tooltip>
               <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalDiscount) }}</span>
             </div>
