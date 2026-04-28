@@ -116,10 +116,10 @@
             </div>
             <div class="finance-item shipping-cost">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalShippingCost') }}</span>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalShippingCost) }} {{ buyCurrency }}</template>
-                <span class="finance-value num-truncate">{{ truncNum(order.totalShippingCost) }} <span class="fin-currency">{{ buyCurrency }}</span></span>
+              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalShippingCost) }} {{ shippingCurrency }}</template>
+                <span class="finance-value num-truncate">{{ truncNum(order.totalShippingCost) }} <span class="fin-currency">{{ shippingCurrency }}</span></span>
               </a-tooltip>
-              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalShippingCost) }}</span>
+              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalShippingCostByShippingExchangeRate) }}</span>
             </div>
             <div class="finance-item cost-before-discount">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalCostBeforeDiscount') }}</span>
@@ -130,10 +130,10 @@
             </div>
             <div class="finance-item discount">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalDiscount') }}</span>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>-{{ formatNumber(order.totalDiscount) }} {{ buyCurrency }}</template>
+              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalDiscount) }} {{ buyCurrency }}</template>
                 <span class="finance-value num-truncate">-{{ truncNum(order.totalDiscount) }} <span class="fin-currency">{{ buyCurrency }}</span></span>
               </a-tooltip>
-              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} -{{ truncNum(order.targetCurrencyTotalDiscount) }}</span>
+              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalDiscount) }}</span>
             </div>
             <div class="finance-item final-cost">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalFinalCost') }}</span>
@@ -380,12 +380,12 @@
                       <div class="profit-display">
                         <div class="profit-item">
                           <span class="profit-label">{{ $t('merchant.orderDetail.profit') }}:</span>
-                          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(sku.profit) }} {{ sku.exchangeRateSell?.targetCurrency || '' }}</template>
+                          <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(sku.profit) }} {{ sku.exchangeRateSell?.baseCurrency || '' }}</template>
                             <span class="profit-value num-truncate" :class="{ 'profit-positive': Number(sku.profit) >= 0, 'profit-negative': Number(sku.profit) < 0 }">
                               {{ truncNum(sku.profit) }} {{ sku.exchangeRateSell?.baseCurrency || '' }}
                             </span>
                           </a-tooltip>
-                          <span class="profit-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber((sku.profit || 0) * (sku.exchangeRateSellValue || 1)) }}</span>
+                          <span class="profit-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(sku.targetCurrencyProfit) }}</span>
                         </div>
                       </div>
                     </div>
@@ -527,6 +527,7 @@ const computedTotalRemainingLak = computed(() =>
 
 const buyCurrency = computed(() => order.value?.exchangeRateBuy?.baseCurrency ?? '');
 const sellCurrency = computed(() => order.value?.exchangeRateSell?.baseCurrency ?? '');
+const shippingCurrency = computed(() => order.value?.shippingExchangeRate?.baseCurrency ?? '');
 
 const coItemColumns = computed(() => [
   { title: t('merchant.orderDetail.colProduct'), key: 'orderItem' },

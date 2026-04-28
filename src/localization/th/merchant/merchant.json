@@ -481,7 +481,13 @@
     "totalLakEquivalent": "รวมในหน่วย LAK",
     "costSummaryTitle": "สรุปการเงิน",
     "discountFix": "เงินสด",
-    "discountPercent": "เปอร์เซ็นต์"
+    "discountPercent": "เปอร์เซ็นต์",
+     "profitInformation": "กำไร",
+    "purchaseInformation": "ราคาซื้อสินค้า",
+    "sellingInformation": "ราคาขายสินค้า",
+   
+    "purchaseTotal": "รวมราคาซื้อ",
+    "exchangeRate": "อัตราแลกเปลี่ยนที่ใช้"
   },
   "teamMembers": {
     "breadcrumb": "ผู้ใช้ทั่วไป",

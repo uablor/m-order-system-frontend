@@ -455,6 +455,7 @@ export interface Order {
   notifiedAt: string | null;
   exchangeRateBuy: ExchangeRateSnapshot | null;
   exchangeRateSell: ExchangeRateSnapshot | null;
+  shippingExchangeRate: ExchangeRateSnapshot | null;
   exchangeRateBuyValue: string | null;
   exchangeRateSellValue: string | null;
   totalPurchaseCost: string;
@@ -471,6 +472,7 @@ export interface Order {
   targetCurrencyTotalFinalCost: string;
   targetCurrencyTotalSellingAmount: string;
   targetCurrencyTotalProfit: string;
+  targetCurrencyTotalShippingCostByShippingExchangeRate: string;
   paymentStatus: PaymentStatusEnum;
   orderItems?: OrderItem[];
   customerOrders?: CustomerOrder[];

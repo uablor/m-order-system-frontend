@@ -463,12 +463,12 @@
     "customerOrders": "ອໍເດີລູກຄ້າ",
     "noCustomerOrders": "ບໍ່ມີອໍເດີລູກຄ້າ",
     "unknownCustomer": "ບໍ່ຮູ້ຊື່ລູກຄ້າ",
-    "purchaseInformation": "ຂານຊື້ສິນຄາຂ",
-    "sellingInformation": "ຂານຊື້ຂາຍ",
     "profitInformation": "ກຳໄລ",
+    "purchaseInformation": "ລາຄາຊື້ສິນຄ້າ",
+    "sellingInformation": "ລາຄາຂາຍສິນຄ້າ",
    
-    "purchaseTotal": "ລວາມລາຄາຊື້",
-    "exchangeRate": "ອັດຕາແລປ່ຽນທີ່ໃຊ້",
+    "purchaseTotal": "ລວມລາຄາຊື້",
+    "exchangeRate": "ອັດຕາແລກປ່ຽນທີ່ໃຊ້",
    
  
     "profit": "ກຳໄລ",

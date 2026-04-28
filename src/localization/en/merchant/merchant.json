@@ -486,7 +486,13 @@
     "totalLakEquivalent": "Total in LAK",
     "costSummaryTitle": "Financial Summary",
     "discountFix": "Cash",
-    "discountPercent": "Percent"
+    "discountPercent": "Percent",
+     "profitInformation": "Profit",
+    "purchaseInformation": "Purchase Price",
+    "sellingInformation": "Selling Price",
+   
+    "purchaseTotal": "Purchase Total",
+    "exchangeRate": "Exchange Rate"
   },
   "teamMembers": {
     "breadcrumb": "User General",
