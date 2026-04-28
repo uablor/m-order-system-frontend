@@ -14,9 +14,9 @@ const rateDisplay = (rate: ExchangeRate | null, notSetLabel: string): string => 
   const base = normCcy(rate.baseCurrency);
   const target = normCcy(rate.targetCurrency);
   const rateNum = Number(rate.rate).toLocaleString();
-  // When both currencies are the same (e.g. LAK/LAK) show "1,000 LAK = 1,000 LAK"
-  // instead of the misleading "1 LAK = 1,000 LAK".
-  if (base === target) return `${rateNum} ${base} = ${rateNum} ${target}`;
+  // When both currencies are the same (e.g. LAK/LAK) show "1 LAK = 1 LAK"
+  // instead of the misleading "1,000 LAK = 1,000 LAK".
+  if (base === target) return `1 ${base} = 1 ${target}`;
   return `1 ${base} = ${rateNum} ${target}`;
 };
 
