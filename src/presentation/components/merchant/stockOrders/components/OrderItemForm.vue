@@ -692,16 +692,21 @@ const emit = defineEmits<{
 const ITEM_COLORS = ['#4E8EB5', '#45BA6A', '#4F3BB3', '#8439AD', '#A84385'];
 const itemBorderColor = computed(() => ITEM_COLORS[props.index % ITEM_COLORS.length]!);
 
-const calc = useItemCalculations(props.getBuyRate, props.getSellRate);
+const isBuySameCurrency = computed(() => props.buyBaseCcy === props.buyTargetCcy);
+const isSellSameCurrency = computed(() => props.sellBaseCcy === props.sellTargetCcy);
+
+// When base = target currency the amount is already in KIP — rate must be 1, not the configured
+// value, otherwise calcShippingLak multiplies KIP by the rate a second time (e.g. 1000 KIP × 1000 = 1,000,000).
+const getEffectiveBuyRate = () => isBuySameCurrency.value ? 1 : props.getBuyRate();
+const getEffectiveSellRate = () => isSellSameCurrency.value ? 1 : props.getSellRate();
+
+const calc = useItemCalculations(getEffectiveBuyRate, getEffectiveSellRate);
 
 const fmtNum = fmtNumber;
 const fmtRate = (val: number) => val.toLocaleString('en-US');
 
 const gutter = computed<[number, number]>(() => props.isMobile ? [12, 0] : [16, 0]);
 const halfCol = computed(() => props.isMobile ? { span: 24 } : { sm: 12, md: 8 });
-
-const isBuySameCurrency = computed(() => props.buyBaseCcy === props.buyTargetCcy);
-const isSellSameCurrency = computed(() => props.sellBaseCcy === props.sellTargetCcy);
 
 // Shipping currency helpers (default to 'buy' for drafts that predate this field)
 const shippingMode = computed(() => props.item.shippingCurrency ?? 'buy');
@@ -710,7 +715,7 @@ const shippingTargetCcy = computed(() => shippingMode.value === 'sell' ? props.s
 const shippingIsSameCurrency = computed(() => shippingCcy.value === shippingTargetCcy.value);
 const calcShippingConverted = computed(() => {
   const amount = variantForCalculation.value.shippingPrice || 0;
-  return shippingMode.value === 'sell' ? amount * props.getSellRate() : amount * props.getBuyRate();
+  return shippingMode.value === 'sell' ? amount * getEffectiveSellRate() : amount * getEffectiveBuyRate();
 });
 
 // Helper function to generate unique IDs
