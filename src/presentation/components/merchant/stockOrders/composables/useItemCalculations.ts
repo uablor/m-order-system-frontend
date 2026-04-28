@@ -24,8 +24,14 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
     return rate === 0 ? 0 : shippingLak / rate;
   };
 
-  const calcPurchaseAndShipForeign = (item: ItemForm) =>
-    (item.purchasePrice * getItemTotalQty(item)) + calcShippingForeign(item);
+  const calcPurchaseAndShipForeign = (item: ItemForm) => {
+    const rate = getBuyRate();
+    if (rate === 0) return 0;
+    // Convert purchase to KIP, add shipping in KIP, then convert back to buy-base foreign
+    const purchaseLak = item.purchasePrice * getItemTotalQty(item) * rate;
+    const shippingLak = calcShippingLak(item);
+    return (purchaseLak + shippingLak) / rate;
+  };
   const calcPurchaseAndShipLak = (item: ItemForm) =>
     calcPurchaseTotalLak(item) + calcShippingLak(item);
   const calcSubtotalLak = (item: ItemForm) => calcPurchaseTotalLak(item) + calcShippingLak(item);
