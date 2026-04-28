@@ -41,6 +41,8 @@ export function useExchangeRates() {
 
   const getBuyRate = () => Number(todayBuyRate.value?.rate ?? 0);
   const getSellRate = () => Number(todaySellRate.value?.rate ?? 0);
+  const getBuyRateId = () => todayBuyRate.value?.id;
+  const getSellRateId = () => todaySellRate.value?.id;
 
   const fetchTodayRates = async () => {
     try {
@@ -62,6 +64,8 @@ export function useExchangeRates() {
     sellTargetCcy,
     getBuyRate,
     getSellRate,
+    getBuyRateId,
+    getSellRateId,
     fetchTodayRates,
   };
 }

@@ -11,6 +11,8 @@ export function useOrderSubmit(
   orderCode: Ref<string>,
   items: Ref<ItemForm[]>,
   onSuccess: () => void,
+  getBuyRateId: () => number | undefined,
+  getSellRateId: () => number | undefined,
 ) {
   const { t } = useI18n();
   const submitting = ref(false);
@@ -169,8 +171,8 @@ export function useOrderSubmit(
                 quantity: variantTotalQty,
                 purchasePrice: variant.purchasePrice,
                 sellingPriceForeign: variant.sellingPriceForeign,
-                exchangeRateBuyId: 1,
-                exchangeRateSellId: 2,
+                exchangeRateBuyId: getBuyRateId(),
+                exchangeRateSellId: getSellRateId(),
               };
             })
             .filter((s): s is NonNullable<typeof s> => s !== null);
@@ -195,8 +197,8 @@ export function useOrderSubmit(
               quantity: item.customers.reduce((sum, c) => sum + (c.qty || 0), 0),
               purchasePrice: item.purchasePrice,
               sellingPriceForeign: item.sellingPriceForeign,
-              exchangeRateBuyId: 1,
-              exchangeRateSellId: 2,
+              exchangeRateBuyId: getBuyRateId(),
+              exchangeRateSellId: getSellRateId(),
             }],
             discountType: item.discountType === 'percent' ? 'PERCENT' : (item.discountType === 'cash' ? 'FIX' : undefined),
             discountValue: item.discountType ? item.discountValue : undefined,
@@ -219,10 +221,10 @@ export function useOrderSubmit(
       });
 
       // Derive shippingExchangeRateId from items' shippingCurrency selections.
-      // Buy currency uses rate ID 1; sell currency uses rate ID 2.
+      // Buy currency uses buy rate ID; sell currency uses sell rate ID.
       // If any item uses sell, prefer the sell rate for the order.
       const usesSell = shippingCurrencies.some(c => c === 'sell');
-      const shippingExchangeRateId = usesSell ? 2 : 1;
+      const shippingExchangeRateId = usesSell ? getSellRateId() : getBuyRateId();
 
       const payload: CreateFullOrderDto = {
         orderCode: orderCode.value.trim(),

@@ -179,10 +179,15 @@ const orderCode = ref('');
 const {
   buyRateDisplay, sellRateDisplay,
   buyBaseCcy, buyTargetCcy, sellBaseCcy, sellTargetCcy,
-  getBuyRate, getSellRate, fetchTodayRates,
+  getBuyRate, getSellRate, getBuyRateId, getSellRateId, fetchTodayRates,
 } = useExchangeRates();
 
-const calc = useItemCalculations(getBuyRate, getSellRate);
+const isBuySameCurrency = computed(() => buyBaseCcy.value === buyTargetCcy.value);
+const isSellSameCurrency = computed(() => sellBaseCcy.value === sellTargetCcy.value);
+const getEffectiveBuyRate = () => isBuySameCurrency.value ? 1 : getBuyRate();
+const getEffectiveSellRate = () => isSellSameCurrency.value ? 1 : getSellRate();
+
+const calc = useItemCalculations(getEffectiveBuyRate, getEffectiveSellRate);
 
 const {
   items, activeItemIdx, itemScrollRef,
@@ -203,7 +208,7 @@ const {
 const { submitting, fieldErrors, clearFieldError, handleSubmit } = useOrderSubmit(orderCode, items, () => {
     clearDraft();
     clearOrderCode(); // Also clear the order code after successful submission
-  });
+  }, getBuyRateId, getSellRateId);
 
 const getItemErrors = (idx: number): Record<string, string> => {
   const prefix = `items.${idx}.`;
@@ -227,7 +232,7 @@ const summarySellingTotalLak = computed(() =>
 const summaryNetCostLak = summaryPurchaseTotalLak;
 const summaryProfitLak = computed(() => summarySellingTotalLak.value - summaryNetCostLak.value);
 const summaryProfitForeign = computed(() => {
-  const rate = getSellRate();
+  const rate = getEffectiveSellRate();
   return rate === 0 ? 0 : summaryProfitLak.value / rate;
 });
 
