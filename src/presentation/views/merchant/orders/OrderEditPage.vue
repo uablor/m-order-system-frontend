@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import MerchantLayout from '../../../components/layouts/merchant-layouts/AppLayout.vue';
+import MerchantLayout from '../../../../components/layouts/merchant-layouts/AppLayout.vue';
 import StockOrderContent from '../../../components/merchant/stockOrders/StockOrderContent.vue';
 import ExchangeRateBulkModal from '../../../components/merchant/exchangerate/ExchangeRateBulkModal.vue';
 import { orderRepository } from '@/infrastructure/repositories/order.repository';
