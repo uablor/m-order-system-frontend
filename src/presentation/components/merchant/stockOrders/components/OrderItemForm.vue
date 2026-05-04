@@ -114,30 +114,28 @@
             </a-form-item>
 
             <!-- Discount All: shared discount fields -->
-            <template v-if="item.discountMode !== 'manual'">
-              <a-row :gutter="[16, 0]">
-                <a-col :span="12">
-                  <a-form-item :label="$t('merchant.orders.items.discountType')">
-                    <a-select v-model:value="item.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full">
-                      <a-select-option value="percent">%</a-select-option>
-                      <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
-                    </a-select>
-                  </a-form-item>
-                </a-col>
-                <a-col :span="12">
-                  <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
-                    <a-input-number v-model:value="item.discountValue" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType" />
-                  </a-form-item>
-                </a-col>
-              </a-row>
-              <a-row v-if="!isBuySameCurrency" :gutter="[16, 0]">
-                <a-col :span="24">
-                  <a-form-item :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
-                    <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
-                  </a-form-item>
-                </a-col>
-              </a-row>
-            </template>
+            <a-row :gutter="[16, 0]">
+              <a-col :span="12">
+                <a-form-item :label="$t('merchant.orders.items.discountType')">
+                  <a-select v-model:value="item.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full" :disabled="item.discountMode === 'manual'">
+                    <a-select-option value="percent">%</a-select-option>
+                    <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
+                  </a-select>
+                </a-form-item>
+              </a-col>
+              <a-col :span="12">
+                <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
+                  <a-input-number v-model:value="item.discountValue" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType || item.discountMode === 'manual'" />
+                </a-form-item>
+              </a-col>
+            </a-row>
+            <a-row v-if="!isBuySameCurrency" :gutter="[16, 0]">
+              <a-col :span="24">
+                <a-form-item :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
+                  <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
+                </a-form-item>
+              </a-col>
+            </a-row>
           </a-col>
         </a-row>
       </template>
@@ -234,20 +232,18 @@
         </a-form-item>
 
         <!-- Discount All fields (mobile) -->
-        <template v-if="item.discountMode !== 'manual'">
-          <a-form-item :label="$t('merchant.orders.items.discountType')">
-            <a-select v-model:value="item.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full">
-              <a-select-option value="percent">%</a-select-option>
-              <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
-            </a-select>
-          </a-form-item>
-          <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
-            <a-input-number v-model:value="item.discountValue" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType" />
-          </a-form-item>
-          <a-form-item v-if="!isBuySameCurrency" :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
-            <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
-          </a-form-item>
-        </template>
+        <a-form-item :label="$t('merchant.orders.items.discountType')">
+          <a-select v-model:value="item.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full" :disabled="item.discountMode === 'manual'">
+            <a-select-option value="percent">%</a-select-option>
+            <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
+          <a-input-number v-model:value="item.discountValue" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType || item.discountMode === 'manual'" />
+        </a-form-item>
+        <a-form-item v-if="!isBuySameCurrency" :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
+          <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
+        </a-form-item>
       </template>
 
       <!-- MAIN PRODUCT SECTION (RED BORDER AREA) -->

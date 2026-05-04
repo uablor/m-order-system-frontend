@@ -2,7 +2,7 @@
   <a-card :bordered="false" class="panel-card mb-4">
     <div class="panel-title">
       <FileTextOutlined class="icon-blue" />
-      <span>{{ $t('merchant.orders.form.orderCode') }} lts</span>
+      <span>{{ $t('merchant.orders.form.orderCode') }}</span>
     </div>
     <a-form-item
       :validate-status="error ? 'error' : ''"
