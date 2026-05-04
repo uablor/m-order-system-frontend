@@ -439,6 +439,9 @@ export interface CustomerOrder {
   targetCurrencyPaidAmount: string;
   targetCurrencyRemainingAmount: string;
   paymentStatus: PaymentStatusEnum;
+  discountType: string | null;
+  discountValue: string | null;
+  discountAmount: string | null;
   customerOrderItems: CustomerOrderItem[];
   createdAt: string;
   updatedAt: string;

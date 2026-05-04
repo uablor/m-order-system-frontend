@@ -12,6 +12,23 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
   const calcPurchaseTotalLak = (item: ItemForm) => item.purchasePrice * getItemTotalQty(item) * getBuyRate();
 
   const calcDiscountLak = (item: ItemForm) => {
+    // Manual mode: sum up per-customer discounts
+    if (item.discountMode === 'manual') {
+      let totalDiscount = 0;
+      const buyRate = getBuyRate();
+      item.customers.forEach(cust => {
+        if (cust.discountType && cust.discountValue) {
+          const custPurchaseLak = item.purchasePrice * cust.qty * buyRate;
+          if (cust.discountType === 'percent') {
+            totalDiscount += custPurchaseLak * (cust.discountValue / 100);
+          } else if (cust.discountType === 'cash') {
+            totalDiscount += cust.discountValue * buyRate;
+          }
+        }
+      });
+      return totalDiscount;
+    }
+    // All mode: use item-level discount
     const subtotal = calcPurchaseTotalLak(item);
     if (item.discountType === 'percent') return subtotal * (item.discountValue / 100);
     if (item.discountType === 'cash') return item.discountValue * getBuyRate();
@@ -60,6 +77,25 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
   };
 
   const calcDiscountLakWithVariants = (item: ItemForm) => {
+    // Manual mode: sum up per-customer discounts
+    if (item.discountMode === 'manual' && item.variants) {
+      let totalDiscount = 0;
+      const buyRate = getBuyRate();
+      item.variants.forEach(variant => {
+        variant.customers.forEach(cust => {
+          if (cust.discountType && cust.discountValue) {
+            const custPurchaseLak = variant.purchasePrice * cust.qty * buyRate;
+            if (cust.discountType === 'percent') {
+              totalDiscount += custPurchaseLak * (cust.discountValue / 100);
+            } else if (cust.discountType === 'cash') {
+              totalDiscount += cust.discountValue * buyRate;
+            }
+          }
+        });
+      });
+      return totalDiscount;
+    }
+    // All mode: use item-level discount
     if (!item.discountType) return 0;
     const variantsPurchaseLak = calcPurchaseTotalLakWithVariants(item);
     if (item.discountType === 'percent') return variantsPurchaseLak * (item.discountValue / 100);

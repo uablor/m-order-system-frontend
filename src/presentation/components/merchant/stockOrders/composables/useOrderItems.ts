@@ -34,7 +34,8 @@ export function useOrderItems(isMobile: Ref<boolean>) {
     items.value.push({
       uid: uid(), productName: '', variant: '',
       purchasePrice: 0,
-      discountType: undefined, discountValue: 0, sellingPriceForeign: 0,
+      discountMode: 'all', discountType: undefined, discountValue: 0,
+      sellingPriceForeign: 0,
       customers: [],
       quantity: 0,
       productImage: '',

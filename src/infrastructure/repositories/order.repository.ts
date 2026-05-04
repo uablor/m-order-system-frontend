@@ -34,6 +34,8 @@ export interface CreateFullCustomerOrderItemDto {
 export interface CreateFullCustomerOrderDto {
   customerId: number;
   items: CreateFullCustomerOrderItemDto[];
+  discountType?: 'PERCENT' | 'FIX';
+  discountValue?: number;
 }
 
 export interface CreateFullOrderDto {
