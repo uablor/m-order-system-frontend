@@ -22,7 +22,7 @@
 
     <!-- Shipping Section -->
     <div class="shipping-title">
-      <TruckOutlined class="icon-blue" />
+      <SendOutlined class="icon-blue" />
       <span>{{ $t('merchant.orders.form.shippingCost') }}</span>
     </div>
     <a-row :gutter="[16, 0]">
@@ -57,7 +57,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { FileTextOutlined, TruckOutlined } from '@ant-design/icons-vue';
+import { FileTextOutlined, SendOutlined } from '@ant-design/icons-vue';
 import { fmtNumber, numFormatter, numParser } from '@/shared/utils/format';
 
 const props = defineProps<{
