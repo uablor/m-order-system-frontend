@@ -33,7 +33,7 @@ export function useOrderItems(isMobile: Ref<boolean>) {
   const addItem = () => {
     items.value.push({
       uid: uid(), productName: '', variant: '',
-      purchasePrice: 0, shippingPrice: 0, shippingCurrency: 'buy',
+      purchasePrice: 0,
       discountType: undefined, discountValue: 0, sellingPriceForeign: 0,
       customers: [],
       quantity: 0,

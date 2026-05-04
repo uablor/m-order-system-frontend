@@ -89,7 +89,7 @@
             </a-form-item>
           </a-col>
     
-          <!-- Right Column: Product Name + Shipping + Discount -->
+          <!-- Right Column: Product Name + Discount -->
           <a-col :sm="24" :md="16">
             <a-form-item
               :label="$t('merchant.orders.items.productName')"
@@ -104,27 +104,7 @@
                 @input="onFieldChange('productName')"
               />
             </a-form-item>
-            
-            <!-- Shipping Currency + Price -->
-            <a-form-item :label="$t('merchant.orders.items.shippingCurrencyType')">
-              <a-select v-model:value="item.shippingCurrency" class="w-full">
-                <a-select-option value="buy">BUY — {{ buyBaseCcy }}</a-select-option>
-                <a-select-option value="sell">SELL — {{ sellBaseCcy }}</a-select-option>
-              </a-select>
-            </a-form-item>
-            <a-row :gutter="[16, 0]">
-              <a-col :span="12">
-                <a-form-item :label="`${$t('merchant.orders.items.shippingPrice')} (${shippingCcy})`">
-                  <a-input-number v-model:value="item.shippingPrice" :formatter="numFormatter" :parser="numParser" class="w-full" />
-                </a-form-item>
-              </a-col>
-              <a-col v-if="!shippingIsSameCurrency" :span="12">
-                <a-form-item :label="`${$t('merchant.orders.items.shippingKip')} (${shippingTargetCcy})`">
-                  <a-input :value="fmtNum(calcShippingConverted)" disabled class="w-full" />
-                </a-form-item>
-              </a-col>
-            </a-row>
-            
+
             <a-row :gutter="[16, 0]">
               <a-col :span="12">
                 <a-form-item :label="$t('merchant.orders.items.discountType')">
@@ -235,19 +215,6 @@
           </div>
         </a-form-item>
         
-        <!-- Mobile Shipping and Discount Fields -->
-        <a-form-item :label="$t('merchant.orders.items.shippingCurrencyType')">
-          <a-select v-model:value="item.shippingCurrency" class="w-full">
-            <a-select-option value="buy">BUY — {{ buyBaseCcy }}</a-select-option>
-            <a-select-option value="sell">SELL — {{ sellBaseCcy }}</a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item :label="`${$t('merchant.orders.items.shippingPrice')} (${shippingCcy})`">
-          <a-input-number v-model:value="item.shippingPrice" :formatter="numFormatter" :parser="numParser" class="w-full" />
-        </a-form-item>
-        <a-form-item v-if="!shippingIsSameCurrency" :label="`${$t('merchant.orders.items.shippingKip')} (${shippingTargetCcy})`">
-          <a-input :value="fmtNum(calcShippingConverted)" disabled class="w-full" />
-        </a-form-item>
         <a-form-item :label="$t('merchant.orders.items.discountType')">
           <a-select v-model:value="item.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full">
             <a-select-option value="percent">%</a-select-option>
@@ -299,11 +266,6 @@
                 <a-input :value="fmtNum(calc.calcPurchaseTotalForeign(variantForCalculation))" disabled class="w-full" />
               </a-form-item>
             </a-col>
-            <a-col v-bind="halfCol">
-              <a-form-item :label="`${$t('merchant.orders.items.purchaseAndShipForeign')} (${buyBaseCcy})`">
-                <a-input :value="fmtNum(calc.calcPurchaseAndShipForeign(variantForCalculation))" disabled class="w-full" />
-              </a-form-item>
-            </a-col>
           </a-row>
           <a-row v-if="!isBuySameCurrency" :gutter="gutter">
             <a-col v-bind="halfCol">
@@ -314,11 +276,6 @@
             <a-col v-bind="halfCol">
               <a-form-item :label="`${$t('merchant.orders.items.purchaseTotalKip')} (${buyTargetCcy})`">
                 <a-input :value="fmtNum(calc.calcPurchaseTotalLak(variantForCalculation))" disabled class="w-full" />
-              </a-form-item>
-            </a-col>
-            <a-col v-bind="halfCol">
-              <a-form-item :label="`${$t('merchant.orders.items.purchaseAndShipKip')} (${buyTargetCcy})`">
-                <a-input :value="fmtNum(calc.calcPurchaseAndShipLak(variantForCalculation))" disabled class="w-full" />
               </a-form-item>
             </a-col>
           </a-row>
@@ -708,16 +665,6 @@ const fmtRate = (val: number) => val.toLocaleString('en-US');
 const gutter = computed<[number, number]>(() => props.isMobile ? [12, 0] : [16, 0]);
 const halfCol = computed(() => props.isMobile ? { span: 24 } : { sm: 12, md: 8 });
 
-// Shipping currency helpers (default to 'buy' for drafts that predate this field)
-const shippingMode = computed(() => props.item.shippingCurrency ?? 'buy');
-const shippingCcy = computed(() => shippingMode.value === 'sell' ? props.sellBaseCcy : props.buyBaseCcy);
-const shippingTargetCcy = computed(() => shippingMode.value === 'sell' ? props.sellTargetCcy : props.buyTargetCcy);
-const shippingIsSameCurrency = computed(() => shippingCcy.value === shippingTargetCcy.value);
-const calcShippingConverted = computed(() => {
-  const amount = variantForCalculation.value.shippingPrice || 0;
-  return shippingMode.value === 'sell' ? amount * getEffectiveSellRate() : amount * getEffectiveBuyRate();
-});
-
 // Helper function to generate unique IDs
 const uid = () => String(Date.now()) + Math.random().toString(36).slice(2, 6);
 
@@ -785,10 +732,8 @@ const variantForCalculation = computed(() => {
     productName: props.item.productName,
     variant: variant.variant,
     purchasePrice: variant.purchasePrice,
-    shippingPrice: props.item.shippingPrice, // ✅ Use item level
-    shippingCurrency: props.item.shippingCurrency, // ✅ Forward so calc functions use the correct rate
-    discountType: props.item.discountType || undefined as 'percent' | 'cash' | undefined, // ✅ Use item level
-    discountValue: props.item.discountValue || 0, // ✅ Use item level
+    discountType: props.item.discountType || undefined as 'percent' | 'cash' | undefined,
+    discountValue: props.item.discountValue || 0,
     sellingPriceForeign: variant.sellingPriceForeign,
     customers: variant.customers,
     quantity: variant.customers.reduce((sum, c) => sum + (c.qty || 0), 0),

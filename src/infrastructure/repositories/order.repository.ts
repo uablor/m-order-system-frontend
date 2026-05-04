@@ -22,7 +22,6 @@ export interface CreateFullOrderItemDto {
   discountType?: 'PERCENT' | 'FIX';
   discountValue?: number;
   imageId?: number;
-  shippingPrice?: number;
 }
 
 export interface CreateFullCustomerOrderItemDto {
@@ -39,6 +38,7 @@ export interface CreateFullCustomerOrderDto {
 
 export interface CreateFullOrderDto {
   orderCode: string;
+  shippingPrice?: number;
   shippingExchangeRateId?: number;
   items: CreateFullOrderItemDto[];
   customerOrders: CreateFullCustomerOrderDto[];

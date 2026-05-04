@@ -13,6 +13,8 @@ export function useOrderSubmit(
   onSuccess: () => void,
   getBuyRateId: () => number | undefined,
   getSellRateId: () => number | undefined,
+  shippingPrice: Ref<number>,
+  shippingCurrency: Ref<'buy' | 'sell'>,
   editOrderId?: number,
 ) {
   const { t } = useI18n();
@@ -134,14 +136,9 @@ export function useOrderSubmit(
         discountType?: 'PERCENT' | 'FIX';
         discountValue?: number;
         imageId?: number;
-        shippingPrice?: number;
       }> = [];
-      // Collect shippingCurrency per item to derive the order-level shippingExchangeRateId
-      const shippingCurrencies: Array<'buy' | 'sell'> = [];
-      
-      items.value.forEach((item) => {
-        shippingCurrencies.push(item.shippingCurrency ?? 'buy');
 
+      items.value.forEach((item) => {
         if (item.variants && item.variants.length > 0) {
           // Create ONE order item with multiple SKUs for all variants
           let skuIndex = 0;
@@ -185,7 +182,6 @@ export function useOrderSubmit(
             discountType: item.discountType === 'percent' ? 'PERCENT' : (item.discountType === 'cash' ? 'FIX' : undefined),
             discountValue: item.discountType ? item.discountValue : undefined,
             ...(item.imageId && { imageId: item.imageId }),
-            shippingPrice: item.shippingPrice || undefined,
           });
         } else {
           // No variants - create single order item as before
@@ -204,7 +200,6 @@ export function useOrderSubmit(
             discountType: item.discountType === 'percent' ? 'PERCENT' : (item.discountType === 'cash' ? 'FIX' : undefined),
             discountValue: item.discountType ? item.discountValue : undefined,
             ...(item.imageId && { imageId: item.imageId }),
-            shippingPrice: item.shippingPrice || undefined,
           });
 
           // Map customers for this item
@@ -221,14 +216,11 @@ export function useOrderSubmit(
         }
       });
 
-      // Derive shippingExchangeRateId from items' shippingCurrency selections.
-      // Buy currency uses buy rate ID; sell currency uses sell rate ID.
-      // If any item uses sell, prefer the sell rate for the order.
-      const usesSell = shippingCurrencies.some(c => c === 'sell');
-      const shippingExchangeRateId = usesSell ? getSellRateId() : getBuyRateId();
+      const shippingExchangeRateId = shippingCurrency.value === 'sell' ? getSellRateId() : getBuyRateId();
 
       const payload: CreateFullOrderDto = {
         orderCode: orderCode.value.trim(),
+        shippingPrice: shippingPrice.value || undefined,
         shippingExchangeRateId,
         items: expandedItems,
         customerOrders: Array.from(customerMap.entries()).map(([customerId, custItems]) => ({

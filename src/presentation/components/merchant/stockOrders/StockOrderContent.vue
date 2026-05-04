@@ -15,7 +15,16 @@
     <OrderCodeCard
       v-model="orderCode"
       :error="fieldErrors.orderCode"
+      :shipping-price="shippingPrice"
+      :shipping-currency="shippingCurrency"
+      :buy-base-ccy="buyBaseCcy"
+      :sell-base-ccy="sellBaseCcy"
+      :buy-target-ccy="buyTargetCcy"
+      :sell-target-ccy="sellTargetCcy"
+      :shipping-converted="shippingConverted"
       @clear-error="clearFieldError('orderCode')"
+      @update:shipping-price="shippingPrice = $event"
+      @update:shipping-currency="shippingCurrency = $event"
     />
 
     <ExchangeRateCard
@@ -140,6 +149,8 @@ const props = defineProps<{
   editOrderId?: number;
   initialOrderCode?: string;
   initialItems?: ItemForm[];
+  initialShippingPrice?: number;
+  initialShippingCurrency?: 'buy' | 'sell';
 }>();
 
 const emit = defineEmits<{
@@ -151,6 +162,9 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const editMode = computed(() => props.editOrderId !== undefined);
+
+const shippingPrice = ref(0);
+const shippingCurrency = ref<'buy' | 'sell'>('buy');
 
 const openRateModal = (data: {
   buy: { baseCurrency: string; targetCurrency: string; rate: number | undefined };
@@ -208,7 +222,7 @@ const {
 // Silence unused template refs
 void itemScrollRef;
 
-const { saveDraft, restoreDraft, clearDraft, clearOrderCode } = useDraftStorage(orderCode, items);
+const { saveDraft, restoreDraft, clearDraft, clearOrderCode } = useDraftStorage(orderCode, items, shippingPrice, shippingCurrency);
 
 const {
   customerOptions, customerSearching,
@@ -226,7 +240,7 @@ const handleSuccess = () => {
 };
 
 const { submitting, fieldErrors, clearFieldError, handleSubmit } = useOrderSubmit(
-  orderCode, items, handleSuccess, getBuyRateId, getSellRateId, props.editOrderId,
+  orderCode, items, handleSuccess, getBuyRateId, getSellRateId, shippingPrice, shippingCurrency, props.editOrderId,
 );
 
 const getItemErrors = (idx: number): Record<string, string> => {
@@ -240,10 +254,21 @@ const getItemErrors = (idx: number): Record<string, string> => {
   return result;
 };
 
-const summaryPurchaseTotalForeign = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcNetCostForeignWithVariants(item), 0));
+// Shipping converted to LAK (also used as display value in OrderCodeCard)
+const shippingConverted = computed(() => {
+  const rate = shippingCurrency.value === 'sell' ? getEffectiveSellRate() : getEffectiveBuyRate();
+  return (shippingPrice.value || 0) * rate;
+});
+const shippingLak = shippingConverted;
+
+const summaryPurchaseTotalForeign = computed(() => {
+  const itemsNetCost = items.value.reduce((sum, item) => sum + calc.calcNetCostForeignWithVariants(item), 0);
+  const rate = getEffectiveBuyRate();
+  const shippingForeign = rate === 0 ? 0 : shippingLak.value / rate;
+  return itemsNetCost + shippingForeign;
+});
 const summaryPurchaseTotalLak = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcNetCostLakWithVariants(item), 0));
+  items.value.reduce((sum, item) => sum + calc.calcNetCostLakWithVariants(item), 0) + shippingLak.value);
 const summarySellingTotalForeign = computed(() =>
   items.value.reduce((sum, item) => sum + calc.calcSellingTotalForeignWithVariants(item), 0));
 const summarySellingTotalLak = computed(() =>
@@ -267,6 +292,8 @@ onMounted(async () => {
     } else if (items.value.length === 0) {
       addItem();
     }
+    if (props.initialShippingPrice !== undefined) shippingPrice.value = props.initialShippingPrice;
+    if (props.initialShippingCurrency) shippingCurrency.value = props.initialShippingCurrency;
   } else {
     // Create mode: restore draft
     restoreDraft();

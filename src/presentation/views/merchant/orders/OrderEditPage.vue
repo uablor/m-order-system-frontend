@@ -19,6 +19,8 @@
       :edit-order-id="orderId"
       :initial-order-code="initialOrderCode"
       :initial-items="initialItems"
+      :initial-shipping-price="initialShippingPrice"
+      :initial-shipping-currency="initialShippingCurrency"
       @open-rate-modal="openModal"
     />
     <ExchangeRateBulkModal ref="bulkModalRef" @submitted="onRatesSubmitted" @skipped="() => {}" />
@@ -51,6 +53,8 @@ const order = ref<Order | null>(null);
 const orderId = ref<number>(0);
 const initialOrderCode = ref('');
 const initialItems = ref<ItemForm[]>([]);
+const initialShippingPrice = ref(0);
+const initialShippingCurrency = ref<'buy' | 'sell'>('buy');
 
 onMounted(async () => {
   const id = Number(route.params.id);
@@ -65,6 +69,8 @@ onMounted(async () => {
     const mapped = orderToItemForms(order.value);
     initialOrderCode.value = mapped.orderCode;
     initialItems.value = mapped.items;
+    initialShippingPrice.value = mapped.shippingPrice;
+    initialShippingCurrency.value = mapped.shippingCurrency;
   } catch (err) {
     error.value = true;
     handleApiError(err, t);

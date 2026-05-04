@@ -21,16 +21,14 @@ export interface ItemForm {
   productName: string;
   variant: string;
   purchasePrice: number;
-  shippingPrice: number; // ✅ Move to item level
-  shippingCurrency?: 'buy' | 'sell'; // which exchange rate the shipping is priced in
-  discountType: 'percent' | 'cash' | undefined; // ✅ Move to item level
-  discountValue: number; // ✅ Move to item level
+  discountType: 'percent' | 'cash' | undefined;
+  discountValue: number;
   sellingPriceForeign: number;
   customers: CustomerInItemForm[];
-  quantity: number; // Add missing quantity property
-  productImage?: string; // Product image URL
-  imageId?: number; // Database image ID
-  variants?: ProductVariant[]; // Array of product variants
+  quantity: number;
+  productImage?: string;
+  imageId?: number;
+  variants?: ProductVariant[];
 }
 
 // Product variant interface
@@ -47,4 +45,6 @@ export interface ProductVariant {
 export interface DraftData {
   orderCode: string;
   items: ItemForm[];
+  shippingPrice?: number;
+  shippingCurrency?: 'buy' | 'sell';
 }

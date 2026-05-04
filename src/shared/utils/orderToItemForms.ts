@@ -5,18 +5,23 @@ function uid(): string {
   return Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 6);
 }
 
-export function orderToItemForms(order: Order): { orderCode: string; items: ItemForm[] } {
-  const items: ItemForm[] = order.orderItems.map(orderItem => {
+export function orderToItemForms(order: Order): {
+  orderCode: string;
+  items: ItemForm[];
+  shippingPrice: number;
+  shippingCurrency: 'buy' | 'sell';
+} {
+  const items: ItemForm[] = (order.orderItems ?? []).map(orderItem => {
     const skus = orderItem.skus || [];
 
     if (skus.length <= 1) {
       const sku = skus[0];
       const customers: CustomerInItemForm[] = [];
 
-      for (const co of order.customerOrders) {
+      for (const co of order.customerOrders ?? []) {
         for (const coi of co.customerOrderItems) {
           const skuId = sku?.id;
-          if (skuId !== undefined && (coi.orderItemSkuId === skuId)) {
+          if (skuId !== undefined && coi.orderItemSkuId === skuId) {
             customers.push({
               uid: uid(),
               customerId: co.customerId,
@@ -32,8 +37,6 @@ export function orderToItemForms(order: Order): { orderCode: string; items: Item
         variant: sku?.variant ?? '',
         purchasePrice: Number(sku?.purchasePrice ?? 0),
         sellingPriceForeign: Number(sku?.sellingPriceForeign ?? 0),
-        shippingPrice: 0,
-        shippingCurrency: 'buy' as const,
         discountType: undefined,
         discountValue: 0,
         quantity: orderItem.quantity,
@@ -47,7 +50,7 @@ export function orderToItemForms(order: Order): { orderCode: string; items: Item
     const variants: ProductVariant[] = skus.map(sku => {
       const skuCustomers: CustomerInItemForm[] = [];
 
-      for (const co of order.customerOrders) {
+      for (const co of order.customerOrders ?? []) {
         for (const coi of co.customerOrderItems) {
           if (coi.orderItemSkuId === sku.id) {
             skuCustomers.push({
@@ -74,8 +77,6 @@ export function orderToItemForms(order: Order): { orderCode: string; items: Item
       variant: '',
       purchasePrice: 0,
       sellingPriceForeign: 0,
-      shippingPrice: 0,
-      shippingCurrency: 'buy' as const,
       discountType: undefined,
       discountValue: 0,
       quantity: orderItem.quantity,
@@ -86,5 +87,14 @@ export function orderToItemForms(order: Order): { orderCode: string; items: Item
     };
   });
 
-  return { orderCode: order.orderCode, items };
+  // Get shipping price from the first order item (same value applied to all items by backend)
+  const rawShipping = order.orderItems?.[0]?.shippingPrice;
+  const shippingPrice = rawShipping ? Number(rawShipping) : 0;
+
+  return {
+    orderCode: order.orderCode,
+    items,
+    shippingPrice,
+    shippingCurrency: 'buy',
+  };
 }
