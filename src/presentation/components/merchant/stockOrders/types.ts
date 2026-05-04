@@ -2,6 +2,8 @@ export interface CustomerInItemForm {
   uid: string;
   customerId: number | undefined;
   qty: number;
+  discountType?: 'percent' | 'cash' | undefined;
+  discountValue?: number;
 }
 
 export interface CoItemForm {
@@ -21,6 +23,7 @@ export interface ItemForm {
   productName: string;
   variant: string;
   purchasePrice: number;
+  discountMode?: 'all' | 'manual';
   discountType: 'percent' | 'cash' | undefined;
   discountValue: number;
   sellingPriceForeign: number;

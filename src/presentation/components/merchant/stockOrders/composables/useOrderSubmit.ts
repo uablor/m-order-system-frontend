@@ -118,6 +118,7 @@ export function useOrderSubmit(
     try {
       // Transform nested structure → backend format
       const customerMap = new Map<number, { orderItemIndex: number; skuIndex: number; quantity: number; sellingPriceForeign: number }[]>();
+      const customerDiscountMap = new Map<number, { discountType?: 'PERCENT' | 'FIX'; discountValue?: number }>();
       let orderItemIndex = 0;
       
       // Expand each item with variants into separate order items
@@ -138,7 +139,13 @@ export function useOrderSubmit(
         imageId?: number;
       }> = [];
 
+      // Helper to convert frontend discount type to backend type
+      const toBackendDiscountType = (dt: 'percent' | 'cash' | undefined): 'PERCENT' | 'FIX' | undefined =>
+        dt === 'percent' ? 'PERCENT' : dt === 'cash' ? 'FIX' : undefined;
+
       items.value.forEach((item) => {
+        const isManual = item.discountMode === 'manual';
+
         if (item.variants && item.variants.length > 0) {
           // Create ONE order item with multiple SKUs for all variants
           let skuIndex = 0;
@@ -151,7 +158,7 @@ export function useOrderSubmit(
 
               const currentSkuIndex = skuIndex++;
 
-              // Map customers for this variant
+              // Map customers for this variant + collect discounts
               variant.customers.forEach(c => {
                 if (!c.customerId) return;
                 if (!customerMap.has(c.customerId)) customerMap.set(c.customerId, []);
@@ -161,6 +168,18 @@ export function useOrderSubmit(
                   quantity: c.qty,
                   sellingPriceForeign: variant.sellingPriceForeign,
                 });
+                // Collect discount per customer
+                if (isManual) {
+                  customerDiscountMap.set(c.customerId, {
+                    discountType: toBackendDiscountType(c.discountType),
+                    discountValue: c.discountType ? (c.discountValue ?? 0) : undefined,
+                  });
+                } else if (item.discountType) {
+                  customerDiscountMap.set(c.customerId, {
+                    discountType: toBackendDiscountType(item.discountType),
+                    discountValue: item.discountValue,
+                  });
+                }
               });
 
               return {
@@ -179,8 +198,6 @@ export function useOrderSubmit(
             Index: orderItemIndex++,
             productName: item.productName.trim(),
             skus,
-            discountType: item.discountType === 'percent' ? 'PERCENT' : (item.discountType === 'cash' ? 'FIX' : undefined),
-            discountValue: item.discountType ? item.discountValue : undefined,
             ...(item.imageId && { imageId: item.imageId }),
           });
         } else {
@@ -197,12 +214,10 @@ export function useOrderSubmit(
               exchangeRateBuyId: getBuyRateId(),
               exchangeRateSellId: getSellRateId(),
             }],
-            discountType: item.discountType === 'percent' ? 'PERCENT' : (item.discountType === 'cash' ? 'FIX' : undefined),
-            discountValue: item.discountType ? item.discountValue : undefined,
             ...(item.imageId && { imageId: item.imageId }),
           });
 
-          // Map customers for this item
+          // Map customers for this item + collect discounts
           item.customers.forEach(c => {
             if (!c.customerId) return;
             if (!customerMap.has(c.customerId)) customerMap.set(c.customerId, []);
@@ -212,6 +227,18 @@ export function useOrderSubmit(
               quantity: c.qty,
               sellingPriceForeign: item.sellingPriceForeign,
             });
+            // Collect discount per customer
+            if (isManual) {
+              customerDiscountMap.set(c.customerId, {
+                discountType: toBackendDiscountType(c.discountType),
+                discountValue: c.discountType ? (c.discountValue ?? 0) : undefined,
+              });
+            } else if (item.discountType) {
+              customerDiscountMap.set(c.customerId, {
+                discountType: toBackendDiscountType(item.discountType),
+                discountValue: item.discountValue,
+              });
+            }
           });
         }
       });
@@ -223,10 +250,17 @@ export function useOrderSubmit(
         shippingPrice: shippingPrice.value || undefined,
         shippingExchangeRateId,
         items: expandedItems,
-        customerOrders: Array.from(customerMap.entries()).map(([customerId, custItems]) => ({
-          customerId,
-          items: custItems,
-        })),
+        customerOrders: Array.from(customerMap.entries()).map(([customerId, custItems]) => {
+          const disc = customerDiscountMap.get(customerId);
+          return {
+            customerId,
+            items: custItems,
+            ...(disc?.discountType && {
+              discountType: disc.discountType,
+              discountValue: disc.discountValue,
+            }),
+          };
+        }),
       };
 
       console.log('🚀 Submitting order payload:', JSON.stringify(payload, null, 2));
