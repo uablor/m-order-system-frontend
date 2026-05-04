@@ -108,7 +108,7 @@
     <div class="submit-area">
       <a-button type="primary" size="large" class="submit-btn" :loading="submitting" data-testid="create-order-btn" @click="handleSubmit">
         <template #icon><SaveOutlined /></template>
-        {{ $t('merchant.orders.buttons.createOrder') }}
+        {{ editMode ? 'ບັນທຶກການແກ້ໄຂ' : $t('merchant.orders.buttons.createOrder') }}
       </a-button>
     </div>
   </div>
@@ -116,6 +116,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import {
   ShoppingOutlined, PlusOutlined, SaveOutlined,
   LeftOutlined, RightOutlined,
@@ -133,13 +134,23 @@ import { useOrderItems } from './composables/useOrderItems';
 import { useItemCustomers } from './composables/useItemCustomers';
 import { useDraftStorage } from './composables/useDraftStorage';
 import { useOrderSubmit } from './composables/useOrderSubmit';
+import type { ItemForm } from './types';
 
-const emit = defineEmits<{ 
+const props = defineProps<{
+  editOrderId?: number;
+  initialOrderCode?: string;
+  initialItems?: ItemForm[];
+}>();
+
+const emit = defineEmits<{
   (e: 'openRateModal', data: {
     buy: { baseCurrency: string; targetCurrency: string; rate: number | undefined };
     sell: { baseCurrency: string; targetCurrency: string; rate: number | undefined };
-  }): void 
+  }): void
 }>();
+
+const router = useRouter();
+const editMode = computed(() => props.editOrderId !== undefined);
 
 const openRateModal = (data: {
   buy: { baseCurrency: string; targetCurrency: string; rate: number | undefined };
@@ -205,10 +216,18 @@ const {
   goCreateCustomer, handleNewCustomerReturn,
 } = useItemCustomers(items, saveDraft);
 
-const { submitting, fieldErrors, clearFieldError, handleSubmit } = useOrderSubmit(orderCode, items, () => {
+const handleSuccess = () => {
+  if (editMode.value) {
+    router.push(`/merchant/orders/${props.editOrderId}`);
+  } else {
     clearDraft();
-    clearOrderCode(); // Also clear the order code after successful submission
-  }, getBuyRateId, getSellRateId);
+    clearOrderCode();
+  }
+};
+
+const { submitting, fieldErrors, clearFieldError, handleSubmit } = useOrderSubmit(
+  orderCode, items, handleSuccess, getBuyRateId, getSellRateId, props.editOrderId,
+);
 
 const getItemErrors = (idx: number): Record<string, string> => {
   const prefix = `items.${idx}.`;
@@ -240,9 +259,19 @@ const refreshRates = () => fetchTodayRates();
 defineExpose({ refreshRates });
 
 onMounted(async () => {
-  // Use intelligent draft restoration - only restore if there's meaningful data
-  restoreDraft();
-  if (items.value.length === 0) addItem();
+  if (editMode.value) {
+    // Edit mode: populate from existing order data
+    if (props.initialOrderCode) orderCode.value = props.initialOrderCode;
+    if (props.initialItems && props.initialItems.length > 0) {
+      items.value = JSON.parse(JSON.stringify(props.initialItems));
+    } else if (items.value.length === 0) {
+      addItem();
+    }
+  } else {
+    // Create mode: restore draft
+    restoreDraft();
+    if (items.value.length === 0) addItem();
+  }
   fetchTodayRates();
   await fetchCustomers('');
   handleNewCustomerReturn();

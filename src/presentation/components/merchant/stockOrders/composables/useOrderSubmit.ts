@@ -13,6 +13,7 @@ export function useOrderSubmit(
   onSuccess: () => void,
   getBuyRateId: () => number | undefined,
   getSellRateId: () => number | undefined,
+  editOrderId?: number,
 ) {
   const { t } = useI18n();
   const submitting = ref(false);
@@ -243,8 +244,13 @@ export function useOrderSubmit(
         hasImage: !!item.imageId 
       })));
 
-      await orderRepository.createFull(payload);
-      message.success(t('merchant.orders.toast.createSuccess'));
+      if (editOrderId !== undefined) {
+        await orderRepository.updateFull(editOrderId, payload);
+        message.success(t('merchant.orders.toast.updateSuccess') || 'ບັນທຶກການແກ້ໄຂສຳເລັດ');
+      } else {
+        await orderRepository.createFull(payload);
+        message.success(t('merchant.orders.toast.createSuccess'));
+      }
       clearAllErrors();
       orderCode.value = '';
       // Clear per-item variant-index keys from localStorage before wiping items array

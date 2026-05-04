@@ -133,6 +133,7 @@ const ORDERS_ENDPOINTS = {
   SUMMARY: `${ORDERS_BASE}/summary`,
   GET_BY_ID: (id: number) => `${ORDERS_BASE}/${id}`,
   UPDATE: (id: number) => `${ORDERS_BASE}/${id}`,
+  UPDATE_FULL: (id: number) => `${ORDERS_BASE}/${id}/update-full`,
   DELETE: (id: number) => `${ORDERS_BASE}/${id}`,
 } as const;
 

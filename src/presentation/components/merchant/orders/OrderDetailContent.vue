@@ -13,6 +13,15 @@
         <ArrowLeftOutlined />
         {{ $t('merchant.orderDetail.back') }}
       </a-button>
+      <a-button
+        v-if="order && canEdit"
+        type="primary"
+        class="edit-btn"
+        @click="goEdit"
+      >
+        <EditOutlined />
+        ແກ້ໄຂ
+      </a-button>
     </div>
 
     <a-spin :spinning="loading">
@@ -81,9 +90,8 @@
             <div v-if="order.exchangeRateBuy" class="rate-card rate-buy">
               <div class="rate-card-header">
                 <span class="rate-type-badge buy">{{ order.exchangeRateBuy.rateType }}</span>
-                <span class="rate-pair">{{ order.exchangeRateBuy.baseCurrency }} → {{ order.exchangeRateBuy.targetCurrency }}</span>
               </div>
-              <div class="rate-value">{{ formatNumber(order.exchangeRateBuy.rate) }}</div>
+              <div class="rate-value">{{ rateDisplay(order.exchangeRateBuy.baseCurrency, order.exchangeRateBuy.targetCurrency, order.exchangeRateBuy.rate) }}</div>
               <div class="rate-label">{{ $t('merchant.orderDetail.buyRateLabel') }}</div>
               <div class="rate-date">{{ $t('merchant.orderDetail.rateDate') }}: {{ formatDateOnly(order.exchangeRateBuy.rateDate) }}</div>
             </div>
@@ -91,9 +99,8 @@
             <div v-if="order.exchangeRateSell" class="rate-card rate-sell">
               <div class="rate-card-header">
                 <span class="rate-type-badge sell">{{ order.exchangeRateSell.rateType }}</span>
-                <span class="rate-pair">{{ order.exchangeRateSell.baseCurrency }} → {{ order.exchangeRateSell.targetCurrency }}</span>
               </div>
-              <div class="rate-value">{{ formatNumber(order.exchangeRateSell.rate) }}</div>
+              <div class="rate-value">{{ rateDisplay(order.exchangeRateSell.baseCurrency, order.exchangeRateSell.targetCurrency, order.exchangeRateSell.rate) }}</div>
               <div class="rate-label">{{ $t('merchant.orderDetail.sellRateLabel') }}</div>
               <div class="rate-date">{{ $t('merchant.orderDetail.rateDate') }}: {{ formatDateOnly(order.exchangeRateSell.rateDate) }}</div>
             </div>
@@ -245,7 +252,7 @@
                   </div>
                   <div class="summary-row">
                     <span class="summary-label">{{ $t('merchant.orderDetail.skus') }}:</span>
-                    <span class="summary-value">{{ (item as any).skus?.length || 0 }}</span>
+                    <span class="summary-value">{{ (item.skus as OrderItemSku[])?.length || 0 }}</span>
                   </div>
                 </div>
 
@@ -283,11 +290,11 @@
                 >
                   <ArrowLeftOutlined />
                 </a-button>
-                <span class="sku-counter">{{ currentSkuIndex + 1 }} / {{ ((selectedOrderItem as any).skus?.length || 0) }}</span>
+                <span class="sku-counter">{{ currentSkuIndex + 1 }} / {{ ((selectedOrderItem.skus as OrderItemSku[])?.length || 0) }}</span>
                 <a-button 
                   type="text" 
                   size="small" 
-                  :disabled="currentSkuIndex === ((selectedOrderItem as any).skus?.length || 0) - 1"
+                  :disabled="currentSkuIndex === ((selectedOrderItem.skus as OrderItemSku[])?.length || 0) - 1"
                   @click="navigateSku('next')"
                 >
                   <ArrowRightOutlined class="rotate-180" />
@@ -298,8 +305,8 @@
             <!-- SKU Cards Horizontal Scroller -->
             <div class="sku-scroller" ref="skuScrollerRef">
               <div class="sku-cards-container">
-                <div 
-                  v-for="(sku, skuIndex) in (selectedOrderItem as any).skus" 
+                <div
+                  v-for="(sku, skuIndex) in (selectedOrderItem.skus as OrderItemSku[])"
                   :key="sku.id"
                   class="sku-detail-card"
                   :class="{ active: currentSkuIndex === skuIndex }"
@@ -328,14 +335,14 @@
                             <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(sku.purchasePrice) }} {{ sku.exchangeRateBuy?.baseCurrency || '' }}</template>
                               <span class="detail-value num-truncate">{{ truncNum(sku.purchasePrice) }} {{ sku.exchangeRateBuy?.baseCurrency || '' }}</span>
                             </a-tooltip>
-                            <span class="detail-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber((sku.purchasePrice || 0) * (sku.exchangeRateBuyValue || 1)) }}</span>
+                            <span class="detail-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(Number(sku.purchasePrice || 0) * Number(sku.exchangeRateBuyValue || 1)) }}</span>
                           </div>
                           <div class="detail-item">
                             <span class="detail-label">{{ $t('merchant.orderDetail.purchaseTotal') }}:</span>
                             <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(sku.purchaseTotal) }} {{ sku.exchangeRateBuy?.baseCurrency || '' }}</template>
                               <span class="detail-value num-truncate">{{ truncNum(sku.purchaseTotal) }} {{ sku.exchangeRateBuy?.baseCurrency || '' }}</span>
                             </a-tooltip>
-                            <span class="detail-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber((sku.purchaseTotal || 0) * (sku.exchangeRateBuyValue || 1)) }}</span>
+                            <span class="detail-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(Number(sku.purchaseTotal || 0) * Number(sku.exchangeRateBuyValue || 1)) }}</span>
                           </div>
                           <div class="detail-item">
                             <span class="detail-label">{{ $t('merchant.orderDetail.exchangeRate') }}:</span>
@@ -355,19 +362,19 @@
                             <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(sku.sellingPriceForeign) }} {{ sku.exchangeRateSell?.baseCurrency || '' }}</template>
                               <span class="detail-value selling-price num-truncate">{{ truncNum(sku.sellingPriceForeign) }} {{ sku.exchangeRateSell?.baseCurrency || '' }}</span>
                             </a-tooltip>
-                            <span class="detail-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber((sku.sellingPriceForeign || 0) * (sku.exchangeRateSellValue || 1)) }}</span>
+                            <span class="detail-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(Number(sku.targetCurrencySellingPriceForeign || 1)) }}</span>
                           </div>
                           <div class="detail-item">
                             <span class="detail-label">{{ $t('merchant.orderDetail.sellingTotal') }}:</span>
                             <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(sku.sellingTotal) }} {{ sku.exchangeRateSell?.baseCurrency || '' }}</template>
                               <span class="detail-value selling-price num-truncate">{{ truncNum(sku.sellingTotal) }} {{ sku.exchangeRateSell?.baseCurrency || '' }}</span>
                             </a-tooltip>
-                            <span class="detail-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber((sku.sellingTotal || 0) * (sku.exchangeRateSellValue || 1)) }}</span>
+                            <span class="detail-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(Number(sku.targetCurrencySellingTotal || 1)) }}</span>
                           </div>
                           <div class="detail-item">
                             <span class="detail-label">{{ $t('merchant.orderDetail.exchangeRate') }}:</span>
-                            <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(sku.exchangeRateSellValue) }}</template>
-                              <span class="detail-value num-truncate">{{ truncNum(sku.exchangeRateSellValue) }}</span>
+                            <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(Number(sku.exchangeRateSellValue || 0)) }}</template>
+                              <span class="detail-value num-truncate">{{ truncNum(Number(sku.exchangeRateSellValue || 0)) }}</span>
                             </a-tooltip>
                           </div>
                         </div>
@@ -385,7 +392,7 @@
                               {{ truncNum(sku.profit) }} {{ sku.exchangeRateSell?.baseCurrency || '' }}
                             </span>
                           </a-tooltip>
-                          <span class="profit-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(sku.targetCurrencyProfit) }}</span>
+                          <span class="profit-sub">{{ $t('merchant.orderDetail.inLak') }} {{ formatNumber(sku.targetCurrencyProfit || 0) }}</span>
                         </div>
                       </div>
                     </div>
@@ -495,9 +502,9 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeftOutlined,ArrowRightOutlined, FileTextOutlined, ShoppingOutlined, TeamOutlined, EyeOutlined, SwapOutlined } from '@ant-design/icons-vue';
+import { ArrowLeftOutlined, ArrowRightOutlined, FileTextOutlined, ShoppingOutlined, TeamOutlined, EyeOutlined, SwapOutlined, EditOutlined, DollarOutlined } from '@ant-design/icons-vue';
 import { orderRepository } from '@/infrastructure/repositories/order.repository';
-import type { Order, PaymentStatusEnum } from '@/domain/entities/user.entity';
+import type { Order, OrderItem, OrderItemSku, PaymentStatusEnum, CustomerOrder } from '@/domain/entities/user.entity';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import { handleApiError } from '@/shared/utils/error';
 
@@ -513,16 +520,16 @@ const currentSkuIndex = ref(0);
 const skuScrollerRef = ref<HTMLElement | null>(null);
 
 const computedTotalPaid = computed(() =>
-  (order.value?.customerOrders ?? []).reduce((sum, co) => sum + Number(co.paidAmount || 0), 0).toString()
+  (order.value?.customerOrders ?? []).reduce((sum: number, co: CustomerOrder) => sum + Number(co.paidAmount || 0), 0).toString()
 );
 const computedTotalRemaining = computed(() =>
-  (order.value?.customerOrders ?? []).reduce((sum, co) => sum + Number(co.remainingAmount || 0), 0).toString()
+  (order.value?.customerOrders ?? []).reduce((sum: number, co: CustomerOrder) => sum + Number(co.remainingAmount || 0), 0).toString()
 );
 const computedTotalPaidLak = computed(() =>
-  (order.value?.customerOrders ?? []).reduce((sum, co) => sum + Number(co.targetCurrencyPaidAmount || 0), 0).toString()
+  (order.value?.customerOrders ?? []).reduce((sum: number, co: CustomerOrder) => sum + Number(co.targetCurrencyPaidAmount || 0), 0).toString()
 );
 const computedTotalRemainingLak = computed(() =>
-  (order.value?.customerOrders ?? []).reduce((sum, co) => sum + Number(co.targetCurrencyRemainingAmount || 0), 0).toString()
+  (order.value?.customerOrders ?? []).reduce((sum: number, co: CustomerOrder) => sum + Number(co.targetCurrencyRemainingAmount || 0), 0).toString()
 );
 
 const buyCurrency = computed(() => order.value?.exchangeRateBuy?.baseCurrency ?? '');
@@ -547,10 +554,24 @@ const paymentLabel = (status: PaymentStatusEnum) => {
   return t('merchant.orderDetail.paymentUnpaid');
 };
 
-const formatNumber = (val: string | number) => Number(val || 0).toLocaleString();
-const truncNum = (val: string | number, maxLen = 12) => {
+const formatNumber = (val: string | number | null) => Number(val || 0).toLocaleString();
+const truncNum = (val: string | number | null, maxLen = 12) => {
   const formatted = Number(val || 0).toLocaleString();
   return formatted.length > maxLen ? formatted.slice(0, maxLen) + '…' : formatted;
+};
+
+// Normalize currency code (KIP -> LAK)
+const normCcy = (code: string | undefined): string =>
+  !code ? 'LAK' : code.toUpperCase() === 'KIP' ? 'LAK' : code;
+
+// Format exchange rate as "1 CYN = 1,000 LAK"
+const rateDisplay = (baseCurrency: string | undefined, targetCurrency: string | undefined, rate: string | number | undefined): string => {
+  if (!baseCurrency || !targetCurrency || rate === undefined) return '-';
+  const base = normCcy(baseCurrency);
+  const target = normCcy(targetCurrency);
+  const rateNum = Number(rate).toLocaleString();
+  if (base === target) return `1 ${base} = 1 ${target}`;
+  return `1 ${base} = ${rateNum} ${target}`;
 };
 
 const formatDateTime = (dateStr: string) => {
@@ -561,7 +582,7 @@ const formatDateTime = (dateStr: string) => {
 
 const formatDateOnly = (dateStr: string | Date) => {
   if (!dateStr) return '-';
-  const d = new Date(dateStr);
+  const d = dateStr instanceof Date ? dateStr : new Date(dateStr);
   return d.toLocaleDateString();
 };
 
@@ -584,8 +605,17 @@ const getCoItemProductName = (coItem: any) => {
   return `SKU #${coItem.orderItemSkuId}`;
 };
 
+const canEdit = computed(() =>
+  order.value?.paymentStatus === 'UNPAID',
+);
+
 const goBack = () => {
   router.push('/merchant/orders');
+};
+
+const goEdit = () => {
+  const id = Number(route.params.id);
+  router.push(`/merchant/orders/${id}/edit`);
 };
 
 const selectOrderItem = (itemId: number) => {
@@ -637,7 +667,7 @@ const handleImageError = (event: any) => {
 
 const selectedOrderItem = computed(() => {
   if (!selectedOrderItemId.value || !order.value?.orderItems) return null;
-  return order.value.orderItems.find(item => item.id === selectedOrderItemId.value);
+  return order.value.orderItems.find((item: OrderItem) => item.id === selectedOrderItemId.value);
 });
 
 const fetchOrder = async () => {
@@ -664,6 +694,17 @@ onMounted(() => {
 
 .page-head {
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.edit-btn {
+  border-radius: 10px;
+  font-weight: 700;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .back-btn {
   font-weight: 700;

@@ -68,6 +68,12 @@ export const MerchantRoute: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/merchant/orders/:id/edit',
+    name: 'merchant-order-edit',
+    component: () => import('@/presentation/views/merchant/orders/OrderEditPage.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/merchant/team',
     name: 'merchant-team',
     component: () => import('@/presentation/views/merchant/manageUser/MerchantUsersPage.vue'),

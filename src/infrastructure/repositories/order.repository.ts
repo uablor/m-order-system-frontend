@@ -106,6 +106,10 @@ export class OrderRepository {
     return order;
   }
 
+  async updateFull(id: number, data: CreateFullOrderDto): Promise<any> {
+    return await this.apiClient.putOrPatch<any>(API_ENDPOINTS.ORDERS.UPDATE_FULL(id), data, 'PUT');
+  }
+
   async update(id: number, data: OrderUpdateDto): Promise<void> {
     await this.apiClient.putOrPatch<void>(API_ENDPOINTS.ORDERS.UPDATE(id), data, 'PATCH');
   }
