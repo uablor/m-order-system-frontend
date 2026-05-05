@@ -148,7 +148,8 @@
     },
     "form": {
       "orderCode": "Order Code",
-      "orderCodePlaceholder": "e.g. ORD-2025-001"
+      "orderCodePlaceholder": "e.g. ORD-2025-001",
+      "shippingCost": "Shipping Cost"
     },
     "items": {
       "title": "Order Items",
@@ -163,6 +164,7 @@
       "variant": "Variant",
       "variantPh": "e.g. Size L / Red",
       "quantity": "Qty",
+      "quantityPlaceholder": "Quantity",
       "purchasePrice": "Purchase Price Per Unit",
       "shippingCurrencyType": "Shipping Currency",
       "shippingPrice": "Shipping",

@@ -148,7 +148,8 @@
     },
     "form": {
       "orderCode": "รหัสออเดอร์",
-      "orderCodePlaceholder": "เช่น ORD-2025-001"
+      "orderCodePlaceholder": "เช่น ORD-2025-001",
+      "shippingCost": "ค่าจัดส่ง"
     },
     "items": {
       "title": "รายการสินค้า",
@@ -163,6 +164,7 @@
       "variant": "ตัวเลือก",
       "variantPh": "เช่น ไซส์ L / สีแดง",
       "quantity": "จำนวน",
+      "quantityPlaceholder": "จำนวน",
       "purchasePrice": "ราคาซื้อต่อจำนวน",
       "shippingCurrencyType": "สกุลเงินค่าขนส่ง",
       "shippingPrice": "ค่าส่ง",

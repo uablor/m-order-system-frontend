@@ -148,7 +148,8 @@
     },
     "form": {
       "orderCode": "ລະຫັດອໍເດີ",
-      "orderCodePlaceholder": "ເຊັ່ນ ORD-2025-001"
+      "orderCodePlaceholder": "ເຊັ່ນ ORD-2025-001",
+      "shippingCost": "ຄ່າຂົນສົ່ງ"
     },
     "items": {
       "title": "ລາຍການສິນຄ້າ",
@@ -163,6 +164,7 @@
       "variant": "ຕົວເລືອກ",
       "variantPh": "ເຊັ່ນ ໄຊສ໌ L / ສີແດງ",
       "quantity": "ຈຳນວນ",
+      "quantityPlaceholder": "ຈຳນວນ",
       "purchasePrice": "ລາຄາຊື້ຕໍ່ 1 ຈຳນວນ",
       "shippingCurrencyType": "ສະກຸນເງີນຄ່າຂົນສົ່ງ",
       "shippingPrice": "ຄ່າຂົນສົ່ງ",

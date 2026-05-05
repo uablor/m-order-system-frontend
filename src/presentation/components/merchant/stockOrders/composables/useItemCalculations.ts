@@ -15,28 +15,28 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
     // Manual mode: sum up per-customer discounts
     if (item.discountMode === 'manual') {
       let totalDiscount = 0;
-      const buyRate = getBuyRate();
+      const sellRate = getSellRate();
       item.customers.forEach(cust => {
         if (cust.discountType && cust.discountValue) {
-          const custPurchaseLak = item.purchasePrice * cust.qty * buyRate;
+          const custSellingLak = item.sellingPriceForeign * cust.qty * sellRate;
           if (cust.discountType === 'percent') {
-            totalDiscount += custPurchaseLak * (cust.discountValue / 100);
+            totalDiscount += custSellingLak * (cust.discountValue / 100);
           } else if (cust.discountType === 'cash') {
-            totalDiscount += cust.discountValue * buyRate;
+            totalDiscount += cust.discountValue * sellRate;
           }
         }
       });
       return totalDiscount;
     }
-    // All mode: use item-level discount
-    const subtotal = calcPurchaseTotalLak(item);
+    // All mode: use item-level discount based on selling price
+    const subtotal = item.sellingPriceForeign * getItemTotalQty(item) * getSellRate();
     if (item.discountType === 'percent') return subtotal * (item.discountValue / 100);
-    if (item.discountType === 'cash') return item.discountValue * getBuyRate();
+    if (item.discountType === 'cash') return item.discountValue * getSellRate();
     return 0;
   };
 
   const calcDiscountForeign = (item: ItemForm) => {
-    const rate = getBuyRate();
+    const rate = getSellRate();
     return rate === 0 ? 0 : calcDiscountLak(item) / rate;
   };
 
@@ -80,31 +80,31 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
     // Manual mode: sum up per-customer discounts
     if (item.discountMode === 'manual' && item.variants) {
       let totalDiscount = 0;
-      const buyRate = getBuyRate();
+      const sellRate = getSellRate();
       item.variants.forEach(variant => {
         variant.customers.forEach(cust => {
           if (cust.discountType && cust.discountValue) {
-            const custPurchaseLak = variant.purchasePrice * cust.qty * buyRate;
+            const custSellingLak = variant.sellingPriceForeign * cust.qty * sellRate;
             if (cust.discountType === 'percent') {
-              totalDiscount += custPurchaseLak * (cust.discountValue / 100);
+              totalDiscount += custSellingLak * (cust.discountValue / 100);
             } else if (cust.discountType === 'cash') {
-              totalDiscount += cust.discountValue * buyRate;
+              totalDiscount += cust.discountValue * sellRate;
             }
           }
         });
       });
       return totalDiscount;
     }
-    // All mode: use item-level discount
+    // All mode: use item-level discount based on selling price
     if (!item.discountType) return 0;
-    const variantsPurchaseLak = calcPurchaseTotalLakWithVariants(item);
-    if (item.discountType === 'percent') return variantsPurchaseLak * (item.discountValue / 100);
-    if (item.discountType === 'cash') return item.discountValue * getBuyRate();
+    const variantsSellingLak = calcSellingTotalLakWithVariants(item);
+    if (item.discountType === 'percent') return variantsSellingLak * (item.discountValue / 100);
+    if (item.discountType === 'cash') return item.discountValue * getSellRate();
     return 0;
   };
 
   const calcDiscountForeignWithVariants = (item: ItemForm) => {
-    const rate = getBuyRate();
+    const rate = getSellRate();
     return rate === 0 ? 0 : calcDiscountLakWithVariants(item) / rate;
   };
 

@@ -393,27 +393,32 @@
                     :precision="0"
                     :formatter="numFormatter"
                     :parser="numParser"
-                    class="w-full"
+                    :placeholder="$t('merchant.orders.items.quantityPlaceholder')"
+                    class="w-full cust-qty-input"
                   />
                 </div>
                 <!-- Per-customer discount in manual mode -->
                 <template v-if="item.discountMode === 'manual'">
                   <div class="cust-col-discount-type">
-                    <a-select v-model:value="cust.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full" size="small">
-                      <a-select-option value="percent">%</a-select-option>
-                      <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
-                    </a-select>
+                    <a-form-item :label="$t('merchant.orders.items.discountType')" class="mb-0">
+                      <a-select v-model:value="cust.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full" size="small">
+                        <a-select-option value="percent">%</a-select-option>
+                        <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
+                      </a-select>
+                    </a-form-item>
                   </div>
                   <div class="cust-col-discount-val">
-                    <a-input-number
-                      v-model:value="cust.discountValue"
-                      :formatter="numFormatter"
-                      :parser="numParser"
-                      :disabled="!cust.discountType"
-                      :min="0"
-                      size="small"
-                      class="w-full"
-                    />
+                    <a-form-item :label="$t('merchant.orders.items.discountValue')" class="mb-0">
+                      <a-input-number
+                        v-model:value="cust.discountValue"
+                        :formatter="numFormatter"
+                        :parser="numParser"
+                        :disabled="!cust.discountType"
+                        :min="0"
+                        size="small"
+                        class="w-full cust-discount-input"
+                      />
+                    </a-form-item>
                   </div>
                 </template>
                 <div class="cust-col-actions">
@@ -2019,6 +2024,38 @@ watch(currentVariantIndex, (newIndex) => {
   padding: 3px 10px;
   border-radius: 6px;
   margin-left: 8px;
+}
+
+/* Customer input field styles */
+.cust-qty-input :deep(.ant-input-number-input) {
+  height: 36px;
+  font-size: 14px;
+  padding: 4px 8px;
+}
+
+.cust-discount-input :deep(.ant-input-number-input) {
+  height: 32px;
+  font-size: 13px;
+  padding: 3px 6px;
+}
+
+.cust-col-discount-type :deep(.ant-select-selector) {
+  height: 32px;
+  font-size: 13px;
+}
+
+.cust-col-discount-val :deep(.ant-form-item-label > label) {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.cust-col-discount-type :deep(.ant-form-item-label > label) {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
 }
 
 /* Navigation button styles */
