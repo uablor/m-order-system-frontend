@@ -242,7 +242,19 @@
       "variantFallback": "Variant {number}",
       "qtyUnit": "{qty} ชิ้น",
       "customerQtyLabel": "จำนวน {qty}",
-      "unknownCustomer": "ไม่ระบุ"
+      "unknownCustomer": "ไม่ระบุ",
+      "discountModeLabel": "รูปแบบส่วนลด:",
+      "discountModeManual": "รายคน",
+      "discountModeAll": "ทั้งหมด",
+      "itemQtyLabel": "จำนวนสินค้า {qty}",
+      "unitPriceLabel": "ราคาต่อจำนวน",
+      "beforeDiscount": "ก่อนส่วนลด",
+      "discountLabel": "ส่วนลด",
+      "customerTotalLabel": "รวมทั้งหมดที่ลูกค้าต้องจ่าย",
+      "grandSubtotalLabel": "รวมทั้งหมด (ก่อนส่วนลด)",
+      "allDiscountLabel": "ส่วนลดทั้งหมด",
+      "grandTotalLabel": "รวมทั้งหมดที่ต้องจ่าย",
+      "noCustomersYet": "ยังไม่มีลูกค้า"
     },
     "validation": {
       "orderCodeRequired": "กรุณากรอกรหัสออเดอร์ก่อนส่ง",

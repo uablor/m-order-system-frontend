@@ -12,6 +12,15 @@
         </span>
       </div>
 
+      <!-- Discount mode selector -->
+      <div class="discount-mode-bar">
+        <span class="discount-mode-label">{{ $t('merchant.orders.summary.discountModeLabel') }}</span>
+        <a-radio-group v-model:value="discountMode" button-style="solid" size="small">
+          <a-radio-button value="manual">{{ $t('merchant.orders.summary.discountModeManual') }}</a-radio-button>
+          <a-radio-button value="all">{{ $t('merchant.orders.summary.discountModeAll') }}</a-radio-button>
+        </a-radio-group>
+      </div>
+
       <div class="cust-list">
         <div
           v-for="(cust, cIdx) in customerSummaries"
@@ -44,8 +53,8 @@
                 <span class="cust-order-variant-name">
                   {{ v.variantName || $t('merchant.orders.summary.variantFallback', { number: vi + 1 }) }}
                 </span>
-                <span class="cust-order-qty">ຈຳນວນສີນຄ້າ {{ v.qty }}</span>
-                <span class="cust-order-unit">ລາຄາຕໍ່ 1 ຈຳນວນ {{ fmtNum(v.unitPrice) }} {{ sellBaseCcy }}</span>
+                <span class="cust-order-qty">{{ $t('merchant.orders.summary.itemQtyLabel', { qty: v.qty }) }}</span>
+                <span class="cust-order-unit">{{ $t('merchant.orders.summary.unitPriceLabel') }} {{ fmtNum(v.unitPrice) }} {{ sellBaseCcy }}</span>
                 <span class="cust-order-line-total">= {{ fmtNum(v.lineTotal) }} {{ sellBaseCcy }}</span>
               </div>
             </div>
@@ -53,48 +62,90 @@
 
           <!-- Subtotal / Discount / Total -->
           <div class="cust-pricing">
-            <!-- Before discount -->
+            <!-- Before discount (always shown) -->
             <div class="cust-pricing-row">
-              <span class="cust-pricing-label">ກ່ອນສ່ວນຫຼຸດ</span>
+              <span class="cust-pricing-label">{{ $t('merchant.orders.summary.beforeDiscount') }}</span>
               <span class="cust-pricing-val before-discount">{{ fmtNum(cust.subtotal) }} {{ sellBaseCcy }}</span>
             </div>
 
-            <!-- Discount input row -->
-            <div class="cust-pricing-row cust-discount-row">
-              <span class="cust-pricing-label discount-label">ສ່ວນຫຼຸດ</span>
-              <div class="cust-discount-controls">
-                <a-select
-                  v-model:value="cust.canonical.discountType"
-                  allow-clear
-                  :placeholder="$t('merchant.orders.items.noDiscount')"
-                  size="small"
-                  class="cust-disc-type-sel"
-                  @change="(val) => handleDiscountTypeChange(val, cust.canonical)"
-                >
-                  <a-select-option value="percent">%</a-select-option>
-                  <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
-                </a-select>
-                <a-input-number
-                  v-model:value="cust.canonical.discountValue"
-                  :formatter="numFormatter"
-                  :parser="numParser"
-                  :disabled="!cust.canonical.discountType"
-                  :min="0"
-                  size="small"
-                  class="cust-disc-val-inp"
-                />
+            <!-- Manual mode: per-customer discount controls -->
+            <template v-if="discountMode === 'manual'">
+              <div class="cust-pricing-row cust-discount-row">
+                <span class="cust-pricing-label discount-label">{{ $t('merchant.orders.summary.discountLabel') }}</span>
+                <div class="cust-discount-controls">
+                  <a-select
+                    v-model:value="cust.canonical.discountType"
+                    allow-clear
+                    :placeholder="$t('merchant.orders.items.noDiscount')"
+                    size="small"
+                    class="cust-disc-type-sel"
+                    @change="(val: string | null) => handleDiscountTypeChange(val, cust.canonical)"
+                  >
+                    <a-select-option value="percent">%</a-select-option>
+                    <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
+                  </a-select>
+                  <a-input-number
+                    v-model:value="cust.canonical.discountValue"
+                    :formatter="numFormatter"
+                    :parser="numParser"
+                    :disabled="!cust.canonical.discountType"
+                    :min="0"
+                    size="small"
+                    class="cust-disc-val-inp"
+                  />
+                </div>
+                <span v-if="cust.discountAmount > 0" class="cust-discount-amount-badge">
+                  − {{ fmtNum(cust.discountAmount) }} {{ sellBaseCcy }}
+                </span>
               </div>
-              <span v-if="cust.discountAmount > 0" class="cust-discount-amount-badge">
-                − {{ fmtNum(cust.discountAmount) }} {{ sellBaseCcy }}
-              </span>
-            </div>
 
-            <!-- Total after discount -->
-            <div class="cust-pricing-row cust-total-final-row">
-              <span class="cust-pricing-label total-label">ລວມທັງໝົດທີ່ລູກຄ້າຕ້ອງຈ່າຍ</span>
-              <span class="cust-total-final-val">{{ fmtNum(cust.total) }} {{ sellBaseCcy }}</span>
-            </div>
+              <!-- Total after discount (manual) -->
+              <div class="cust-pricing-row cust-total-final-row">
+                <span class="cust-pricing-label total-label">{{ $t('merchant.orders.summary.customerTotalLabel') }}</span>
+                <span class="cust-total-final-val">{{ fmtNum(cust.total) }} {{ sellBaseCcy }}</span>
+              </div>
+            </template>
           </div>
+        </div>
+      </div>
+
+      <!-- All mode: global discount section -->
+      <div v-if="discountMode === 'all' && customerSummaries.length > 0" class="all-discount-section">
+        <div class="all-disc-row">
+          <span class="all-disc-label">{{ $t('merchant.orders.summary.grandSubtotalLabel') }}</span>
+          <span class="all-disc-subtotal">{{ fmtNum(grandSubtotal) }} {{ sellBaseCcy }}</span>
+        </div>
+        <div class="all-disc-row all-disc-control-row">
+          <span class="all-disc-label discount-label">{{ $t('merchant.orders.summary.allDiscountLabel') }}</span>
+          <div class="cust-discount-controls">
+            <a-select
+              v-model:value="allDiscountType"
+              allow-clear
+              :placeholder="$t('merchant.orders.items.noDiscount')"
+              size="small"
+              class="cust-disc-type-sel"
+              @change="handleAllDiscountTypeChange"
+            >
+              <a-select-option value="percent">%</a-select-option>
+              <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
+            </a-select>
+            <a-input-number
+              v-model:value="allDiscountValue"
+              :formatter="numFormatter"
+              :parser="numParser"
+              :disabled="!allDiscountType"
+              :min="0"
+              size="small"
+              class="cust-disc-val-inp"
+            />
+          </div>
+          <span v-if="allDiscountAmount > 0" class="cust-discount-amount-badge">
+            − {{ fmtNum(allDiscountAmount) }} {{ sellBaseCcy }}
+          </span>
+        </div>
+        <div class="all-disc-row all-disc-total-row">
+          <span class="all-disc-label total-label">{{ $t('merchant.orders.summary.grandTotalLabel') }}</span>
+          <span class="all-disc-total-val">{{ fmtNum(grandTotalAfterDiscount) }} {{ sellBaseCcy }}</span>
         </div>
       </div>
 
@@ -186,7 +237,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { CalculatorOutlined, UnorderedListOutlined, TagOutlined } from '@ant-design/icons-vue';
 import { fmtNumber, numFormatter, numParser } from '@/shared/utils/format';
@@ -211,8 +262,18 @@ const props = defineProps<{
   customerOptions?: Customer[];
 }>();
 
+const emit = defineEmits<{ 'discount-change': [total: number] }>();
+
 const { t } = useI18n();
 const fmtNum = fmtNumber;
+
+const discountMode = ref<'all' | 'manual'>('manual');
+const allDiscountType = ref<'percent' | 'cash' | undefined>(undefined);
+const allDiscountValue = ref<number>(0);
+
+const handleAllDiscountTypeChange = (val: unknown) => {
+  if (!val) allDiscountValue.value = 0;
+};
 
 const isBuySameCurrency = computed(() => props.buyBaseCcy === props.buyTargetCcy);
 const isSellSameCurrency = computed(() => props.sellBaseCcy === props.sellTargetCcy);
@@ -314,6 +375,25 @@ const customerSummaries = computed(() => {
     };
   });
 });
+
+const grandSubtotal = computed(() =>
+  customerSummaries.value.reduce((s, c) => s + c.subtotal, 0)
+);
+
+const allDiscountAmount = computed(() =>
+  calcDiscountAmount(grandSubtotal.value, allDiscountType.value, allDiscountValue.value)
+);
+
+const totalDiscountAmount = computed(() => {
+  if (discountMode.value === 'all') return allDiscountAmount.value;
+  return customerSummaries.value.reduce((s, c) => s + c.discountAmount, 0);
+});
+
+const grandTotalAfterDiscount = computed(() =>
+  Math.max(0, grandSubtotal.value - totalDiscountAmount.value)
+);
+
+watch(totalDiscountAmount, (val) => emit('discount-change', val), { immediate: true });
 
 const hasDetail = computed(() =>
   !!(props.orderCode || customerSummaries.value.length > 0)
@@ -466,6 +546,45 @@ const handleDiscountTypeChange = (val: unknown, canonical: CustomerInItemForm) =
 }
 .total-label { color: #059669; font-weight: 700; font-size: 13px; }
 .cust-total-final-val {
+  font-size: 15px; font-weight: 800; color: #059669; margin-left: auto;
+}
+
+/* ── Discount mode bar ── */
+.discount-mode-bar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+  padding: 8px 12px;
+  background: #f8fafc; border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+.discount-mode-label {
+  font-size: 12px; font-weight: 700; color: #475569; flex-shrink: 0;
+}
+
+/* ── All-mode global discount section ── */
+.all-discount-section {
+  margin-top: 14px;
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.all-disc-row {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.all-disc-label {
+  font-size: 12px; font-weight: 600; color: #6b7280;
+  min-width: 150px; flex-shrink: 0;
+}
+.all-disc-subtotal {
+  font-size: 13px; font-weight: 700; color: #64748b; margin-left: auto;
+}
+.all-disc-control-row { gap: 6px; }
+.all-disc-total-row {
+  border-top: 1px solid #fde68a; padding-top: 8px; margin-top: 2px;
+}
+.all-disc-total-val {
   font-size: 15px; font-weight: 800; color: #059669; margin-left: auto;
 }
 

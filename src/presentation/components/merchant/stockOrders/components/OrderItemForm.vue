@@ -13,12 +13,13 @@
       <a-button type="text" danger size="small" @click="$emit('remove', item.uid)"><DeleteOutlined /></a-button>
     </div>
     <a-form layout="vertical" class="item-form">
-      <!-- Top Section: Product Name + Upload Image + Shipping & Discount -->
+      <!-- Top Section: Upload Image (centered) + Product Name (centered below) -->
       <template v-if="!isMobile">
-        <a-row :gutter="[16, 0]">
-          <!-- Left Column: Image Upload -->
-          <a-col :sm="24" :md="8">
-            <a-form-item :label="$t('merchant.orders.items.productImage')">
+        <a-row :gutter="[16, 16]" justify="center">
+          <!-- Centered Column: Image Upload + Product Name -->
+          <a-col :sm="24" :md="12" :lg="10">
+            <!-- Image Upload -->
+            <a-form-item :label="$t('merchant.orders.items.productImage')" class="centered-form-item">
               <div v-if="!variantForCalculation.productImage" class="avatar-upload-container" :class="{ uploading: imageUploading }">
                 <div class="avatar-upload-placeholder">
                   <div class="avatar-upload-icon">
@@ -46,26 +47,26 @@
               <div v-else class="uploaded-image-container">
                 <div class="uploaded-image-content">
                   <div class="uploaded-image-preview">
-                    <img 
-                      :src="variantForCalculation.productImage" 
-                      alt="Product" 
+                    <img
+                      :src="variantForCalculation.productImage"
+                      alt="Product"
                       class="uploaded-image-img"
                     />
                     <!-- Hover Overlay with Actions -->
                     <div class="uploaded-image-overlay">
                       <div class="uploaded-image-actions">
-                        <a-button 
-                          type="primary" 
-                          size="small" 
+                        <a-button
+                          type="primary"
+                          size="small"
                           class="uploaded-image-action-btn uploaded-image-view-btn"
                           @click="previewImage(variantForCalculation.productImage || '')"
                         >
                           <template #icon><EyeOutlined /></template>
                         </a-button>
-                        <a-button 
-                          type="primary" 
-                          danger 
-                          size="small" 
+                        <a-button
+                          type="primary"
+                          danger
+                          size="small"
                           class="uploaded-image-action-btn uploaded-image-delete-btn"
                           @click="removeImage"
                         >
@@ -87,14 +88,13 @@
                 </a-upload>
               </div>
             </a-form-item>
-          </a-col>
-    
-          <!-- Right Column: Product Name + Discount -->
-          <a-col :sm="24" :md="16">
+
+            <!-- Product Name - Centered below image -->
             <a-form-item
               :label="$t('merchant.orders.items.productName')"
               :validate-status="errors.productName ? 'error' : ''"
               :help="errors.productName || ''"
+              class="centered-form-item"
             >
               <a-input
                 v-model:value="item.productName"
@@ -1135,6 +1135,19 @@ watch(currentVariantIndex, (newIndex) => {
 .item-form :deep(.ant-form-item-label > label) { font-size: 12px; font-weight: 700; color: #64748b; }
 .item-form :deep(.ant-input-number), .item-form :deep(.ant-input), .item-form :deep(.ant-select) { width: 100% !important; }
 :deep(.ant-input[disabled]) { color: #0f172a !important; font-weight: 600; background: #f1f5f9; font-size: 13px; }
+
+/* Centered form items for image upload and product name */
+.centered-form-item {
+  text-align: center;
+}
+
+.centered-form-item :deep(.ant-form-item-label) {
+  text-align: center;
+}
+
+.centered-form-item :deep(.ant-form-item-label > label) {
+  justify-content: center;
+}
 
 /* Avatar Upload Styles */
 .avatar-upload-container {

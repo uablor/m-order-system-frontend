@@ -242,7 +242,19 @@
       "variantFallback": "Variant {number}",
       "qtyUnit": "{qty} ອັນ",
       "customerQtyLabel": "ຈຳນວນ {qty}",
-      "unknownCustomer": "ບໍ່ລະບຸ"
+      "unknownCustomer": "ບໍ່ລະບຸ",
+      "discountModeLabel": "ຮູບແບບສ່ວນຫຼຸດ:",
+      "discountModeManual": "ລາຍຄົນ",
+      "discountModeAll": "ທັງໝົດ",
+      "itemQtyLabel": "ຈຳນວນສີນຄ້າ {qty}",
+      "unitPriceLabel": "ລາຄາຕໍ່ 1 ຈຳນວນ",
+      "beforeDiscount": "ກ່ອນສ່ວນຫຼຸດ",
+      "discountLabel": "ສ່ວນຫຼຸດ",
+      "customerTotalLabel": "ລວມທັງໝົດທີ່ລູກຄ້າຕ້ອງຈ່າຍ",
+      "grandSubtotalLabel": "ລວມທັງໝົດ (ກ່ອນສ່ວນຫຼຸດ)",
+      "allDiscountLabel": "ສ່ວນຫຼຸດທັງໝົດ",
+      "grandTotalLabel": "ລວມທັງໝົດທີ່ຕ້ອງຈ່າຍ",
+      "noCustomersYet": "ຍັງບໍ່ມີລູກຄ້າ"
     },
     "validation": {
       "orderCodeRequired": "ກະລຸນາປ້ອນລະຫັດອໍເດີກ່ອນສົ່ງ.",

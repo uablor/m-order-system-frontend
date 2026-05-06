@@ -242,7 +242,18 @@
       "variantFallback": "Variant {number}",
       "qtyUnit": "{qty} pcs",
       "customerQtyLabel": "Qty {qty}",
-      "unknownCustomer": "Unknown"
+      "unknownCustomer": "Unknown",
+      "discountModeLabel": "Discount Mode:",
+      "discountModeManual": "Per Customer",
+      "discountModeAll": "All",
+      "itemQtyLabel": "Qty {qty}",
+      "unitPriceLabel": "Price / unit",
+      "beforeDiscount": "Before Discount",
+      "discountLabel": "Discount",
+      "customerTotalLabel": "Total (customer pays)",
+      "grandSubtotalLabel": "Grand Total (Before Discount)",
+      "allDiscountLabel": "Total Discount",
+      "grandTotalLabel": "Grand Total"
     },
     "validation": {
       "orderCodeRequired": "Please enter the Order Code before submitting.",

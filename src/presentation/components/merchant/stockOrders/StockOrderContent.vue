@@ -111,6 +111,7 @@
       :order-code="orderCode"
       :items="items"
       :customer-options="customerOptions"
+      @discount-change="handleCustomerDiscountChange"
     />
 
     <!-- Submit -->
@@ -162,6 +163,9 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const editMode = computed(() => props.editOrderId !== undefined);
+
+const customerTotalDiscount = ref(0);
+const handleCustomerDiscountChange = (amount: number) => { customerTotalDiscount.value = amount; };
 
 const shippingPrice = ref(0);
 const shippingCurrency = ref<'buy' | 'sell'>('buy');
@@ -269,10 +273,15 @@ const summaryPurchaseTotalForeign = computed(() => {
 });
 const summaryPurchaseTotalLak = computed(() =>
   items.value.reduce((sum, item) => sum + calc.calcNetCostLakWithVariants(item), 0) + shippingLak.value);
-const summarySellingTotalForeign = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcSellingTotalForeignWithVariants(item), 0));
-const summarySellingTotalLak = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcSellingTotalLakWithVariants(item), 0));
+const summarySellingTotalForeign = computed(() => {
+  const raw = items.value.reduce((sum, item) => sum + calc.calcSellingTotalForeignWithVariants(item), 0);
+  return Math.max(0, raw - customerTotalDiscount.value);
+});
+const summarySellingTotalLak = computed(() => {
+  const rawLak = items.value.reduce((sum, item) => sum + calc.calcSellingTotalLakWithVariants(item), 0);
+  const rate = getEffectiveSellRate();
+  return Math.max(0, rawLak - customerTotalDiscount.value * rate);
+});
 const summaryNetCostLak = computed(() =>
   items.value.reduce((sum, item) => sum + calc.calcNetCostLakWithVariants(item), 0) + shippingLak.value);
 const summaryProfitLak = computed(() => summarySellingTotalLak.value - summaryNetCostLak.value);
