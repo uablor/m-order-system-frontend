@@ -21,13 +21,13 @@
       base-uri  'self'        → blocks <base href> injection
       form-action 'self'      → forms can only submit to our own origin
       ────────────────────────────────────────────────────────────────────────
-      http://localhost:4000 is replaced by Vite at build time from .env
+      %VITE_API_ORIGIN% is replaced by Vite at build time from .env
     -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self';
-      connect-src 'self' http://localhost:4000;
-      img-src 'self' data: blob: http://localhost:4000;
+      connect-src 'self' %VITE_API_ORIGIN%;
+      img-src 'self' data: blob: %VITE_API_ORIGIN%;
       style-src 'self' 'unsafe-inline';
       font-src 'self' data:;
       frame-ancestors 'none';
@@ -42,14 +42,14 @@
     <meta name="referrer" content="strict-origin-when-cross-origin">
 
     <link rel="preload" href="/NotoSansLao-VariableFont_wdth,wght.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-    <script type="module" crossorigin src="/assets/index-BSwPS7mZ.js"></script>
+    <script type="module" crossorigin src="/assets/index-Cq4eYXl4.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/vue-DvDzKK9x.js">
     <link rel="modulepreload" crossorigin href="/assets/vendor-CY48sSgb.js">
     <link rel="modulepreload" crossorigin href="/assets/antd-icons-Cr3eO1aY.js">
     <link rel="modulepreload" crossorigin href="/assets/antd-T3cKbJoV.js">
     <link rel="modulepreload" crossorigin href="/assets/i18n-CwV-sIGg.js">
     <link rel="stylesheet" crossorigin href="/assets/antd-B6snAd4S.css">
-    <link rel="stylesheet" crossorigin href="/assets/index-Dyt9ScAq.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-BNzhvcAd.css">
   </head>
   <body>
     <div id="app"></div>
