@@ -104,38 +104,6 @@
                 @input="onFieldChange('productName')"
               />
             </a-form-item>
-
-            <!-- Discount Mode Toggle -->
-            <a-form-item :label="$t('merchant.orders.items.discountMode')">
-              <a-radio-group v-model:value="item.discountMode" button-style="solid" size="small">
-                <a-radio-button value="all">{{ $t('merchant.orders.items.discountAll') }}</a-radio-button>
-                <a-radio-button value="manual">{{ $t('merchant.orders.items.discountManual') }}</a-radio-button>
-              </a-radio-group>
-            </a-form-item>
-
-            <!-- Discount All: shared discount fields -->
-            <a-row :gutter="[16, 0]">
-              <a-col :span="12">
-                <a-form-item :label="$t('merchant.orders.items.discountType')">
-                  <a-select v-model:value="item.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full" :disabled="item.discountMode === 'manual'">
-                    <a-select-option value="percent">%</a-select-option>
-                    <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
-                  </a-select>
-                </a-form-item>
-              </a-col>
-              <a-col :span="12">
-                <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${sellBaseCcy})`">
-                  <a-input-number v-model:value="item.discountValue" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType || item.discountMode === 'manual'" />
-                </a-form-item>
-              </a-col>
-            </a-row>
-            <a-row v-if="!isSellSameCurrency" :gutter="[16, 0]">
-              <a-col :span="24">
-                <a-form-item :label="`${$t('merchant.orders.items.discountKip')} (${sellTargetCcy})`">
-                  <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
-                </a-form-item>
-              </a-col>
-            </a-row>
           </a-col>
         </a-row>
       </template>
@@ -221,28 +189,6 @@
               <div class="upload-trigger"></div>
             </a-upload>
           </div>
-        </a-form-item>
-        
-        <!-- Discount Mode Toggle (mobile) -->
-        <a-form-item :label="$t('merchant.orders.items.discountMode')">
-          <a-radio-group v-model:value="item.discountMode" button-style="solid" size="small">
-            <a-radio-button value="all">{{ $t('merchant.orders.items.discountAll') }}</a-radio-button>
-            <a-radio-button value="manual">{{ $t('merchant.orders.items.discountManual') }}</a-radio-button>
-          </a-radio-group>
-        </a-form-item>
-
-        <!-- Discount All fields (mobile) -->
-        <a-form-item :label="$t('merchant.orders.items.discountType')">
-          <a-select v-model:value="item.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full" :disabled="item.discountMode === 'manual'">
-            <a-select-option value="percent">%</a-select-option>
-            <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${sellBaseCcy})`">
-          <a-input-number v-model:value="item.discountValue" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType || item.discountMode === 'manual'" />
-        </a-form-item>
-        <a-form-item v-if="!isBuySameCurrency" :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
-          <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
         </a-form-item>
       </template>
 
@@ -355,6 +301,7 @@
 
         <!-- Customer Section -->
         <div class="customer-section">
+          
           <div class="section-header">
             <span class="section-title customers-title">{{ $t('merchant.orders.customerOrders.title') }}</span>
           </div>
@@ -364,10 +311,6 @@
             <div class="cust-row-headers">
               <div class="cust-header-customer">{{ $t('merchant.orders.customerOrders.customer') }}</div>
               <div class="cust-header-qty">{{ $t('merchant.orders.items.quantity') }}</div>
-              <template v-if="item.discountMode === 'manual'">
-                <div class="cust-header-discount-type">{{ $t('merchant.orders.items.discountType') }}</div>
-                <div class="cust-header-discount-val">{{ $t('merchant.orders.items.discountValue') }}</div>
-              </template>
               <div class="cust-header-actions"></div>
             </div>
           </template>
@@ -376,7 +319,7 @@
           <div v-for="(cust, cIdx) in currentVariant.customers" :key="cust.uid" class="cust-row">
             <!-- Desktop row -->
             <template v-if="!isMobile">
-              <div class="cust-row-inner" :class="{ 'cust-row-manual': item.discountMode === 'manual' }">
+              <div class="cust-row-inner">
                 <div class="cust-col-customer">
                   <a-select
                     v-model:value="cust.customerId"
@@ -410,26 +353,6 @@
                     class="w-full cust-qty-input"
                   />
                 </div>
-                <!-- Per-customer discount in manual mode -->
-                <template v-if="item.discountMode === 'manual'">
-                  <div class="cust-col-discount-type">
-                    <a-select v-model:value="cust.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full">
-                      <a-select-option value="percent">%</a-select-option>
-                      <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
-                    </a-select>
-                  </div>
-                  <div class="cust-col-discount-val">
-                    <a-input-number
-                      v-model:value="cust.discountValue"
-                      :formatter="numFormatter"
-                      :parser="numParser"
-                      :disabled="!cust.discountType"
-                      :min="0"
-                      size="small"
-                      class="w-full cust-discount-input"
-                    />
-                  </div>
-                </template>
                 <div class="cust-col-actions">
                   <a-tooltip :title="$t('merchant.orders.customerOrders.createNew')" placement="top">
                     <a-button type="text" size="small" class="create-cust-btn" @click="$emit('createCustomer', item.uid, cust.uid)">
@@ -476,22 +399,6 @@
                     :parser="numParser"
                     class="cust-qty-mobile"
                   />
-                  <!-- Per-customer discount (mobile) -->
-                  <template v-if="item.discountMode === 'manual'">
-                    <a-select v-model:value="cust.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="cust-discount-type-mobile" size="small">
-                      <a-select-option value="percent">%</a-select-option>
-                      <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
-                    </a-select>
-                    <a-input-number
-                      v-model:value="cust.discountValue"
-                      :formatter="numFormatter"
-                      :parser="numParser"
-                      :disabled="!cust.discountType"
-                      :min="0"
-                      size="small"
-                      class="cust-discount-val-mobile"
-                    />
-                  </template>
                   <a-button type="text" danger size="small" @click="removeVariantCustomer(cust.uid)">
                     <DeleteOutlined />
                   </a-button>
@@ -1165,21 +1072,6 @@ watch(currentVariant, (newVariant) => {
     }
   }
 }, { deep: true });
-
-// Watch discount type to reset discount value when cleared
-watch(() => props.item.discountType, (newType, oldType) => {
-  if (!newType && oldType) {
-    // Discount type was cleared, reset discount value to 0
-    props.item.discountValue = 0;
-  }
-}, { immediate: true });
-
-// Ensure discount value is never undefined
-watch(() => props.item.discountValue, (value) => {
-  if (value === undefined || value === null) {
-    props.item.discountValue = 0;
-  }
-}, { immediate: true });
 
 // Initial sync when component mounts
 if (currentVariant.value) {
