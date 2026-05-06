@@ -238,7 +238,7 @@
             <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
+        <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${sellBaseCcy})`">
           <a-input-number v-model:value="item.discountValue" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType || item.discountMode === 'manual'" />
         </a-form-item>
         <a-form-item v-if="!isBuySameCurrency" :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">

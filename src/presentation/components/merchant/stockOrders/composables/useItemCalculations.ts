@@ -40,8 +40,16 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
     return rate === 0 ? 0 : calcDiscountLak(item) / rate;
   };
 
-  const calcNetCostForeign = (item: ItemForm) =>
-    item.purchasePrice * getItemTotalQty(item) - calcDiscountForeign(item);
+  const calcNetCostForeign = (item: ItemForm) => {
+    const purchaseTotalForeign = item.purchasePrice * getItemTotalQty(item);
+    const discountLak = calcDiscountLak(item); // Discount in LAK
+    const buyRate = getBuyRate();
+    
+    // Convert discount from LAK to buyBaseCcy using buy rate
+    const discountInBuyCurrency = buyRate === 0 ? 0 : discountLak / buyRate;
+    
+    return purchaseTotalForeign - discountInBuyCurrency;
+  };
 
   const calcNetCostLak = (item: ItemForm) => calcPurchaseTotalLak(item) - calcDiscountLak(item);
 
@@ -103,13 +111,15 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
     return 0;
   };
 
-  const calcDiscountForeignWithVariants = (item: ItemForm) => {
-    const rate = getSellRate();
-    return rate === 0 ? 0 : calcDiscountLakWithVariants(item) / rate;
-  };
-
   const calcNetCostForeignWithVariants = (item: ItemForm) => {
-    return calcPurchaseTotalForeignWithVariants(item) - calcDiscountForeignWithVariants(item);
+    const purchaseTotalForeign = calcPurchaseTotalForeignWithVariants(item);
+    const discountLak = calcDiscountLakWithVariants(item); // Discount in LAK
+    const buyRate = getBuyRate();
+    
+    // Convert discount from LAK to buyBaseCcy using buy rate
+    const discountInBuyCurrency = buyRate === 0 ? 0 : discountLak / buyRate;
+    
+    return purchaseTotalForeign - discountInBuyCurrency;
   };
 
   const calcNetCostLakWithVariants = (item: ItemForm) => {
