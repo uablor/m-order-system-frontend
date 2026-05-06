@@ -124,14 +124,14 @@
                 </a-form-item>
               </a-col>
               <a-col :span="12">
-                <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${buyBaseCcy})`">
+                <a-form-item :label="`${$t('merchant.orders.items.discountValue')} (${sellBaseCcy})`">
                   <a-input-number v-model:value="item.discountValue" :formatter="numFormatter" :parser="numParser" class="w-full" :disabled="!item.discountType || item.discountMode === 'manual'" />
                 </a-form-item>
               </a-col>
             </a-row>
-            <a-row v-if="!isBuySameCurrency" :gutter="[16, 0]">
+            <a-row v-if="!isSellSameCurrency" :gutter="[16, 0]">
               <a-col :span="24">
-                <a-form-item :label="`${$t('merchant.orders.items.discountKip')} (${buyTargetCcy})`">
+                <a-form-item :label="`${$t('merchant.orders.items.discountKip')} (${sellTargetCcy})`">
                   <a-input :value="fmtNum(calc.calcDiscountLak(variantForCalculation))" disabled class="w-full" />
                 </a-form-item>
               </a-col>
@@ -387,15 +387,17 @@
                   <span v-if="errors[`customers.${cIdx}.customerId`]" class="cust-field-error">{{ errors[`customers.${cIdx}.customerId`] }}</span>
                 </div>
                 <div class="cust-col-qty">
-                  <a-input-number
-                    v-model:value="cust.qty"
-                    :min="1"
-                    :precision="0"
-                    :formatter="numFormatter"
-                    :parser="numParser"
-                    :placeholder="$t('merchant.orders.items.quantityPlaceholder')"
-                    class="w-full cust-qty-input"
-                  />
+                  <a-form-item :label="$t('merchant.orders.items.quantity')" class="mb-0">
+                    <a-input-number
+                      v-model:value="cust.qty"
+                      :min="1"
+                      :precision="0"
+                      :formatter="numFormatter"
+                      :parser="numParser"
+                      :placeholder="$t('merchant.orders.items.quantityPlaceholder')"
+                      class="w-full cust-qty-input"
+                    />
+                  </a-form-item>
                 </div>
                 <!-- Per-customer discount in manual mode -->
                 <template v-if="item.discountMode === 'manual'">
