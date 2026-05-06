@@ -359,6 +359,19 @@
             <span class="section-title customers-title">{{ $t('merchant.orders.customerOrders.title') }}</span>
           </div>
           
+          <!-- Column headers (desktop) -->
+          <template v-if="!isMobile">
+            <div class="cust-row-headers">
+              <div class="cust-header-customer">{{ $t('merchant.orders.customerOrders.customer') }}</div>
+              <div class="cust-header-qty">{{ $t('merchant.orders.items.quantity') }}</div>
+              <template v-if="item.discountMode === 'manual'">
+                <div class="cust-header-discount-type">{{ $t('merchant.orders.items.discountType') }}</div>
+                <div class="cust-header-discount-val">{{ $t('merchant.orders.items.discountValue') }}</div>
+              </template>
+              <div class="cust-header-actions"></div>
+            </div>
+          </template>
+          
           <!-- Customer rows -->
           <div v-for="(cust, cIdx) in currentVariant.customers" :key="cust.uid" class="cust-row">
             <!-- Desktop row -->
@@ -387,40 +400,34 @@
                   <span v-if="errors[`customers.${cIdx}.customerId`]" class="cust-field-error">{{ errors[`customers.${cIdx}.customerId`] }}</span>
                 </div>
                 <div class="cust-col-qty">
-                  <a-form-item :label="$t('merchant.orders.items.quantity')" class="mb-0">
-                    <a-input-number
-                      v-model:value="cust.qty"
-                      :min="1"
-                      :precision="0"
-                      :formatter="numFormatter"
-                      :parser="numParser"
-                      :placeholder="$t('merchant.orders.items.quantityPlaceholder')"
-                      class="w-full cust-qty-input"
-                    />
-                  </a-form-item>
+                  <a-input-number
+                    v-model:value="cust.qty"
+                    :min="1"
+                    :precision="0"
+                    :formatter="numFormatter"
+                    :parser="numParser"
+                    :placeholder="$t('merchant.orders.items.quantityPlaceholder')"
+                    class="w-full cust-qty-input"
+                  />
                 </div>
                 <!-- Per-customer discount in manual mode -->
                 <template v-if="item.discountMode === 'manual'">
                   <div class="cust-col-discount-type">
-                    <a-form-item :label="$t('merchant.orders.items.discountType')" class="mb-0">
-                      <a-select v-model:value="cust.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full" size="small">
-                        <a-select-option value="percent">%</a-select-option>
-                        <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
-                      </a-select>
-                    </a-form-item>
+                    <a-select v-model:value="cust.discountType" allow-clear :placeholder="$t('merchant.orders.items.noDiscount')" class="w-full">
+                      <a-select-option value="percent">%</a-select-option>
+                      <a-select-option value="cash">{{ $t('merchant.orders.items.cash') }}</a-select-option>
+                    </a-select>
                   </div>
                   <div class="cust-col-discount-val">
-                    <a-form-item :label="$t('merchant.orders.items.discountValue')" class="mb-0">
-                      <a-input-number
-                        v-model:value="cust.discountValue"
-                        :formatter="numFormatter"
-                        :parser="numParser"
-                        :disabled="!cust.discountType"
-                        :min="0"
-                        size="small"
-                        class="w-full cust-discount-input"
-                      />
-                    </a-form-item>
+                    <a-input-number
+                      v-model:value="cust.discountValue"
+                      :formatter="numFormatter"
+                      :parser="numParser"
+                      :disabled="!cust.discountType"
+                      :min="0"
+                      size="small"
+                      class="w-full cust-discount-input"
+                    />
                   </div>
                 </template>
                 <div class="cust-col-actions">
@@ -1669,9 +1676,56 @@ watch(currentVariantIndex, (newIndex) => {
   flex-shrink: 0;
 }
 
+/* Column headers */
+.cust-row-headers {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.cust-header-customer {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.cust-header-qty {
+  width: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.cust-header-discount-type {
+  width: 150px;
+  
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.cust-header-discount-val {
+  width: 150px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.cust-header-actions {
+  width: 60px;
+  flex-shrink: 0;
+}
+
 .create-cust-btn,
 .cust-col-actions .ant-btn {
-  height: 32px;
+  height: 36px;
   width: 28px;
   display: flex;
   align-items: center;
@@ -2029,21 +2083,42 @@ watch(currentVariantIndex, (newIndex) => {
 }
 
 /* Customer input field styles */
+.cust-col-customer :deep(.ant-select) {
+  height: 36px;
+}
+
+.cust-col-customer :deep(.ant-select-selector) {
+  height: 36px;
+  font-size: 14px;
+}
+
+.cust-qty-input :deep(.ant-input-number) {
+  height: 36px;
+}
+
 .cust-qty-input :deep(.ant-input-number-input) {
   height: 36px;
   font-size: 14px;
   padding: 4px 8px;
 }
 
+.cust-discount-input :deep(.ant-input-number) {
+  height: 36px;
+}
+
 .cust-discount-input :deep(.ant-input-number-input) {
-  height: 32px;
-  font-size: 13px;
-  padding: 3px 6px;
+  height: 36px;
+  font-size: 14px;
+  padding: 4px 8px;
+}
+
+.cust-col-discount-type :deep(.ant-select) {
+  height: 36px;
 }
 
 .cust-col-discount-type :deep(.ant-select-selector) {
-  height: 32px;
-  font-size: 13px;
+  height: 36px;
+  font-size: 14px;
 }
 
 .cust-col-discount-val :deep(.ant-form-item-label > label) {
@@ -2247,12 +2322,12 @@ watch(currentVariantIndex, (newIndex) => {
 }
 
 .cust-col-discount-type {
-  width: 90px;
+  width: 150px;
   flex-shrink: 0;
 }
 
 .cust-col-discount-val {
-  width: 80px;
+  width: 150px;
   flex-shrink: 0;
 }
 
