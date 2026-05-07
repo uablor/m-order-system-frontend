@@ -233,13 +233,48 @@
         </a-row>
       </template>
     </a-form>
+
+    <!-- Shipping Section -->
+    <div class="shipping-section">
+      <div class="shipping-title">
+        <SendOutlined class="icon-blue" />
+        <span>{{ $t('merchant.orders.form.shippingCost') }}</span>
+      </div>
+      <a-row :gutter="[16, 0]">
+        <a-col :xs="24" :sm="8">
+          <a-form-item :label="$t('merchant.orders.items.shippingCurrencyType')" class="compact-form-item">
+            <a-select :value="shippingCurrency" class="w-full" @change="onShippingCurrencyChange">
+              <a-select-option value="buy">BUY — {{ buyBaseCcy }}</a-select-option>
+              <a-select-option value="sell">SELL — {{ sellBaseCcy }}</a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+        <a-col :xs="24" :sm="8">
+          <a-form-item :label="`${$t('merchant.orders.items.shippingPrice')} (${shippingCcy})`" class="compact-form-item">
+            <a-input-number
+              :value="shippingPrice"
+              :formatter="numFormatter"
+              :parser="numParser"
+              :min="0"
+              class="w-full"
+              @change="onShippingPriceChange"
+            />
+          </a-form-item>
+        </a-col>
+        <a-col v-if="!shippingIsSameCurrency" :xs="24" :sm="8">
+          <a-form-item :label="`${$t('merchant.orders.items.shippingKip')} (${shippingTargetCcy})`" class="compact-form-item">
+            <a-input :value="fmtNum(shippingConverted ?? 0)" disabled class="w-full" />
+          </a-form-item>
+        </a-col>
+      </a-row>
+    </div>
   </a-card>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { CalculatorOutlined, UnorderedListOutlined, TagOutlined } from '@ant-design/icons-vue';
+import { CalculatorOutlined, UnorderedListOutlined, TagOutlined, SendOutlined } from '@ant-design/icons-vue';
 import { fmtNumber, numFormatter, numParser } from '@/shared/utils/format';
 import type { ItemForm, CustomerInItemForm } from '../types';
 import type { Customer } from '@/domain/entities/user.entity';
@@ -260,9 +295,16 @@ const props = defineProps<{
   orderCode?: string;
   items?: ItemForm[];
   customerOptions?: Customer[];
+  shippingPrice?: number;
+  shippingCurrency?: 'buy' | 'sell';
+  shippingConverted?: number;
 }>();
 
-const emit = defineEmits<{ 'discount-change': [total: number] }>();
+const emit = defineEmits<{
+  'discount-change': [total: number];
+  'update:shippingPrice': [val: number];
+  'update:shippingCurrency': [val: 'buy' | 'sell'];
+}>();
 
 const { t } = useI18n();
 const fmtNum = fmtNumber;
@@ -401,6 +443,23 @@ const hasDetail = computed(() =>
 
 const handleDiscountTypeChange = (val: unknown, canonical: CustomerInItemForm) => {
   if (!val) canonical.discountValue = 0;
+};
+
+// Shipping computed properties
+const shippingCcy = computed(() =>
+  props.shippingCurrency === 'sell' ? props.sellBaseCcy : props.buyBaseCcy,
+);
+const shippingTargetCcy = computed(() =>
+  props.shippingCurrency === 'sell' ? props.sellTargetCcy : props.buyTargetCcy,
+);
+const shippingIsSameCurrency = computed(() => shippingCcy.value === shippingTargetCcy.value);
+
+const onShippingPriceChange = (val: number | null) => {
+  emit('update:shippingPrice', val ?? 0);
+};
+
+const onShippingCurrencyChange = (val: 'buy' | 'sell') => {
+  emit('update:shippingCurrency', val);
 };
 </script>
 
@@ -587,6 +646,18 @@ const handleDiscountTypeChange = (val: unknown, canonical: CustomerInItemForm) =
 .all-disc-total-val {
   font-size: 15px; font-weight: 800; color: #059669; margin-left: auto;
 }
+
+/* ── Shipping section ── */
+.shipping-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+.shipping-title {
+  font-size: 14px; font-weight: 700; color: #0f172a;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.compact-form-item { margin-bottom: 0; }
 
 @media (max-width: 767px) {
   .panel-card { border-radius: 10px; }

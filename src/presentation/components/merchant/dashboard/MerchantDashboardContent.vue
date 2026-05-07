@@ -31,7 +31,7 @@
       <!-- Row 1: Summary Stat Cards -->
       <a-row :gutter="[16, 16]" class="stats-row">
         <a-col :xs="12" :sm="8" :md="8" :lg="4">
-          <div class="stat-card stat-purple">
+          <div class="stat-card stat-card-clickable stat-purple" @click="goToOrders">
             <div class="stat-icon"><ShoppingCartOutlined /></div>
             <div class="stat-body">
               <a-tooltip :overlay-class-name="'blue-tooltip'">
@@ -43,7 +43,7 @@
           </div>
         </a-col>
         <a-col :xs="12" :sm="8" :md="8" :lg="4">
-          <div class="stat-card stat-green">
+          <div class="stat-card stat-card-clickable stat-green" @click="goToOrders">
             <div class="stat-icon"><CheckCircleOutlined /></div>
             <div class="stat-body">
               <a-tooltip :overlay-class-name="'blue-tooltip'">
@@ -55,7 +55,7 @@
           </div>
         </a-col>
         <a-col :xs="12" :sm="8" :md="8" :lg="4">
-          <div class="stat-card stat-blue">
+          <div class="stat-card stat-card-clickable stat-blue" @click="goToCustomers">
             <div class="stat-icon"><TeamOutlined /></div>
             <div class="stat-body">
               <a-tooltip :overlay-class-name="'blue-tooltip'">
@@ -67,7 +67,7 @@
           </div>
         </a-col>
         <a-col :xs="12" :sm="8" :md="8" :lg="4">
-          <div class="stat-card stat-teal">
+          <div class="stat-card stat-card-clickable stat-teal" @click="goToArrivals">
             <div class="stat-icon"><InboxOutlined /></div>
             <div class="stat-body">
               <a-tooltip :overlay-class-name="'blue-tooltip'">
@@ -79,7 +79,7 @@
           </div>
         </a-col>
         <a-col :xs="12" :sm="8" :md="8" :lg="4">
-          <div class="stat-card stat-orange">
+          <div class="stat-card stat-card-clickable stat-orange" @click="goToOrders">
             <div class="stat-icon"><AppstoreOutlined /></div>
             <div class="stat-body">
               <a-tooltip :overlay-class-name="'blue-tooltip'">
@@ -91,7 +91,7 @@
           </div>
         </a-col>
         <a-col :xs="12" :sm="8" :md="8" :lg="4">
-          <div class="stat-card stat-indigo">
+          <div class="stat-card stat-card-clickable stat-indigo" @click="goToTeam">
             <div class="stat-icon"><UserOutlined /></div>
             <div class="stat-body">
               <a-tooltip :overlay-class-name="'blue-tooltip'">
@@ -277,6 +277,10 @@ const router = useRouter();
 const { loading, dashboard, fetchDashboard } = useMerchantDashboard();
 
 const goCreateOrder = () => router.push({ name: 'merchant-stock-order' });
+const goToOrders = () => router.push({ name: 'merchant-orders' });
+const goToCustomers = () => router.push({ name: 'merchant-customers' });
+const goToArrivals = () => router.push({ name: 'merchant-arrivals' });
+const goToTeam = () => router.push({ name: 'merchant-team' });
 const error = ref<string | null>(null);
 const latestOrderItems = ref<OrderItem[]>([]);
 const latestOrderItemsLoading = ref(false);
@@ -420,6 +424,7 @@ function parseCurrencyString(val: string | number): number {
   height: 100%;
 }
 .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(15,23,42,0.10); }
+.stat-card-clickable { cursor: pointer; }
 .stat-icon {
   width: 40px; height: 40px;
   border-radius: 10px;

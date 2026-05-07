@@ -111,7 +111,12 @@
       :order-code="orderCode"
       :items="items"
       :customer-options="customerOptions"
+      :shipping-price="shippingPrice"
+      :shipping-currency="shippingCurrency"
+      :shipping-converted="shippingConverted"
       @discount-change="handleCustomerDiscountChange"
+      @update:shipping-price="shippingPrice = $event"
+      @update:shipping-currency="shippingCurrency = $event"
     />
 
     <!-- Submit -->
@@ -265,14 +270,10 @@ const shippingConverted = computed(() => {
 });
 const shippingLak = shippingConverted;
 
-const summaryPurchaseTotalForeign = computed(() => {
-  const itemsNetCost = items.value.reduce((sum, item) => sum + calc.calcNetCostForeignWithVariants(item), 0);
-  const rate = getEffectiveBuyRate();
-  const shippingForeign = rate === 0 ? 0 : shippingLak.value / rate;
-  return itemsNetCost + shippingForeign;
-});
+const summaryPurchaseTotalForeign = computed(() =>
+  items.value.reduce((sum, item) => sum + calc.calcNetCostForeignWithVariants(item), 0));
 const summaryPurchaseTotalLak = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcNetCostLakWithVariants(item), 0) + shippingLak.value);
+  items.value.reduce((sum, item) => sum + calc.calcNetCostLakWithVariants(item), 0));
 const summarySellingTotalForeign = computed(() => {
   const raw = items.value.reduce((sum, item) => sum + calc.calcSellingTotalForeignWithVariants(item), 0);
   return Math.max(0, raw - customerTotalDiscount.value);
@@ -283,7 +284,7 @@ const summarySellingTotalLak = computed(() => {
   return Math.max(0, rawLak - customerTotalDiscount.value * rate);
 });
 const summaryNetCostLak = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcNetCostLakWithVariants(item), 0) + shippingLak.value);
+  items.value.reduce((sum, item) => sum + calc.calcNetCostLakWithVariants(item), 0));
 const summaryProfitLak = computed(() => summarySellingTotalLak.value - summaryNetCostLak.value);
 const summaryProfitForeign = computed(() => {
   const rate = getEffectiveSellRate();

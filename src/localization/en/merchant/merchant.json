@@ -439,6 +439,8 @@
     "totalCostBeforeDiscount": "Total Before Discount ",
     "totalDiscount": "Total Discount ",
     "totalFinalCost": "Total Final Cost",
+    "paidAmount": " paid amount",
+    "remainingAmount": "remaining amount",
     "totalSellingAmount": "Total Selling Amount",
     "totalProfit": "Total Profit",
     "depositAmount": "Deposit Amount",
