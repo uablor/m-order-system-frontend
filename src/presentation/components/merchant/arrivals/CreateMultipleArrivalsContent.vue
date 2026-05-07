@@ -1,6 +1,6 @@
 <template>
   <div class="create-multiple-arrivals-page">
-    <div class="page-header">
+    <div v-if="!embedded" class="page-header">
       <a-button type="text" class="back-btn" @click="goBack">
         <ArrowLeftOutlined /> {{ $t('merchant.arrivals.backToList') }}
       </a-button>
@@ -362,6 +362,9 @@ import { useAuthStore } from '@/store/auth.store';
 import { storeToRefs } from 'pinia';
 import { handleApiError } from '@/shared/utils/error';
 import { useWhatsApp } from '@/shared/composables/useWhatsApp';
+
+const props = withDefaults(defineProps<{ embedded?: boolean }>(), { embedded: false });
+const emit = defineEmits<{ done: [] }>();
 
 const { t } = useI18n();
 const { openWhatsAppChat, isValidWhatsAppPhone, formatPhoneForWhatsApp } = useWhatsApp();
@@ -806,7 +809,11 @@ const handleReset = () => {
 
 const handleCancel = () => {
   clearBucketStorage();
-  router.push('/merchant/arrivals');
+  if (props.embedded) {
+    bucket.value = [];
+  } else {
+    router.push('/merchant/arrivals');
+  }
 };
 
 const fetchOrders = async () => {
@@ -826,7 +833,7 @@ const fetchOrders = async () => {
 };
 
 const goBack = () => {
-  router.push('/merchant/arrivals');
+  if (!props.embedded) router.push('/merchant/arrivals');
 };
 
 const openConfirmModal = () => {
@@ -873,7 +880,12 @@ const handleCreateMultiple = async () => {
     
     confirmModalVisible.value = false;
     clearBucketStorage();
-    router.push('/merchant/arrivals');
+    bucket.value = [];
+    if (props.embedded) {
+      emit('done');
+    } else {
+      router.push('/merchant/arrivals');
+    }
   } catch (err) {
     handleApiError(err, t);
     throw err;

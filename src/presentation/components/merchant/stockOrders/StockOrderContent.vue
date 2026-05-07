@@ -268,7 +268,7 @@ const shippingConverted = computed(() => {
   const rate = shippingCurrency.value === 'sell' ? getEffectiveSellRate() : getEffectiveBuyRate();
   return (shippingPrice.value || 0) * rate;
 });
-const shippingLak = shippingConverted;
+// const shippingLak = shippingConverted;
 
 const summaryPurchaseTotalForeign = computed(() =>
   items.value.reduce((sum, item) => sum + calc.calcNetCostForeignWithVariants(item), 0));

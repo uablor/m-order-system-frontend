@@ -21,7 +21,7 @@
     </a-form-item>
 
     <!-- Shipping Section -->
-    <div class="shipping-title">
+    <!-- <div class="shipping-title">
       <SendOutlined class="icon-blue" />
       <span>{{ $t('merchant.orders.form.shippingCost') }}</span>
     </div>
@@ -51,14 +51,12 @@
           <a-input :value="fmtNum(shippingConverted)" disabled class="w-full" />
         </a-form-item>
       </a-col>
-    </a-row>
+    </a-row> -->
   </a-card>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { FileTextOutlined, SendOutlined } from '@ant-design/icons-vue';
-import { fmtNumber, numFormatter, numParser } from '@/shared/utils/format';
+import { FileTextOutlined } from '@ant-design/icons-vue';
 
 const props = defineProps<{
   modelValue: string;
@@ -79,27 +77,9 @@ const emit = defineEmits<{
   (e: 'update:shippingCurrency', val: 'buy' | 'sell'): void;
 }>();
 
-const fmtNum = fmtNumber;
-
-const shippingCcy = computed(() =>
-  props.shippingCurrency === 'sell' ? props.sellBaseCcy : props.buyBaseCcy,
-);
-const shippingTargetCcy = computed(() =>
-  props.shippingCurrency === 'sell' ? props.sellTargetCcy : props.buyTargetCcy,
-);
-const shippingIsSameCurrency = computed(() => shippingCcy.value === shippingTargetCcy.value);
-
 const onInput = (val: string) => {
   emit('update:modelValue', val);
   if (props.error) emit('clearError');
-};
-
-const onShippingPriceChange = (val: number | null) => {
-  emit('update:shippingPrice', val ?? 0);
-};
-
-const onShippingCurrencyChange = (val: 'buy' | 'sell') => {
-  emit('update:shippingCurrency', val);
 };
 </script>
 

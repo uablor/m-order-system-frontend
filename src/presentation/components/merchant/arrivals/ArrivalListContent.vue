@@ -14,11 +14,6 @@
       >
         <FilterOutlined />
       </a-button>
-      <!-- Show Record Arrival button only when NOT embedded in Notification page -->
-      <a-button v-if="!embedded" type="primary" class="add-btn" @click="goToCreateMultiple">
-        <template #icon><PlusOutlined /></template>
-        {{ $t('merchant.arrivals.recordArrival') }}
-      </a-button>
     </div>
 
     <!-- Embedded + Mobile: แถบ filter toggle (เมื่อ embed ใน Notification tab, ไม่ใช้เมื่อ controlsInParent) -->
@@ -32,6 +27,13 @@
         <FilterOutlined />
       </a-button>
     </div>
+
+    <!-- Create Multiple Arrivals form — shown inline above the table on the main arrivals page -->
+    <CreateMultipleArrivalsContent
+      v-if="!embedded"
+      :embedded="true"
+      @done="fetchArrivals"
+    />
 
     <!-- Filter: Different behavior for Notifications vs Arrivals page -->
     <!-- Notifications page (embedded): Show only customer filter + create button -->
@@ -299,7 +301,6 @@ import type { Dayjs } from 'dayjs';
 import type { TableColumnsType, TablePaginationConfig } from 'ant-design-vue';
 import {
   EyeOutlined,
-  PlusOutlined,
   FilterOutlined,
   DownOutlined,
 } from '@ant-design/icons-vue';
@@ -314,6 +315,7 @@ import { storeToRefs } from 'pinia';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
 import { handleApiError } from '@/shared/utils/error';
 import { useWhatsApp } from '@/shared/composables/useWhatsApp';
+import CreateMultipleArrivalsContent from './CreateMultipleArrivalsContent.vue';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -572,10 +574,6 @@ const handleCreateNotifications = async () => {
   } finally {
     createNotiSubmitting.value = false;
   }
-};
-
-const goToCreateMultiple = () => {
-  router.push('/merchant/arrivals/create-multiple');
 };
 
 defineExpose({
