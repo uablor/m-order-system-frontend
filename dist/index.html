@@ -17,9 +17,13 @@
                                 blob URLs (camera/canvas), and API server (product images)
       style-src 'self' 'unsafe-inline' → Ant Design Vue injects runtime styles
       font-src  'self' data:  → local fonts + base64 encoded fonts
-      frame-ancestors 'none'  → prevents clickjacking (this page cannot be iframed)
       base-uri  'self'        → blocks <base href> injection
       form-action 'self'      → forms can only submit to our own origin
+
+      NOTE: frame-ancestors is NOT listed here because browsers ignore that
+      directive when delivered via <meta>. It is enforced via the HTTP response
+      header Content-Security-Policy set in vite.config.ts (dev/preview) and
+      in your production web-server config (nginx: add_header Content-Security-Policy).
       ────────────────────────────────────────────────────────────────────────
       http://localhost:4000 is replaced by Vite at build time from .env
     -->
@@ -30,7 +34,6 @@
       img-src 'self' data: blob: http://localhost:4000;
       style-src 'self' 'unsafe-inline';
       font-src 'self' data:;
-      frame-ancestors 'none';
       base-uri 'self';
       form-action 'self';
     ">
@@ -42,7 +45,7 @@
     <meta name="referrer" content="strict-origin-when-cross-origin">
 
     <link rel="preload" href="/NotoSansLao-VariableFont_wdth,wght.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-    <script type="module" crossorigin src="/assets/index-D5jOOhMb.js"></script>
+    <script type="module" crossorigin src="/assets/index-gXZcdwle.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/vue-DvDzKK9x.js">
     <link rel="modulepreload" crossorigin href="/assets/vendor-CY48sSgb.js">
     <link rel="modulepreload" crossorigin href="/assets/antd-icons-qND6_kXG.js">

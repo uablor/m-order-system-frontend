@@ -12,6 +12,11 @@ export default defineConfig(({ mode }) => ({
     },
   },
   server: {
+    headers: {
+      // frame-ancestors must be an HTTP header — browsers ignore it in <meta> tags
+      'Content-Security-Policy': "frame-ancestors 'none'",
+      'X-Frame-Options': 'DENY',
+    },
     // Dev proxy เพื่อตัดปัญหา CORS (frontend -> backend)
     proxy: {
       '/api': {
@@ -19,6 +24,12 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         rewrite: (p) => p.replace(/^\/api/, ''),
       },
+    },
+  },
+  preview: {
+    headers: {
+      'Content-Security-Policy': "frame-ancestors 'none'",
+      'X-Frame-Options': 'DENY',
     },
   },
   // Strip all console.* and debugger statements from the production bundle so

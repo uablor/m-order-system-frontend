@@ -65,7 +65,10 @@
             <!-- Before discount (always shown) -->
             <div class="cust-pricing-row">
               <span class="cust-pricing-label">{{ $t('merchant.orders.summary.beforeDiscount') }}</span>
-              <span class="cust-pricing-val before-discount">{{ fmtNum(cust.subtotal) }} {{ sellBaseCcy }}</span>
+              <div class="cust-pricing-val-group">
+                <span class="cust-pricing-val before-discount">{{ fmtNum(cust.subtotal) }} {{ sellBaseCcy }}</span>
+                <span v-if="!isSellSameCurrency" class="cust-pricing-val-lak">≈ {{ fmtNum(toLak(cust.subtotal)) }} {{ sellTargetCcy }}</span>
+              </div>
             </div>
 
             <!-- Manual mode: per-customer discount controls -->
@@ -94,15 +97,19 @@
                     class="cust-disc-val-inp"
                   />
                 </div>
-                <span v-if="cust.discountAmount > 0" class="cust-discount-amount-badge">
-                  − {{ fmtNum(cust.discountAmount) }} {{ sellBaseCcy }}
-                </span>
+                <div v-if="cust.discountAmount > 0" class="cust-discount-badge-group">
+                  <span class="cust-discount-amount-badge">− {{ fmtNum(cust.discountAmount) }} {{ sellBaseCcy }}</span>
+                  <span v-if="!isSellSameCurrency" class="cust-discount-amount-badge cust-discount-lak-badge">≈ − {{ fmtNum(toLak(cust.discountAmount)) }} {{ sellTargetCcy }}</span>
+                </div>
               </div>
 
               <!-- Total after discount (manual) -->
               <div class="cust-pricing-row cust-total-final-row">
                 <span class="cust-pricing-label total-label">{{ $t('merchant.orders.summary.customerTotalLabel') }}</span>
-                <span class="cust-total-final-val">{{ fmtNum(cust.total) }} {{ sellBaseCcy }}</span>
+                <div class="cust-pricing-val-group">
+                  <span class="cust-total-final-val">{{ fmtNum(cust.total) }} {{ sellBaseCcy }}</span>
+                  <span v-if="!isSellSameCurrency" class="cust-pricing-val-lak cust-total-lak">≈ {{ fmtNum(toLak(cust.total)) }} {{ sellTargetCcy }}</span>
+                </div>
               </div>
             </template>
           </div>
@@ -113,7 +120,10 @@
       <div v-if="discountMode === 'all' && customerSummaries.length > 0" class="all-discount-section">
         <div class="all-disc-row">
           <span class="all-disc-label">{{ $t('merchant.orders.summary.grandSubtotalLabel') }}</span>
-          <span class="all-disc-subtotal">{{ fmtNum(grandSubtotal) }} {{ sellBaseCcy }}</span>
+          <div class="all-disc-val-group">
+            <span class="all-disc-subtotal">{{ fmtNum(grandSubtotal) }} {{ sellBaseCcy }}</span>
+            <span v-if="!isSellSameCurrency" class="all-disc-lak">≈ {{ fmtNum(toLak(grandSubtotal)) }} {{ sellTargetCcy }}</span>
+          </div>
         </div>
         <div class="all-disc-row all-disc-control-row">
           <span class="all-disc-label discount-label">{{ $t('merchant.orders.summary.allDiscountLabel') }}</span>
@@ -139,13 +149,17 @@
               class="cust-disc-val-inp"
             />
           </div>
-          <span v-if="allDiscountAmount > 0" class="cust-discount-amount-badge">
-            − {{ fmtNum(allDiscountAmount) }} {{ sellBaseCcy }}
-          </span>
+          <div v-if="allDiscountAmount > 0" class="cust-discount-badge-group">
+            <span class="cust-discount-amount-badge">− {{ fmtNum(allDiscountAmount) }} {{ sellBaseCcy }}</span>
+            <span v-if="!isSellSameCurrency" class="cust-discount-amount-badge cust-discount-lak-badge">≈ − {{ fmtNum(toLak(allDiscountAmount)) }} {{ sellTargetCcy }}</span>
+          </div>
         </div>
         <div class="all-disc-row all-disc-total-row">
           <span class="all-disc-label total-label">{{ $t('merchant.orders.summary.grandTotalLabel') }}</span>
-          <span class="all-disc-total-val">{{ fmtNum(grandTotalAfterDiscount) }} {{ sellBaseCcy }}</span>
+          <div class="all-disc-val-group">
+            <span class="all-disc-total-val">{{ fmtNum(grandTotalAfterDiscount) }} {{ sellBaseCcy }}</span>
+            <span v-if="!isSellSameCurrency" class="all-disc-lak all-disc-total-lak">≈ {{ fmtNum(toLak(grandTotalAfterDiscount)) }} {{ sellTargetCcy }}</span>
+          </div>
         </div>
       </div>
 
@@ -298,10 +312,12 @@ const props = defineProps<{
   shippingPrice?: number;
   shippingCurrency?: 'buy' | 'sell';
   shippingConverted?: number;
+  sellRate?: number;
 }>();
 
 const emit = defineEmits<{
   'discount-change': [total: number];
+  'discount-detail-change': [mode: 'all' | 'manual', allType: 'percent' | 'cash' | undefined, allValue: number];
   'update:shippingPrice': [val: number];
   'update:shippingCurrency': [val: 'buy' | 'sell'];
 }>();
@@ -319,6 +335,8 @@ const handleAllDiscountTypeChange = (val: unknown) => {
 
 const isBuySameCurrency = computed(() => props.buyBaseCcy === props.buyTargetCcy);
 const isSellSameCurrency = computed(() => props.sellBaseCcy === props.sellTargetCcy);
+
+const toLak = (amount: number) => amount * (props.sellRate ?? 1);
 
 const VARIANT_COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#DDA0DD', '#98D8C8'];
 const getVariantColor = (idx: number) => VARIANT_COLORS[idx % VARIANT_COLORS.length];
@@ -436,6 +454,12 @@ const grandTotalAfterDiscount = computed(() =>
 );
 
 watch(totalDiscountAmount, (val) => emit('discount-change', val), { immediate: true });
+
+watch(
+  [discountMode, allDiscountType, allDiscountValue],
+  () => emit('discount-detail-change', discountMode.value, allDiscountType.value, allDiscountValue.value),
+  { immediate: true },
+);
 
 const hasDetail = computed(() =>
   !!(props.orderCode || customerSummaries.value.length > 0)
@@ -585,16 +609,32 @@ const onShippingCurrencyChange = (val: 'buy' | 'sell') => {
 }
 .before-discount { color: #64748b; }
 
+/* Value + LAK secondary grouping */
+.cust-pricing-val-group {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px; margin-left: auto;
+}
+.cust-pricing-val-lak {
+  font-size: 11px; font-weight: 600; color: #94a3b8;
+}
+.cust-total-lak {
+  color: #6ee7b7; font-size: 12px; font-weight: 700;
+}
+
 /* Discount row */
 .cust-discount-row { gap: 6px; }
 .discount-label { color: #d97706; }
 .cust-discount-controls { display: flex; align-items: center; gap: 6px; }
 .cust-disc-type-sel { width: 90px; }
 .cust-disc-val-inp { width: 100px; }
+.cust-discount-badge-group {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 3px; margin-left: auto;
+}
 .cust-discount-amount-badge {
   font-size: 12px; font-weight: 700; color: #dc2626;
   background: #fef2f2; padding: 2px 8px; border-radius: 6px;
-  margin-left: auto;
+}
+.cust-discount-lak-badge {
+  font-size: 11px; color: #f87171; background: #fff1f2;
 }
 
 /* Total after discount */
@@ -605,7 +645,7 @@ const onShippingCurrencyChange = (val: 'buy' | 'sell') => {
 }
 .total-label { color: #059669; font-weight: 700; font-size: 13px; }
 .cust-total-final-val {
-  font-size: 15px; font-weight: 800; color: #059669; margin-left: auto;
+  font-size: 15px; font-weight: 800; color: #059669;
 }
 
 /* ── Discount mode bar ── */
@@ -636,15 +676,24 @@ const onShippingCurrencyChange = (val: 'buy' | 'sell') => {
   font-size: 12px; font-weight: 600; color: #6b7280;
   min-width: 150px; flex-shrink: 0;
 }
+.all-disc-val-group {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px; margin-left: auto;
+}
 .all-disc-subtotal {
-  font-size: 13px; font-weight: 700; color: #64748b; margin-left: auto;
+  font-size: 13px; font-weight: 700; color: #64748b;
+}
+.all-disc-lak {
+  font-size: 11px; font-weight: 600; color: #a16207;
 }
 .all-disc-control-row { gap: 6px; }
 .all-disc-total-row {
   border-top: 1px solid #fde68a; padding-top: 8px; margin-top: 2px;
 }
 .all-disc-total-val {
-  font-size: 15px; font-weight: 800; color: #059669; margin-left: auto;
+  font-size: 15px; font-weight: 800; color: #059669;
+}
+.all-disc-total-lak {
+  font-size: 12px; font-weight: 700; color: #6ee7b7;
 }
 
 /* ── Shipping section ── */

@@ -114,7 +114,9 @@
       :shipping-price="shippingPrice"
       :shipping-currency="shippingCurrency"
       :shipping-converted="shippingConverted"
+      :sell-rate="effectiveSellRate"
       @discount-change="handleCustomerDiscountChange"
+      @discount-detail-change="handleDiscountDetailChange"
       @update:shipping-price="shippingPrice = $event"
       @update:shipping-currency="shippingCurrency = $event"
     />
@@ -170,7 +172,20 @@ const router = useRouter();
 const editMode = computed(() => props.editOrderId !== undefined);
 
 const customerTotalDiscount = ref(0);
+const summaryDiscountMode = ref<'all' | 'manual'>('manual');
+const summaryAllDiscountType = ref<'percent' | 'cash' | undefined>(undefined);
+const summaryAllDiscountValue = ref(0);
+
 const handleCustomerDiscountChange = (amount: number) => { customerTotalDiscount.value = amount; };
+const handleDiscountDetailChange = (
+  mode: 'all' | 'manual',
+  allType: 'percent' | 'cash' | undefined,
+  allValue: number,
+) => {
+  summaryDiscountMode.value = mode;
+  summaryAllDiscountType.value = allType;
+  summaryAllDiscountValue.value = allValue;
+};
 
 const shippingPrice = ref(0);
 const shippingCurrency = ref<'buy' | 'sell'>('buy');
@@ -220,6 +235,7 @@ const isBuySameCurrency = computed(() => buyBaseCcy.value === buyTargetCcy.value
 const isSellSameCurrency = computed(() => sellBaseCcy.value === sellTargetCcy.value);
 const getEffectiveBuyRate = () => isBuySameCurrency.value ? 1 : getBuyRate();
 const getEffectiveSellRate = () => isSellSameCurrency.value ? 1 : getSellRate();
+const effectiveSellRate = computed(() => getEffectiveSellRate());
 
 const calc = useItemCalculations(getEffectiveBuyRate, getEffectiveSellRate);
 
@@ -250,6 +266,7 @@ const handleSuccess = () => {
 
 const { submitting, fieldErrors, clearFieldError, handleSubmit } = useOrderSubmit(
   orderCode, items, handleSuccess, getBuyRateId, getSellRateId, shippingPrice, shippingCurrency, props.editOrderId,
+  summaryDiscountMode, summaryAllDiscountType, summaryAllDiscountValue,
 );
 
 const getItemErrors = (idx: number): Record<string, string> => {
