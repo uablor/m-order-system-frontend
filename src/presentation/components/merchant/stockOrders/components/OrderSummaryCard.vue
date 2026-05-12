@@ -176,12 +176,12 @@
         <a-row :gutter="[16, 0]">
           <a-col :md="6">
             <a-form-item :label="`${$t('merchant.orders.summary.purchaseTotalForeign')} (${buyBaseCcy})`">
-              <a-input :value="fmtNum(purchaseTotalForeign)" disabled class="w-full" />
+              <a-input :value="fmtNum(purchaseForeignCurrencyMatchesShipping ? purchaseTotalForeignWithShippingInForeign : purchaseTotalForeignWithShippingInLak)" disabled class="w-full" />
             </a-form-item>
           </a-col>
           <a-col v-if="!isBuySameCurrency" :md="6">
             <a-form-item :label="`${$t('merchant.orders.summary.purchaseTotalLak')} (${buyTargetCcy})`">
-              <a-input :value="fmtNum(purchaseTotalLak)" disabled class="w-full" />
+              <a-input :value="fmtNum(purchaseTotalLakWithShipping)" disabled class="w-full" />
             </a-form-item>
           </a-col>
         </a-row>
@@ -198,12 +198,12 @@
           </a-col>
           <a-col :md="6">
             <a-form-item :label="`${$t('merchant.orders.summary.profitForeign')} (${sellBaseCcy})`">
-              <a-input :value="fmtNum(profitForeign)" disabled class="w-full summary-profit" />
+              <a-input :value="fmtNum(profitForeignWithShipping)" disabled class="w-full summary-profit" />
             </a-form-item>
           </a-col>
           <a-col v-if="!isSellSameCurrency" :md="6">
             <a-form-item :label="`${$t('merchant.orders.summary.profitLak')} (${sellTargetCcy})`">
-              <a-input :value="fmtNum(profitLak)" disabled class="w-full summary-profit" />
+              <a-input :value="fmtNum(profitLakWithShipping)" disabled class="w-full summary-profit" />
             </a-form-item>
           </a-col>
         </a-row>
@@ -212,12 +212,12 @@
         <a-row :gutter="[12, 0]">
           <a-col :span="12">
             <a-form-item :label="`${$t('merchant.orders.summary.purchaseTotalForeign')} (${buyBaseCcy})`">
-              <a-input :value="fmtNum(purchaseTotalForeign)" disabled class="w-full" />
+              <a-input :value="fmtNum(purchaseForeignCurrencyMatchesShipping ? purchaseTotalForeignWithShippingInForeign : purchaseTotalForeignWithShippingInLak)" disabled class="w-full" />
             </a-form-item>
           </a-col>
           <a-col v-if="!isBuySameCurrency" :span="12">
             <a-form-item :label="`${$t('merchant.orders.summary.purchaseTotalLak')} (${buyTargetCcy})`">
-              <a-input :value="fmtNum(purchaseTotalLak)" disabled class="w-full" />
+              <a-input :value="fmtNum(purchaseTotalLakWithShipping)" disabled class="w-full" />
             </a-form-item>
           </a-col>
         </a-row>
@@ -236,12 +236,12 @@
         <a-row :gutter="[12, 0]">
           <a-col :span="12">
             <a-form-item :label="`${$t('merchant.orders.summary.profitForeign')} (${sellBaseCcy})`">
-              <a-input :value="fmtNum(profitForeign)" disabled class="w-full summary-profit" />
+              <a-input :value="fmtNum(profitForeignWithShipping)" disabled class="w-full summary-profit" />
             </a-form-item>
           </a-col>
           <a-col v-if="!isSellSameCurrency" :span="12">
             <a-form-item :label="`${$t('merchant.orders.summary.profitLak')} (${sellTargetCcy})`">
-              <a-input :value="fmtNum(profitLak)" disabled class="w-full summary-profit" />
+              <a-input :value="fmtNum(profitLakWithShipping)" disabled class="w-full summary-profit" />
             </a-form-item>
           </a-col>
         </a-row>
@@ -313,6 +313,7 @@ const props = defineProps<{
   shippingCurrency?: 'buy' | 'sell';
   shippingConverted?: number;
   sellRate?: number;
+  buyRate?: number;
 }>();
 
 const emit = defineEmits<{
@@ -485,6 +486,51 @@ const onShippingPriceChange = (val: number | null) => {
 const onShippingCurrencyChange = (val: 'buy' | 'sell') => {
   emit('update:shippingCurrency', val);
 };
+
+// Computed properties for purchase totals with shipping included
+const purchaseForeignCurrencyMatchesShipping = computed(() => {
+  const purchaseCurrency = props.buyBaseCcy; // purchaseTotalForeign is in buyBaseCcy
+  const shippingCurrency = props.shippingCurrency === 'sell' ? props.sellBaseCcy : props.buyBaseCcy;
+  return purchaseCurrency === shippingCurrency;
+});
+
+const purchaseTotalForeignWithShippingInForeign = computed(() => {
+  // When currencies match, add directly in foreign currency
+  const shippingInForeign = (props.shippingConverted ?? 0) / (props.sellRate ?? 1);
+  return props.purchaseTotalForeign + shippingInForeign;
+});
+
+const purchaseTotalForeignWithShippingInLak = computed(() => {
+  // Convert both to LAK, add, then convert back to buy base currency
+  // Since buyRate might not be available, calculate it from purchaseTotalLak and purchaseTotalForeign
+  const effectiveBuyRate = props.buyRate ?? (props.purchaseTotalForeign > 0 ? props.purchaseTotalLak / props.purchaseTotalForeign : 1);
+  
+  const purchaseInLak = props.purchaseTotalForeign * effectiveBuyRate;
+  const shippingInLak = props.shippingConverted ?? 0; // Already converted to LAK
+  const totalInLak = purchaseInLak + shippingInLak;
+  // Convert back to buy base currency using the same rate
+  return totalInLak / effectiveBuyRate;
+});
+
+const purchaseTotalLakWithShipping = computed(() => {
+  // purchaseTotalLak is already in LAK, add shippingConverted
+  const shippingInLak = props.shippingConverted ?? 0;
+  return props.purchaseTotalLak + shippingInLak;
+});
+
+// Computed properties for profit with shipping included
+const profitForeignWithShipping = computed(() => {
+  // Profit = sellingTotalForeign - (purchaseTotalForeign converted to foreign currency + shipping in foreign currency)
+  // But since we want profit in foreign currency, we need to subtract shipping from the original profit
+  const shippingInForeign = (props.shippingConverted ?? 0) / (props.sellRate ?? 1);
+  return props.profitForeign - shippingInForeign;
+});
+
+const profitLakWithShipping = computed(() => {
+  // Profit = sellingTotalLak - (purchaseTotalLak + shippingConverted)
+  const shippingInLak = props.shippingConverted ?? 0;
+  return props.profitLak - shippingInLak;
+});
 </script>
 
 <style scoped>
