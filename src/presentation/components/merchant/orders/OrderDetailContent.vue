@@ -168,9 +168,14 @@
             </div>
             <div class="finance-item selling-after-discount">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalSellingAfterDiscount') }}</span>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(Number(order.totalSellingAmount) - Number(order.totalDiscount)) }} {{ sellCurrency }}</template>
-                <span class="finance-value num-truncate">{{ truncNum(Number(order.totalSellingAmount) - Number(order.totalDiscount)) }} <span class="fin-currency">{{ sellCurrency }}</span></span>
-              </a-tooltip>
+              <div class="sad-values-row">
+                <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(Number(order.totalSellingAmount) - Number(order.totalDiscount)) }} {{ sellCurrency }}</template>
+                  <span class="finance-value num-truncate">{{ truncNum(Number(order.totalSellingAmount) - Number(order.totalDiscount)) }} <span class="fin-currency">{{ sellCurrency }}</span></span>
+                </a-tooltip>
+                <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>− {{ formatNumber(Number(order.totalDiscount)) }} {{ sellCurrency }}</template>
+                  <span class="finance-value num-truncate sad-discount-val">− {{ truncNum(Number(order.totalDiscount)) }} <span class="fin-currency">{{ sellCurrency }}</span></span>
+                </a-tooltip>
+              </div>
             </div>
             <!-- <div class="finance-item shipping-cost">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalShippingCost') }}</span>
@@ -245,16 +250,17 @@
             >
               <!-- Image Section -->
               <div class="item-image-section">
-                <img 
-                  v-if="item.image?.publicUrl" 
-                  :src="item.image.publicUrl" 
+                <img
+                  v-if="item.image?.publicUrl"
+                  :src="item.image.publicUrl"
                   :alt="item.productName"
                   class="item-image"
                   @error="handleImageError"
-                />
+                /> 
                 <div v-else class="item-image-placeholder">
-                  <ShoppingOutlined />
-                </div>
+                  <ShoppingOutlined /> 
+                </div> 
+                
               </div>
 
               <!-- Content Section -->
@@ -692,12 +698,8 @@ const backToOrderItems = () => {
 };
 
 const handleImageError = (event: any) => {
-  // Hide the image and show placeholder on error
-  event.target.style.display = 'none';
-  const placeholder = event.target.nextElementSibling;
-  if (placeholder && placeholder.classList.contains('item-image-placeholder')) {
-    placeholder.style.display = 'flex';
-  }
+  // Log error but don't hide - let browser handle naturally
+  console.warn('Image failed to load:', event.target?.src);
 };
 
 const selectedOrderItem = computed(() => {
@@ -859,6 +861,24 @@ onMounted(() => {
 .finance-item.selling-amount {
   background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
   border: 1px solid #10b981;
+}
+
+.finance-item.selling-after-discount {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #10b981;
+}
+
+.sad-values-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sad-discount-val {
+  color: #dc2626 !important;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .finance-item.deposit {
