@@ -444,6 +444,7 @@
     "totalDiscount": "ส่วนลดรวม",
     "totalFinalCost": "ต้นทุนสุทธิรวม",
     "totalSellingAmount": "ยอดขายรวม",
+    "totalSellingAfterDiscount": "ยอดขาย − ส่วนลด",
     "totalProfit": "กำไรรวม",
     "depositAmount": "เงินมัดจำ",
     "paidAmount": "จำนวนที่ชำระแล้ว",

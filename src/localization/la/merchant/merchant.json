@@ -444,6 +444,7 @@
     "totalDiscount": "ສ່ວນຫຼຸດລວມ",
     "totalFinalCost": "ຕົ້ນທຶນສຸດທິລວມ",
     "totalSellingAmount": "ຍອດຂາຍລວມ",
+    "totalSellingAfterDiscount": "ຍອດຂາຍ − ສ່ວນຫຼຸດ",
     "totalProfit": "ກຳໄລສຸດທິ",
     "depositAmount": "ເງິນມັດຈຳ",
     "paidAmount": "ຈຳນວນທີ່ຊຳລະແລ້ວ",

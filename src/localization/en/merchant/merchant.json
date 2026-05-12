@@ -442,6 +442,7 @@
     "paidAmount": " paid amount",
     "remainingAmount": "remaining amount",
     "totalSellingAmount": "Total Selling Amount",
+    "totalSellingAfterDiscount": "Total Selling − Discount",
     "totalProfit": "Total Profit",
     "depositAmount": "Deposit Amount",
     "orderItems": "Order Items",
