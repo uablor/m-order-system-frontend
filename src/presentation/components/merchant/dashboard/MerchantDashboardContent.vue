@@ -107,34 +107,36 @@
         <div class="page-titlek">{{ $t('merchant.dashboard.sectionFinancialOverview') }}</div>
         <div class="page-subtitle">{{ $t('merchant.dashboard.sectionPriceByCurrencyDesc') }}</div>
       </div> 
-      <!-- Row 2a: Price by Currency (non-LAK) — grid 3, placeholders when empty -->
-      <a-row :gutter="[16, 16]" class="stats-row">
-        <a-col :xs="24" :sm="8" :md="8" v-for="(currency, i) in displayNonLakCurrencies" :key="currency ? (currency.baseCurrency || currency.targetCurrency || 'unknown') : `placeholder-${i}`">
-          <a-card :bordered="false" class="panel-card currency-card" :class="currency ? `currency-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'currency-placeholder'">
+      <!-- Row 2a: Price by Currency (non-LAK) — show only when data exists -->
+      <a-row v-if="displayNonLakCurrencies.length > 0" :gutter="[16, 16]" class="stats-row">
+        <a-col :xs="24" :sm="8" :md="8" v-for="currency in displayNonLakCurrencies" :key="currency.baseCurrency || currency.targetCurrency || 'unknown'">
+          <a-card :bordered="false" class="panel-card currency-card" :class="`currency-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}`">
             <div class="currency-header">
               <span>{{ $t('merchant.dashboard.currency') }}</span>
-              <span class="currency-badge" :class="currency ? `badge-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'badge-placeholder'">{{ currency ? (currency.baseCurrency || currency.targetCurrency || 'Unknown') : '—' }}</span>
-              <!-- <span class="currency-title">{{ currency ? $t('merchant.dashboard.priceInCurrency', { currency: currency.baseCurrency || currency.targetCurrency || 'Unknown' }) : $t('merchant.dashboard.noData') }}</span> -->
+              <span class="currency-badge" :class="`badge-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}`">{{ currency.baseCurrency || currency.targetCurrency || 'Unknown' }}</span>
             </div>
             <div class="currency-rows">
               <div class="currency-row">
                 <span class="c-label">{{ $t('merchant.dashboard.totalPrice') }}</span>
-                <span class="c-val">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalAll)) : fmtCurrency(0) }}</span>
+                <span class="c-val">{{ fmtCurrency(parseCurrencyString(currency.totalAll)) }}</span>
               </div>
               <div class="currency-row">
                 <span class="c-label">{{ $t('merchant.dashboard.pricePaid') }}</span>
-                <span class="c-val text-green">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalPaid)) : fmtCurrency(0) }}</span>
+                <span class="c-val text-green">{{ fmtCurrency(parseCurrencyString(currency.totalPaid)) }}</span>
               </div>
               <div class="currency-row">
                 <span class="c-label">{{ $t('merchant.dashboard.priceUnpaid') }}</span>
-                <span class="c-val text-red">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalUnpaid)) : fmtCurrency(0) }}</span>
+                <span class="c-val text-red">{{ fmtCurrency(parseCurrencyString(currency.totalUnpaid)) }}</span>
               </div>
-              <!-- <div class="currency-divider" />
-              <div class="currency-row">
-                <span class="c-label">{{ $t('merchant.dashboard.totalInLak') }}</span>
-                <span class="c-val text-blue">{{ currency ? fmtCurrency(currency.totalAllConverted) : fmtCurrency(0) }}</span>
-              </div> -->
             </div>
+          </a-card>
+        </a-col>
+      </a-row>
+      <!-- No data message for non-LAK currencies -->
+      <a-row v-else :gutter="[16, 16]" class="stats-row">
+        <a-col :xs="24">
+          <a-card :bordered="false" class="panel-card no-data-card">
+            <div class="no-data-message">{{ $t('merchant.dashboard.noFinancialData') || 'No financial data available' }}</div>
           </a-card>
         </a-col>
       </a-row>
@@ -301,13 +303,8 @@ const lakCurrencyTarget = computed(() => {
   console.log('Found LAK currency:', found);
   return found;
 });
-/* Financial Summary: stable grid 3 — เสมอ 3 cards (เติม placeholder ถ้ามีน้อยกว่า 3) */
-const displayNonLakCurrencies = computed(() => {
-  const list = nonLakCurrencies.value;
-  if (list.length >= 3) return list;
-  const placeholders = Array(Math.max(0, 3 - list.length)).fill(null);
-  return [...list, ...placeholders] as (typeof list[0] | null)[];
-});
+/* Financial Summary: show only when data exists */
+const displayNonLakCurrencies = computed(() => nonLakCurrencies.value);
 const displaySummaryLakCurrency = computed(() => lakCurrencyTarget.value ?? null);
 const safeFetchDashboard = async () => {
   error.value = null;
