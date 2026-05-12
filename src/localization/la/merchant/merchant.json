@@ -445,6 +445,7 @@
     "totalFinalCost": "ຕົ້ນທຶນສຸດທິລວມ",
     "totalSellingAmount": "ຍອດຂາຍລວມ",
     "totalSellingAfterDiscount": "ຍອດຂາຍ − ສ່ວນຫຼຸດ",
+    "discount":"ສ່ວນຫຼຸດ",
     "totalProfit": "ກຳໄລສຸດທິ",
     "depositAmount": "ເງິນມັດຈຳ",
     "paidAmount": "ຈຳນວນທີ່ຊຳລະແລ້ວ",
@@ -481,7 +482,7 @@
     "customerOrders": "ອໍເດີລູກຄ້າ",
     "noCustomerOrders": "ບໍ່ມີອໍເດີລູກຄ້າ",
     "unknownCustomer": "ບໍ່ຮູ້ຊື່ລູກຄ້າ",
-    "profitInformation": "ກຳໄລ",
+    "profitInformation": "ກຳໄລກ່ອນສ່ວນຫຼຸດ",
     "purchaseInformation": "ລາຄາຊື້ສິນຄ້າ",
     "sellingInformation": "ລາຄາຂາຍສິນຄ້າ",
    
@@ -491,6 +492,7 @@
  
     "profit": "ກຳໄລ",
     "sellingAmountLak": "ຍອດຂາຍ",
+     "sellingAmountLakAffterDiscount": "ຍອດຂາຍ - ສ່ວນຫຼຸດ",
     "sellingPriceLak": "ລາຄາຂາຍ",
     "paid": "ຊຳລະແລ້ວ",
     "remaining": "ຍອດຄ້າງ",

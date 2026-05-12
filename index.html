@@ -31,7 +31,7 @@
       default-src 'self';
       script-src 'self';
       connect-src 'self' %VITE_API_ORIGIN%;
-      img-src 'self' data: blob: %VITE_API_ORIGIN%;
+      img-src 'self' data: blob: %VITE_API_ORIGIN% https://*.r2.dev;
       style-src 'self' 'unsafe-inline';
       font-src 'self' data:;
       base-uri 'self';

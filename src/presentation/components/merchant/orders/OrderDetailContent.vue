@@ -142,6 +142,13 @@
               </a-tooltip>
               <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalShippingCostByShippingExchangeRate) }}</span>
             </div>
+            <div class="finance-item cost-before-discount">
+              <span class="finance-label">{{ $t('merchant.orderDetail.totalCostBeforeDiscount') }}</span>
+              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalCostBeforeDiscount) }} {{ buyCurrency }}</template>
+                <span class="finance-value num-truncate">{{ truncNum(order.totalCostBeforeDiscount) }} <span class="fin-currency">{{ buyCurrency }}</span></span>
+              </a-tooltip>
+              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalCostBeforeDiscount) }}</span>
+            </div>
             <div class="finance-item final-cost">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalFinalCost') }}</span>
               <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalFinalCost) }} {{ buyCurrency }}</template>
@@ -167,15 +174,21 @@
               <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalSellingAmount) }} </span>
             </div>
             <div class="finance-item selling-after-discount">
+              <span class="finance-label">{{ $t('merchant.orderDetail.discount') }}</span>
+              <!-- <div class="sad-values-row"> -->
+              
+                <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title> {{ formatNumber(Number(order.totalDiscount)) }} {{ sellCurrency }}</template>
+                  <span class="finance-value num-truncate sad-discount-val"> {{ truncNum(Number(order.totalDiscount)) }} <span class="fin-currency">{{ sellCurrency }}</span></span>
+                </a-tooltip>
+              <!-- </div> -->
+            </div>
+             <div class="finance-item selling-after-discount">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalSellingAfterDiscount') }}</span>
-              <div class="sad-values-row">
+              
                 <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(Number(order.totalSellingAmount) - Number(order.totalDiscount)) }} {{ sellCurrency }}</template>
                   <span class="finance-value num-truncate">{{ truncNum(Number(order.totalSellingAmount) - Number(order.totalDiscount)) }} <span class="fin-currency">{{ sellCurrency }}</span></span>
                 </a-tooltip>
-                <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>− {{ formatNumber(Number(order.totalDiscount)) }} {{ sellCurrency }}</template>
-                  <span class="finance-value num-truncate sad-discount-val">− {{ truncNum(Number(order.totalDiscount)) }} <span class="fin-currency">{{ sellCurrency }}</span></span>
-                </a-tooltip>
-              </div>
+              
             </div>
             <!-- <div class="finance-item shipping-cost">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalShippingCost') }}</span>
@@ -184,13 +197,7 @@
               </a-tooltip>
               <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalShippingCostByShippingExchangeRate) }}</span>
             </div> -->
-            <div class="finance-item cost-before-discount">
-              <span class="finance-label">{{ $t('merchant.orderDetail.totalCostBeforeDiscount') }}</span>
-              <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalCostBeforeDiscount) }} {{ buyCurrency }}</template>
-                <span class="finance-value num-truncate">{{ truncNum(order.totalCostBeforeDiscount) }} <span class="fin-currency">{{ buyCurrency }}</span></span>
-              </a-tooltip>
-              <span class="finance-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(order.targetCurrencyTotalCostBeforeDiscount) }}</span>
-            </div>
+            
             <div class="finance-item" :class="{ 'profit-positive-bg': Number(order.totalProfit) >= 0, 'profit-negative-bg': Number(order.totalProfit) < 0 }">
               <span class="finance-label">{{ $t('merchant.orderDetail.totalProfit') }}</span>
               <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(order.totalProfit) }} {{ sellCurrency }}</template>
@@ -412,7 +419,7 @@
                       <h4 class="section-title">{{ $t('merchant.orderDetail.profitInformation') }}</h4>
                       <div class="profit-display">
                         <div class="profit-item">
-                          <span class="profit-label">{{ $t('merchant.orderDetail.profit') }}:</span>
+                          <!-- <span class="profit-label">{{ $t('merchant.orderDetail.profit') }}:</span> -->
                           <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(sku.profit) }} {{ sku.exchangeRateSell?.baseCurrency || '' }}</template>
                             <span class="profit-value num-truncate" :class="{ 'profit-positive': Number(sku.profit) >= 0, 'profit-negative': Number(sku.profit) < 0 }">
                               {{ truncNum(sku.profit) }} {{ sku.exchangeRateSell?.baseCurrency || '' }}
@@ -473,6 +480,13 @@
               </div>
               <div class="co-fin-item">
                 <span class="co-fin-label">{{ $t('merchant.orderDetail.sellingAmountLak') }}</span>
+                <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(Number(co.totalSellingAmount) ) }} {{ sellCurrency }}</template>
+                  <span class="co-fin-value num-truncate">{{ truncNum(Number(co.totalSellingAmount) ) }} <span class="co-fin-currency">{{ sellCurrency }}</span></span>
+                </a-tooltip>
+                <span v-if="sellCurrency !== 'LAK' && sellCurrency !== 'KIP'" class="co-fin-lak-sub">{{ $t('merchant.orderDetail.inLak') }} {{ truncNum(Number(co.targetCurrencyTotalSellingAmount)) }}</span>
+              </div>
+              <div class="co-fin-item">
+                <span class="co-fin-label">{{ $t('merchant.orderDetail.sellingAmountLakAffterDiscount') }}</span>
                 <a-tooltip :overlay-class-name="'blue-tooltip'"><template #title>{{ formatNumber(Number(co.totalSellingAmount) - Number(co.discountAmount)) }} {{ sellCurrency }}</template>
                   <span class="co-fin-value num-truncate">{{ truncNum(Number(co.totalSellingAmount) - Number(co.discountAmount)) }} <span class="co-fin-currency">{{ sellCurrency }}</span></span>
                 </a-tooltip>
