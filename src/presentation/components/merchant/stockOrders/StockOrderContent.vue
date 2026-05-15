@@ -133,7 +133,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import {
   ShoppingOutlined, PlusOutlined, SaveOutlined,
   LeftOutlined, RightOutlined,
@@ -263,6 +263,18 @@ const handleSuccess = () => {
     clearOrderCode();
   }
 };
+
+onBeforeRouteLeave((to) => {
+  // Do not clear when navigating to customer creation from stock order
+  if (to.path === '/merchant/customers/create' && to.query.from === 'stock-order') return;
+  // Clear all stock order related localStorage keys
+  try { localStorage.removeItem('stock_order_draft'); } catch { /* ignore */ }
+  try { localStorage.removeItem('stock_order_active_item'); } catch { /* ignore */ }
+  try { localStorage.removeItem('stock_order_sku_context'); } catch { /* ignore */ }
+  items.value.forEach(item => {
+    try { localStorage.removeItem(`order-item-${item.uid}-variant-index`); } catch { /* ignore */ }
+  });
+});
 
 const { submitting, fieldErrors, clearFieldError, handleSubmit } = useOrderSubmit(
   orderCode, items, handleSuccess, getBuyRateId, getSellRateId, shippingPrice, shippingCurrency, props.editOrderId,
