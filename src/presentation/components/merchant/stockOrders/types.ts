@@ -4,6 +4,7 @@ export interface CustomerInItemForm {
   qty: number;
   discountType?: 'percent' | 'cash' | undefined;
   discountValue?: number;
+  customerOrderId?: number;
 }
 
 export interface CoItemForm {
@@ -32,6 +33,8 @@ export interface ItemForm {
   productImage?: string;
   imageId?: number;
   variants?: ProductVariant[];
+  orderItemId?: number;
+  orderItemSkuId?: number;
 }
 
 // Product variant interface
@@ -43,6 +46,7 @@ export interface ProductVariant {
   // ✅ Remove shippingPrice, discountType, discountValue from variant level
   customers: CustomerInItemForm[];
   productImage?: string; // Product image URL for this variant
+  orderItemSkuId?: number;
 }
 
 export interface DraftData {

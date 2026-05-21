@@ -312,7 +312,7 @@ export type RateType = 'BUY' | 'SELL';
 export type CurrencyCode = 'THB' | 'USD' | 'LAK';
 
 export type ArrivalStatusEnum = 'NOT_ARRIVED' | 'ARRIVED';
-export type PaymentStatusEnum = 'UNPAID' | 'PARTIAL' | 'PAID';
+export type PaymentStatusEnum = 'NOT_CREATED' | 'UNPAID' | 'PARTIAL' | 'PAID';
 export type ArrivalItemCondition = 'OK' | 'DAMAGED' | 'LOST';
 
 export interface ExchangeRateSnapshot {
@@ -323,8 +323,8 @@ export interface ExchangeRateSnapshot {
   rateType: string;
   rateDate: string;
   isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface OrderItemSku {

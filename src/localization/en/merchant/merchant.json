@@ -280,6 +280,7 @@
     },
     "toast": {
       "createSuccess": "Order created successfully!",
+      "updateSuccess": "Order updated successfully!",
       "qtyExceeded": "'{productName}' has {totalQty} units total. Only {remainingQty} unit(s) can still be assigned.",
       "insufficientStock": "Not enough stock for '{productName}': requested {requested}, only {available} available."
     }
@@ -417,6 +418,7 @@
     "breadcrumbDetail": "Order Detail",
     "back": "Back to Orders",
     "notFound": "Order not found",
+    "orderAlreadyPaidCannotUpdate": "Order already paid and cannot be updated",
     "orderInfo": "Order Information",
     "orderCode": "Order Code",
     "orderDate": "Order Date",

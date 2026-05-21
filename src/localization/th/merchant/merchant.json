@@ -281,6 +281,7 @@
     },
     "toast": {
       "createSuccess": "สร้างออเดอร์สำเร็จ!",
+      "updateSuccess": "แก้ไขออเดอร์สำเร็จ!",
       "qtyExceeded": "สินค้า '{productName}' มีทั้งหมด {totalQty} ชิ้น ยังจัดสรรได้อีก {remainingQty} ชิ้น",
       "insufficientStock": "สินค้า '{productName}' ไม่เพียงพอ: ต้องการ {requested} ชิ้น มีเพียง {available} ชิ้น"
     }
@@ -421,6 +422,7 @@
     "breadcrumbDetail": "รายละเอียดออเดอร์",
     "back": "กลับไปยังออเดอร์",
     "notFound": "ไม่พบออเดอร์",
+    "orderAlreadyPaidCannotUpdate": "ออเดอร์ชำระเงินแล้ว ไม่สามารถแก้ไขได้",
     "orderInfo": "ข้อมูลออเดอร์",
     "orderCode": "รหัสออเดอร์",
     "orderDate": "วันที่สั่ง",

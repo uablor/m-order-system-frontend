@@ -6,6 +6,7 @@ import type { BackendPaginatedResponse } from '@/shared/types/backend-response.t
 import { extractSingleResult } from '@/shared/types/backend-response.types';
 
 export interface CreateFullOrderItemSkuDto {
+  id?: number;
   orderItemSkuIndex: number;
   variant: string;
   quantity: number;
@@ -16,6 +17,7 @@ export interface CreateFullOrderItemSkuDto {
 }
 
 export interface CreateFullOrderItemDto {
+  id?: number;
   Index: number;
   productName: string;
   skus: CreateFullOrderItemSkuDto[];
@@ -32,6 +34,7 @@ export interface CreateFullCustomerOrderItemDto {
 }
 
 export interface CreateFullCustomerOrderDto {
+  id?: number;
   customerId: number;
   items: CreateFullCustomerOrderItemDto[];
   discountType?: 'PERCENT' | 'FIX';
@@ -41,6 +44,8 @@ export interface CreateFullCustomerOrderDto {
 export interface CreateFullOrderDto {
   orderCode: string;
   shippingPrice?: number;
+  exchangeRateBuyId?: number;
+  exchangeRateSellId?: number;
   shippingExchangeRateId?: number;
   items: CreateFullOrderItemDto[];
   customerOrders: CreateFullCustomerOrderDto[];
@@ -110,6 +115,10 @@ export class OrderRepository {
 
   async updateFull(id: number, data: CreateFullOrderDto): Promise<any> {
     return await this.apiClient.putOrPatch<any>(API_ENDPOINTS.ORDERS.UPDATE_FULL(id), data, 'PUT');
+  }
+
+  async patchFull(id: number, data: CreateFullOrderDto): Promise<any> {
+    return await this.apiClient.putOrPatch<any>(API_ENDPOINTS.ORDERS.PATCH_FULL(id), data, 'PATCH');
   }
 
   async update(id: number, data: OrderUpdateDto): Promise<void> {

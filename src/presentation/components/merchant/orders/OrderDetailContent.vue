@@ -22,6 +22,13 @@
         <EditOutlined />
         ແກ້ໄຂ
       </a-button>
+      <a-alert
+        v-if="order && order.paymentStatus === 'PAID'"
+        type="warning"
+        :message="$t('merchant.orderDetail.orderAlreadyPaidCannotUpdate')"
+        show-icon
+        class="paid-warning"
+      />
     </div>
 
     <a-spin :spinning="loading">
@@ -661,7 +668,7 @@ const getCoItemProductName = (coItem: any) => {
 };
 
 const canEdit = computed(() =>
-  order.value?.paymentStatus === 'UNPAID',
+  order.value?.paymentStatus === 'NOT_CREATED',
 );
 
 const goBack = () => {
@@ -756,6 +763,9 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+.paid-warning {
+  flex: 1;
 }
 .back-btn {
   font-weight: 700;

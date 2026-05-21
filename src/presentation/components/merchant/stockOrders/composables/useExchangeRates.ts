@@ -2,7 +2,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { exchangeRateRepository } from '@/infrastructure/repositories/exchange-rate.repository';
 import { extractArrayResult } from '@/shared/types/backend-response.types';
-import type { ExchangeRate } from '@/domain/entities/user.entity';
+import type { ExchangeRate, ExchangeRateSnapshot } from '@/domain/entities/user.entity';
 
 // Lao Kip is stored as 'KIP' in some legacy records but the ISO code is 'LAK'.
 // Normalize at read time so the rest of the UI always sees 'LAK'.
@@ -25,6 +25,11 @@ export function useExchangeRates() {
 
   const todayBuyRate = ref<ExchangeRate | null>(null);
   const todaySellRate = ref<ExchangeRate | null>(null);
+
+  const setRates = (buy: ExchangeRate | ExchangeRateSnapshot | null, sell: ExchangeRate | ExchangeRateSnapshot | null) => {
+    if (buy) todayBuyRate.value = buy as ExchangeRate;
+    if (sell) todaySellRate.value = sell as ExchangeRate;
+  };
 
   const buyRateDisplay = computed(() =>
     rateDisplay(todayBuyRate.value, t('merchant.orders.exchangeRate.notSet')),
@@ -67,5 +72,6 @@ export function useExchangeRates() {
     getBuyRateId,
     getSellRateId,
     fetchTodayRates,
+    setRates,
   };
 }

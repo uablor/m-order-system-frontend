@@ -25,6 +25,8 @@ export function orderToItemForms(order: Order): {
   items: ItemForm[];
   shippingPrice: number;
   shippingCurrency: 'buy' | 'sell';
+  initialBuyRate: Order['exchangeRateBuy'];
+  initialSellRate: Order['exchangeRateSell'];
 } {
   // Build a lookup: customerId → { discountType, discountValue }
   const customerDiscountLookup = new Map<number, { discountType?: 'percent' | 'cash'; discountValue?: number }>();
@@ -48,6 +50,7 @@ export function orderToItemForms(order: Order): {
               uid: uid(),
               customerId: co.customerId,
               qty: coi.quantity,
+              customerOrderId: co.id,
               ...disc,
             });
           }
@@ -75,6 +78,8 @@ export function orderToItemForms(order: Order): {
         imageId: orderItem.imageId ?? undefined,
         productImage: orderItem.image?.publicUrl ?? undefined,
         customers,
+        orderItemId: orderItem.id,
+        orderItemSkuId: sku?.id,
       };
     }
 
@@ -90,6 +95,7 @@ export function orderToItemForms(order: Order): {
               uid: uid(),
               customerId: co.customerId,
               qty: coi.quantity,
+              customerOrderId: co.id,
               ...disc,
             });
           }
@@ -102,6 +108,7 @@ export function orderToItemForms(order: Order): {
         purchasePrice: Number(sku.purchasePrice),
         sellingPriceForeign: Number(sku.sellingPriceForeign),
         customers: skuCustomers,
+        orderItemSkuId: sku.id,
       };
     });
 
@@ -128,17 +135,27 @@ export function orderToItemForms(order: Order): {
       productImage: orderItem.image?.publicUrl ?? undefined,
       customers: [],
       variants,
+      orderItemId: orderItem.id,
     };
   });
 
-  // Get shipping price from the first order item (same value applied to all items by backend)
-  const rawShipping = order.orderItems?.[0]?.shippingPrice;
-  const shippingPrice = rawShipping ? Number(rawShipping) : 0;
+  // Shipping is stored at the order level (totalShippingCost), not per-item
+  const shippingPrice = order.totalShippingCost ? Number(order.totalShippingCost) : 0;
+
+  // Determine shipping currency: compare shippingExchangeRate id to sell rate id
+  let shippingCurrency: 'buy' | 'sell' = 'buy';
+  if (order.shippingExchangeRate && order.exchangeRateSell) {
+    if (order.shippingExchangeRate.id === order.exchangeRateSell.id) {
+      shippingCurrency = 'sell';
+    }
+  }
 
   return {
     orderCode: order.orderCode,
     items,
     shippingPrice,
-    shippingCurrency: 'buy',
+    shippingCurrency,
+    initialBuyRate: order.exchangeRateBuy,
+    initialSellRate: order.exchangeRateSell,
   };
 }

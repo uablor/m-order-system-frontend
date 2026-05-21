@@ -281,6 +281,7 @@
     },
     "toast": {
       "createSuccess": "ສ້າງອໍເດີສຳເລັດ!",
+      "updateSuccess": "ແກ້ໄຂອໍເດີສຳເລັດ!",
       "qtyExceeded": "ສິນຄ້າ '{productName}' ມີທັງໝົດ {totalQty} ໜ່ວຍ ຍັງຈັດສັນໄດ້ {remainingQty} ໜ່ວຍ",
       "insufficientStock": "ສິນຄ້າ '{productName}' ບໍ່ພໍ: ຕ້ອງການ {requested} ໜ່ວຍ ມີພຽງ {available} ໜ່ວຍ"
     }
@@ -421,6 +422,7 @@
     "breadcrumbDetail": "ລາຍລະອຽດອໍເດີ",
     "back": "ກັບໄປຫາອໍເດີ",
     "notFound": "ບໍ່ພົບອໍເດີ",
+    "orderAlreadyPaidCannotUpdate": "ອໍເດີຈ່າຍແລ້ວ ບໍ່ສາມາດແກ້ໄຂໄດ້",
     "orderInfo": "ຂໍ້ມູນອໍເດີ",
     "orderCode": "ລະຫັດອໍເດີ",
     "orderDate": "ວັນທີ່ສັ່ງ",
