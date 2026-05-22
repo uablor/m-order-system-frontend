@@ -495,7 +495,12 @@ const purchaseForeignCurrencyMatchesShipping = computed(() => {
 });
 
 const purchaseTotalForeignWithShippingInForeign = computed(() => {
-  // When currencies match, add directly in foreign currency
+  // When currencies match, add shipping directly without conversion
+  if (purchaseForeignCurrencyMatchesShipping.value) {
+    // shippingPrice is already in the same currency as purchaseTotalForeign
+    return props.purchaseTotalForeign + (props.shippingPrice ?? 0);
+  }
+  // When currencies don't match, convert shipping from LAK to foreign currency
   const shippingInForeign = (props.shippingConverted ?? 0) / (props.sellRate ?? 1);
   return props.purchaseTotalForeign + shippingInForeign;
 });

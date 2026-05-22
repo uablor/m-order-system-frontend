@@ -13,6 +13,7 @@
     "sectionFinancialOverviewDesc": "Total revenue in LAK equivalent",
     "sectionTopCustomers": "Top Customers",
     "currency": "Currency",
+    "noFinancialData": "No financial data",
     "sectionTopCustomersDesc": "Best performing customers by purchase amount",
     "sectionTopCustomersAndOrderItems": "Top Customers & Latest Order Items",
     "sectionTopCustomersAndOrderItemsDesc": "Best customers and recent order items",

@@ -300,9 +300,9 @@ const shippingConverted = computed(() => {
 // const shippingLak = shippingConverted;
 
 const summaryPurchaseTotalForeign = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcNetCostForeignWithVariants(item), 0));
+  items.value.reduce((sum, item) => sum + calc.calcPurchaseTotalForeignWithVariants(item), 0));
 const summaryPurchaseTotalLak = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcNetCostLakWithVariants(item), 0));
+  items.value.reduce((sum, item) => sum + calc.calcPurchaseTotalLakWithVariants(item), 0));
 const summarySellingTotalForeign = computed(() => {
   const raw = items.value.reduce((sum, item) => sum + calc.calcSellingTotalForeignWithVariants(item), 0);
   return Math.max(0, raw - customerTotalDiscount.value);
@@ -313,7 +313,7 @@ const summarySellingTotalLak = computed(() => {
   return Math.max(0, rawLak - customerTotalDiscount.value * rate);
 });
 const summaryNetCostLak = computed(() =>
-  items.value.reduce((sum, item) => sum + calc.calcNetCostLakWithVariants(item), 0));
+  items.value.reduce((sum, item) => sum + calc.calcPurchaseTotalLakWithVariants(item), 0));
 const summaryProfitLak = computed(() => summarySellingTotalLak.value - summaryNetCostLak.value);
 const summaryProfitForeign = computed(() => {
   const rate = getEffectiveSellRate();

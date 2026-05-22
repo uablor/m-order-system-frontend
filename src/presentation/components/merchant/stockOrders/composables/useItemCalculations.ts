@@ -42,16 +42,18 @@ export function useItemCalculations(getBuyRate: () => number, getSellRate: () =>
 
   const calcNetCostForeign = (item: ItemForm) => {
     const purchaseTotalForeign = item.purchasePrice * getItemTotalQty(item);
-    const discountLak = calcDiscountLak(item); // Discount in LAK
-    const buyRate = getBuyRate();
+    // const discountLak = calcDiscountLak(item); // Discount in LAK
+    // const buyRate = getBuyRate();
     
     // Convert discount from LAK to buyBaseCcy using buy rate
-    const discountInBuyCurrency = buyRate === 0 ? 0 : discountLak / buyRate;
+    // const discountInBuyCurrency = buyRate === 0 ? 0 : discountLak / buyRate;
     
-    return purchaseTotalForeign - discountInBuyCurrency;
+    // return purchaseTotalForeign - discountInBuyCurrency;
+    return purchaseTotalForeign ;
   };
 
-  const calcNetCostLak = (item: ItemForm) => calcPurchaseTotalLak(item) - calcDiscountLak(item);
+  // const calcNetCostLak = (item: ItemForm) => calcPurchaseTotalLak(item) - calcDiscountLak(item);
+  const calcNetCostLak = (item: ItemForm) => calcPurchaseTotalLak(item) ;
 
   const calcSellingUnitLak = (item: ItemForm) => item.sellingPriceForeign * getSellRate();
   const calcSellingTotalForeign = (item: ItemForm) => item.sellingPriceForeign * getItemTotalQty(item);

@@ -37,7 +37,7 @@ export function orderToItemForms(order: Order): {
   const items: ItemForm[] = (order.orderItems ?? []).map(orderItem => {
     const skus = orderItem.skus || [];
 
-    if (skus.length <= 1) {
+    if (skus.length <= 0) {
       const sku = skus[0];
       const customers: CustomerInItemForm[] = [];
 

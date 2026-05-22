@@ -12,6 +12,7 @@
     "sectionFinancialOverview": "สรุปการเงิน",
     "sectionFinancialOverviewDesc": "รายได้รวมเทียบเท่า LAK",
     "sectionTopCustomers": "ลูกค้าอันดับต้น",
+    "noFinancialData": "ไม่มีข้อมูลการเงิน",
     "currency": "สกุลเงิน",
     "sectionTopCustomersDesc": "ลูกค้าที่มียอดซื้อสูงสุด",
     "sectionTopCustomersAndOrderItems": "ลูกค้าอันดับต้น & รายการสินค้าล่าสุด",
