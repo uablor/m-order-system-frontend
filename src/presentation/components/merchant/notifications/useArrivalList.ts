@@ -120,6 +120,7 @@ export function useCustomerOrderList() {
     const q: CustomerOrderQueryDto = {
       page: currentPage.value,
       limit: pageSize.value,
+      merchantId: authPayload.value?.merchantId,
       // notificationStatus: 'null', // Filter for orders where notification is null - removed since backend defaults to null
     };
 
@@ -127,7 +128,7 @@ export function useCustomerOrderList() {
     if (filters.customerId) q.customerId = filters.customerId;
     if (startDate.value) q.startDate = startDate.value.format('YYYY-MM-DD');
     if (endDate.value) q.endDate = endDate.value.format('YYYY-MM-DD');
-    
+
     // Optional: explicitly set notificationStatus if needed
     // q.notificationStatus = 'null'; // Uncomment to explicitly filter for null notifications
 
