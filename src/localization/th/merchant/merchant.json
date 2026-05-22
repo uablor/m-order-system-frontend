@@ -667,6 +667,8 @@
   "arrivalDetail": {
     "breadcrumbArrivals": "เคื่องมาถึง",
     "breadcrumbDetail": "รายละเอียดการมาถึง",
+    "tableProfit":"กำไร",
+    "tableAvatar": "รูปโปรไฟล์",
     "back": "กลับไปยังการมาถึง",
     "notFound": "ไม่พบการมาถึง",
     "arrivalInfo": "ข้อมูลการมาถึง",

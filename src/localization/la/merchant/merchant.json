@@ -669,6 +669,8 @@
   },
   "arrivalDetail": {
     "breadcrumbArrivals": "ເຄື່ອງມາຮອດ",
+    "tableProfit":"ກຳໄລ",
+    "tableAvatar": "ຮູບແທນ",
     "breadcrumbDetail": "ລາຍລະອຽດການມາຮອດ",
     "back": "ກັບໄປຫາການມາຮອດ",
     "notFound": "ບໍ່ພົບການມາຮອດ",

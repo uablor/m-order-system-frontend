@@ -676,6 +676,7 @@
     "arrivedTime": "Arrived Time",
     "recordedBy": "Recorded By",
     "notes": "Notes",
+    "tableProfit":"profit",
     "createdAt": "Created At",
     "updatedAt": "Updated At",
     "arrivalItems": "Arrival Items",

@@ -64,6 +64,8 @@ export interface CustomerOrderListQuery {
   orderCode?: string;
   customerOrderId?: number;
   customerId?: number;
+  merchantId?: number;
+  search?: string;
   customerToken?: string;
   notificationToken?: string;
   notificationStatus?: string;
@@ -150,13 +152,15 @@ class CustomerOrderRepository {
     if (query?.orderCode) params.orderCode = query.orderCode;
     if (query?.customerOrderId) params.customerOrderId = query.customerOrderId;
     if (query?.customerId) params.customerId = query.customerId;
+    if (query?.merchantId) params.merchantId = query.merchantId;
+    if (query?.search) params.search = query.search;
     if (query?.customerToken) params.customerToken = query.customerToken;
     if (query?.notificationToken) params.notificationToken = query.notificationToken;
     if (query?.notificationStatus) params.notificationStatus = query.notificationStatus;
     if (query?.paymentStatus) params.paymentStatus = query.paymentStatus;
     if (query?.startDate) params.startDate = query.startDate;
     if (query?.endDate) params.endDate = query.endDate;
-    
+
     return this.apiClient.getParams<BackendPaginatedResponse<CustomerOrder>>(
       API_ENDPOINTS.CUSTOMER_ORDERS.LIST,
       params,

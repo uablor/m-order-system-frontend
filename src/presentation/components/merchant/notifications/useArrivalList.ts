@@ -7,7 +7,7 @@ import { useI18n } from 'vue-i18n';
 import type { TablePaginationConfig } from 'ant-design-vue';
 import type { TableColumnsType } from 'ant-design-vue';
 import type { Dayjs } from 'dayjs';
-import { customerOrderRepository } from '@/infrastructure/repositories/customer-order.repository';
+import { customerOrderRepository, type CustomerOrderListQuery } from '@/infrastructure/repositories/customer-order.repository';
 import { customerRepository } from '@/infrastructure/repositories/customer.repository';
 import { notificationRepository } from '@/infrastructure/repositories/notification.repository';
 import { useWhatsApp } from '@/shared/composables/useWhatsApp';
@@ -25,18 +25,6 @@ const debounce = <T extends (...args: any[]) => any>(func: T, delay: number) => 
   };
 };
 
-export interface CustomerOrderQueryDto {
-  page?: number;
-  limit?: number;
-  merchantId?: number;
-  search?: string;
-  startDate?: string;
-  endDate?: string;
-  customerId?: number;
-  orderCode?: string;
-  paymentStatus?: string;
-  notificationStatus?: string;
-}
 import { useAuthStore } from '@/store/auth.store';
 import { storeToRefs } from 'pinia';
 import { useIsMobile } from '@/shared/composables/useIsMobile';
@@ -116,8 +104,8 @@ export function useCustomerOrderList() {
   }, 500); // 500ms delay
 
   // Build query for API
-  const buildQuery = (): CustomerOrderQueryDto => {
-    const q: CustomerOrderQueryDto = {
+  const buildQuery = (): CustomerOrderListQuery => {
+    const q: CustomerOrderListQuery = {
       page: currentPage.value,
       limit: pageSize.value,
       merchantId: authPayload.value?.merchantId,
