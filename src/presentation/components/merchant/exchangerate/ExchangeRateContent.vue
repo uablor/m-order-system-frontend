@@ -352,7 +352,6 @@ watch(() => windowWidth.value, (newWidth) => {
   clearTimeout(resizeTimer);
   
   if (isUpdating.value) {
-    console.warn('Skipping update - already updating');
     return;
   }
   
@@ -383,18 +382,15 @@ const originalReplaceChild = Node.prototype.replaceChild;
 // More robust DOM manipulation fixes with additional safety checks
 Node.prototype.removeChild = function<T extends Node>(child: T): T {
   if (!this || !child) {
-    console.warn('removeChild called with invalid arguments');
     return child;
   }
   if (!this.contains?.(child)) {
-    console.warn('removeChild: child not found in parent');
     return child;
   }
   try {
     return originalRemoveChild.call(this, child) as T;
   } catch (error) {
     if (error instanceof DOMException && (error.name === 'NotFoundError' || error.name === 'TypeError')) {
-      console.warn('removeChild error prevented:', error.message);
       return child;
     }
     throw error;
@@ -403,17 +399,15 @@ Node.prototype.removeChild = function<T extends Node>(child: T): T {
 
 Node.prototype.insertBefore = function<T extends Node>(newNode: T, referenceNode: Node | null): T {
   if (!this || !newNode) {
-    console.warn('insertBefore called with invalid arguments');
     return newNode;
   }
   if (referenceNode && !this.contains?.(referenceNode)) {
-    console.warn('insertBefore: reference node not found in parent, proceeding anyway');
+    // reference node not found in parent, proceeding anyway
   }
   try {
     return originalInsertBefore.call(this, newNode, referenceNode) as T;
   } catch (error) {
     if (error instanceof DOMException && (error.name === 'NotFoundError' || error.name === 'TypeError')) {
-      console.warn('insertBefore error prevented:', error.message);
       return newNode;
     }
     throw error;
@@ -422,14 +416,12 @@ Node.prototype.insertBefore = function<T extends Node>(newNode: T, referenceNode
 
 Node.prototype.appendChild = function<T extends Node>(child: T): T {
   if (!this || !child) {
-    console.warn('appendChild called with invalid arguments');
     return child;
   }
   try {
     return originalAppendChild.call(this, child) as T;
   } catch (error) {
     if (error instanceof DOMException && (error.name === 'NotFoundError' || error.name === 'TypeError')) {
-      console.warn('appendChild error prevented:', error.message);
       return child;
     }
     throw error;
@@ -438,14 +430,12 @@ Node.prototype.appendChild = function<T extends Node>(child: T): T {
 
 (Node.prototype as any).replaceChild = function(newChild: Node, oldChild: Node): Node {
   if (!this || !newChild || !oldChild) {
-    console.warn('replaceChild called with invalid arguments');
     return newChild;
   }
   try {
     return originalReplaceChild.call(this, newChild, oldChild);
   } catch (error) {
     if (error instanceof DOMException && (error.name === 'NotFoundError' || error.name === 'TypeError')) {
-      console.warn('replaceChild error prevented:', error.message);
       return newChild;
     }
     throw error;
@@ -457,14 +447,12 @@ const originalInsert = (Element.prototype as any).insertBefore;
 if (originalInsert) {
   (Element.prototype as any).insertBefore = function(newNode: Node, referenceNode: Node | null) {
     if (!this || !newNode) {
-      console.warn('Element.insertBefore called with invalid arguments');
       return newNode;
     }
     try {
       return originalInsert.call(this, newNode, referenceNode);
     } catch (error) {
       if (error instanceof DOMException && (error.name === 'NotFoundError' || error.name === 'TypeError')) {
-        console.warn('Element.insertBefore error prevented:', error.message);
         return newNode;
       }
       throw error;

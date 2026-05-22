@@ -545,9 +545,7 @@ const openCurrentCustomerWhatsApp = () => {
   
   whatsappCurrentName.value = customerName;
   whatsappProgress.value = currentCustomerIndex.value;
-  
-  console.log(`Opening WhatsApp for ${customerName} (${currentNotification.recipientContact})`);
-  
+
   const success = openWhatsAppChat({
     phone: currentNotification.recipientContact!,
     template: {
@@ -559,10 +557,7 @@ const openCurrentCustomerWhatsApp = () => {
   });
 
   if (!success) {
-    console.warn(`Failed to open WhatsApp for ${customerName}`);
     message.error(t('merchant.arrivals.whatsappError'));
-  } else {
-    console.log(`Successfully opened WhatsApp for ${customerName}`);
   }
 };
 

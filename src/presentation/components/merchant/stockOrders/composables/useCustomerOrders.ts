@@ -152,7 +152,7 @@ export function useCustomerOrders(
       const res = await customerRepository.getList({ merchantId: mid, search: search || undefined, limit: 50 });
       customerOptions.value = res.results ?? [];
     } catch (err) {
-      console.error('[StockOrder] fetchCustomers failed:', err);
+      // fetchCustomers failed
     } finally {
       customerSearching.value = false;
     }

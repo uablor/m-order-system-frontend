@@ -134,7 +134,6 @@ const handleSubmit = async () => {
     visible.value = false;
     resetForm();
   } catch (error: any) {
-    console.error('Change password error:', error);
     const errorMessage = error?.response?.data?.message || t('merchants.changePasswordError');
     message.error(errorMessage);
   } finally {

@@ -656,7 +656,7 @@ const saveVariantIndex = (index: number) => {
   try {
     localStorage.setItem(getLocalStorageKey(), index.toString());
   } catch (error) {
-    console.warn('Failed to save variant index to localStorage:', error);
+    // Failed to save variant index to localStorage
   }
 };
 
@@ -666,7 +666,6 @@ const loadVariantIndex = (): number => {
     const saved = localStorage.getItem(getLocalStorageKey());
     return saved ? parseInt(saved, 10) : 0;
   } catch (error) {
-    console.warn('Failed to load variant index from localStorage:', error);
     return 0;
   }
 };
@@ -839,15 +838,12 @@ const triggerVariantAnimation = (direction: 'next' | 'previous' | 'new') => {
         duration = 500;
         break;
     }
-    
+
     mainSection.classList.add(animationClass);
-    
-    console.log(`Animation triggered: ${animationClass} (${direction})`); // Debug log
-    
+
     // Remove animation class after animation completes
     setTimeout(() => {
       mainSection.classList.remove(animationClass);
-      console.log(`Animation removed: ${animationClass}`); // Debug log
     }, duration);
   }
 };
@@ -869,13 +865,11 @@ const beforeImageUpload = (file: File) => {
 
 const handleImageUpload = async (options: any) => {
   const { file } = options;
-  console.log('Starting image upload for file:', file.name);
   imageUploading.value = true;
-  
+
   try {
     // Upload image to server and get real imageId
     const uploadedImages = await uploadFilesForMerchant([file]);
-    console.log('Upload response:', uploadedImages);
     
     const imageId = uploadedImages[0]?.id;
     if (!imageId) {
@@ -887,20 +881,13 @@ const handleImageUpload = async (options: any) => {
     reader.onload = (e) => {
       props.item.productImage = e.target?.result as string;
       props.item.imageId = imageId; // Use real imageId from server
-      console.log('✅ Uploaded image successfully:', {
-        imageId,
-        fileName: file.name,
-        previewUrl: e.target?.result
-      });
       message.success('Image uploaded successfully!');
     };
-    reader.onerror = (error) => {
-      console.error('❌ FileReader error:', error);
+    reader.onerror = () => {
       message.error('Failed to read image file');
     };
     reader.readAsDataURL(file);
   } catch (error) {
-    console.error('❌ Image upload error:', error);
     message.error('Failed to upload image: ' + (error as Error).message);
   } finally {
     imageUploading.value = false;
@@ -911,12 +898,9 @@ const removeImage = async () => {
   // If there's an imageId, delete the file from server
   if (props.item.imageId) {
     try {
-      console.log('🗑️ Attempting to delete image with ID:', props.item.imageId);
       await deleteFile(props.item.imageId);
-      console.log('✅ Image deleted successfully from server:', props.item.imageId);
       message.success('Image deleted successfully');
     } catch (error: any) {
-      console.error('❌ Failed to delete image from server:', error);
       
       // Handle different error types
       if (error.response?.status === 404) {

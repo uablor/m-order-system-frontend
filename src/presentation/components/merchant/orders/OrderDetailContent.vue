@@ -649,10 +649,6 @@ const formatDateOnly = (dateStr: string | Date) => {
 };
 
 const getCoItemProductName = (coItem: any) => {
-  console.log('=== getCoItemProductName DEBUG ===');
-  console.log('coItem:', coItem);
-  console.log('coItem.variant:', coItem.variant);
-  
   // Return only the variant - this is what you want
   if (coItem.variant) {
     return coItem.variant;
@@ -718,9 +714,8 @@ const backToOrderItems = () => {
   selectedOrderItemId.value = null;
 };
 
-const handleImageError = (event: any) => {
+const handleImageError = () => {
   // Log error but don't hide - let browser handle naturally
-  console.warn('Image failed to load:', event.target?.src);
 };
 
 const selectedOrderItem = computed(() => {

@@ -16,6 +16,10 @@ export class ExchangeRateRepository {
     return await this.apiClient.post<{ id: number }>(API_ENDPOINTS.EXCHANGE_RATES.CREATE, data);
   }
 
+  async createForEdit(data: ExchangeRateCreateDto): Promise<{ id: number }> {
+    return await this.apiClient.post<{ id: number }>(API_ENDPOINTS.EXCHANGE_RATES.CREATE_FOR_EDIT, data);
+  }
+
   async createBulk(data: ExchangeRateBulkCreateDto): Promise<void> {
     await this.apiClient.post<void>(API_ENDPOINTS.EXCHANGE_RATES.BULK_CREATE, data);
   }

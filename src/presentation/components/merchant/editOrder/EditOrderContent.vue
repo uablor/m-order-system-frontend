@@ -277,7 +277,33 @@ const summaryProfitForeign = computed(() => {
 });
 
 const refreshRates = () => fetchTodayRates();
-defineExpose({ refreshRates });
+
+const updateExchangeRates = async (buyId?: number, sellId?: number) => {
+  try {
+    const { exchangeRateRepository } = await import('@/infrastructure/repositories/exchange-rate.repository');
+    const buyRate = buyId ? await exchangeRateRepository.getById(buyId) : null;
+    const sellRate = sellId ? await exchangeRateRepository.getById(sellId) : null;
+    setRates(buyRate, sellRate);
+  } catch (error) {
+    // Failed to update exchange rates
+  }
+};
+
+const getStoredExchangeRateIds = () => {
+  const storageKey = `edit_order_${props.editOrderId}_exchange_rates`;
+  const storedRates = localStorage.getItem(storageKey);
+  if (storedRates) {
+    try {
+      const { buyRateId, sellRateId } = JSON.parse(storedRates);
+      return { buyRateId, sellRateId };
+    } catch (error) {
+      // Failed to parse stored exchange rates
+    }
+  }
+  return { buyRateId: undefined, sellRateId: undefined };
+};
+
+defineExpose({ refreshRates, updateExchangeRates, getStoredExchangeRateIds });
 
 onMounted(async () => {
   // Populate from existing order data
@@ -290,17 +316,34 @@ onMounted(async () => {
   if (props.initialShippingPrice !== undefined) shippingPrice.value = props.initialShippingPrice;
   if (props.initialShippingCurrency) shippingCurrency.value = props.initialShippingCurrency;
 
-  // Seed the order's saved exchange rates. Do NOT auto-fetch today's rates
-  // so the order's original rates are preserved. User can update via rate modal.
-  if (props.initialBuyRate || props.initialSellRate) {
-    setRates(
-      props.initialBuyRate ?? null,
-      props.initialSellRate ?? null,
-    );
+  // Check if there are new exchange rate IDs from localStorage (created via modal)
+  const storageKey = `edit_order_${props.editOrderId}_exchange_rates`;
+  const storedRates = localStorage.getItem(storageKey);
+  
+  if (storedRates) {
+    try {
+      const { buyRateId, sellRateId } = JSON.parse(storedRates);
+      await updateExchangeRates(buyRateId, sellRateId);
+    } catch (error) {
+      // Fallback to initial rates
+      if (props.initialBuyRate || props.initialSellRate) {
+        setRates(
+          props.initialBuyRate ?? null,
+          props.initialSellRate ?? null,
+        );
+      }
+    }
   } else {
-    // No saved rates on order — fall back to today's
-    fetchTodayRates();
+    // Seed the order's saved exchange rates. Do NOT auto-fetch today's rates
+    // so the order's original rates are preserved. User can update via rate modal.
+    if (props.initialBuyRate || props.initialSellRate) {
+      setRates(
+        props.initialBuyRate ?? null,
+        props.initialSellRate ?? null,
+      );
+    }
   }
+  // If no saved rates on order, leave fields empty for user to create new rates via modal
   await fetchCustomers('');
   handleNewCustomerReturn();
 });

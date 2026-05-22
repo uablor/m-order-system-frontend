@@ -249,7 +249,7 @@ const submit = async () => {
     const ok = await createUserWithMerchant(payload);
     if (ok) router.push('/super-admin/users');
   } catch (error) {
-    console.error('Validation failed:', error);
+    // Validation failed
   }
 };
 

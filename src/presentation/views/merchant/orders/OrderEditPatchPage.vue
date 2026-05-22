@@ -25,7 +25,7 @@
       :initial-sell-rate="initialSellRate"
       @open-rate-modal="openModal"
     />
-    <ExchangeRateBulkModal ref="bulkModalRef" @submitted="onRatesSubmitted" @skipped="() => {}" />
+    <ExchangeRateBulkModal ref="bulkModalRef" for-edit @submitted="onRatesSubmitted" @skipped="() => {}" />
   </MerchantLayout>
 </template>
 
@@ -92,7 +92,17 @@ const openModal = (data?: {
   bulkModalRef.value?.open('both', data);
 };
 
-const onRatesSubmitted = () => {
-  contentRef.value?.refreshRates();
+const onRatesSubmitted = (data?: { buyId?: number; sellId?: number }) => {
+  if (data && (data.buyId || data.sellId)) {
+    // Store new exchange rate IDs in localStorage for this order
+    const storageKey = `edit_order_${orderId.value}_exchange_rates`;
+    localStorage.setItem(storageKey, JSON.stringify({
+      buyRateId: data.buyId,
+      sellRateId: data.sellId,
+    }));
+    contentRef.value?.updateExchangeRates(data.buyId, data.sellId);
+  } else {
+    contentRef.value?.refreshRates();
+  }
 };
 </script>

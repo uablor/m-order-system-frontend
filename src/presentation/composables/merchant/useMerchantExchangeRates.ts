@@ -64,6 +64,21 @@ export function useMerchantExchangeRates() {
     }
   };
 
+  const createRateForEdit = async (payload: Omit<ExchangeRateCreateDto, 'merchantId'>) => {
+    loading.value = true;
+    try {
+      const result = await exchangeRateRepository.createForEdit(payload);
+      message.success(t('merchant.exchangeRates.toast.createSuccess'));
+      await fetchRates({ page: 1 });
+      return result.id;
+    } catch (error) {
+      handleApiError(error, t);
+      return null;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   const createBulkRates = async (items: Omit<ExchangeRateCreateDto, 'merchantId'>[]) => {
     loading.value = true;
     try {
@@ -113,6 +128,7 @@ export function useMerchantExchangeRates() {
     filterRateType: computed(() => filterRateType.value),
     fetchRates,
     createRate,
+    createRateForEdit,
     createBulkRates,
     deleteRate,
     changePage,

@@ -109,7 +109,6 @@ export function useCustomerOrderList() {
         name: customer.customerName || `Customer ${customer.id}`
       })) || [];
     } catch (error) {
-      console.error('Failed to fetch customers:', error);
       customerOptions.value = [];
     } finally {
       loadingCustomers.value = false;
@@ -363,13 +362,11 @@ export function useCustomerOrderList() {
           }
         }
       } catch (error) {
-        console.error('Failed to create notifications:', error);
         message.error('Failed to create notifications');
       } finally {
         createNotiSubmitting.value = false;
       }
     } catch (error) {
-      console.error('Error in notification creation process:', error);
       message.error('An error occurred while creating notifications');
       createNotiSubmitting.value = false;
     }

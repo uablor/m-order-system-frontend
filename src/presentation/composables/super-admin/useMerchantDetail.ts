@@ -23,7 +23,6 @@ export function useMerchantDetail() {
         const currencyRes = await merchantService.getAdminPriceCurrencySummary(id);
         priceCurrencySummary.value = currencyRes.results ?? [];
       } catch (currencyErr) {
-        console.error('Failed to fetch price currency summary:', currencyErr);
         priceCurrencySummary.value = [];
       }
     } catch (err) {

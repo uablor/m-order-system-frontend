@@ -409,7 +409,6 @@ const props = defineProps<{
 const orderCurrencyCache = ref<Map<number, string>>(new Map());
 
 const currencySymbol = (code: string | null) => {
-  console.log("no have currcecy",code);
   if (!code) return '₭';
   const map: Record<string, string> = { 
     LAK: '₭', 
@@ -424,12 +423,8 @@ const currencySymbol = (code: string | null) => {
 
 // Computed properties for formatted prices to ensure reactivity
 const formattedOrderItems = computed(() => {
-  console.log('=== RECOMPUTING FORMATTED ITEMS ===');
-  console.log('Current order ID:', props.order.id);
-  console.log('Order customerOrderItems:', props.order.customerOrderItems);
-  
   // Group items by orderItemId to handle multiple SKUs for same order item
-  const groupedItems = props.order.customerOrderItems?.reduce((acc, item, index) => {
+  const groupedItems = props.order.customerOrderItems?.reduce((acc, item) => {
     const orderItemId = item.orderItemId;
     
     if (!orderItemId) {
@@ -442,15 +437,6 @@ const formattedOrderItems = computed(() => {
         acc[orderItemId] = [];
       }
       acc[orderItemId].push(item);
-      
-      console.log(`Grouping item ${index}:`, {
-        id: item.id,
-        orderItemId: item.orderItemId,
-        orderItemSkuId: item.orderItemSkuId,
-        variant: item.variant,
-        productName: item.productName,
-        groupSize: acc[orderItemId].length
-      });
     }
     
     return acc;
@@ -487,19 +473,11 @@ const formattedOrderItems = computed(() => {
           productName: firstItem.productName || ''
         })
       };
-      
-      console.log(`Merged item for orderItemId ${key}:`, {
-        totalSkus: items.length,
-        allSkus: mergedItem.allSkus,
-        firstItem: firstItem
-      });
-      
+
       return mergedItem;
     }
   }).flat(); // Flatten to handle both grouped and individual items
-  
-  console.log('Formatted items after grouping:', formatted);
-  console.log('Total formatted items count:', formatted.length);
+
   return formatted;
 });
 
@@ -536,8 +514,6 @@ const formatItemPrice = (customerOrderItem: {
       // If there's a converted amount but no exchange rate, assume it's converted to LAK
       currencyCode = 'LAK';
     }
-  } else {
-    console.log('Using default fallback (no exchange rate, no conversion)');
   }
   
   const sym = currencySymbol(currencyCode);
@@ -558,9 +534,7 @@ const formatTotalDue = (o: CustomerOrder & {
   
   // Use exchangeRateSell.baseCurrency from first item for currency symbol
   const firstItem = o.customerOrderItems?.[0];
-  console.log("firstItem", firstItem)
   let currencyCode = firstItem?.exchangeRateSell?.baseCurrency ?? null;
-   console.log("log currencycode", currencyCode)
   // If no exchange rate data, try to use cached currency
   if (!currencyCode) {
     currencyCode = orderCurrencyCache.value.get(o.id) ?? null;
@@ -654,17 +628,9 @@ const fetchOrderItemImage = async (orderItemId: number, orderItemSkuId?: number)
   }
   
   try {
-    console.log(`=== FETCHING ORDER ITEM ${orderItemId} ${orderItemSkuId ? `(SKU: ${orderItemSkuId})` : ''} ===`);
-    
     // Always fetch by orderItemId to get all SKUs
     // Only use SKU filter when we specifically want just that SKU (not for grouped items)
     const orderItem = await orderItemRepository.getById(orderItemId);
-      
-    console.log(`=== API RESPONSE FOR ORDER ITEM ${orderItemId} ===`);
-    console.log('Full response:', JSON.stringify(orderItem, null, 2));
-    console.log('Exchange rate sell data:', orderItem?.exchangeRateSell);
-    console.log('Base currency:', orderItem?.exchangeRateSell?.baseCurrency);
-    console.log('Target currency selling total:', orderItem?.targetCurrencySellingTotal);
     
     // Cache order item
     orderItemImages.value.set(cacheKey, orderItem);
@@ -675,15 +641,12 @@ const fetchOrderItemImage = async (orderItemId: number, orderItemSkuId?: number)
       (orderItemSkuId && item.orderItemSkuId === orderItemSkuId)
     );
     if (customerOrderItem && orderItem?.exchangeRateSell) {
-      console.log(`=== UPDATING ORDER ITEM ${orderItemId} WITH EXCHANGE RATE DATA ===`);
-      console.log('Before update:', customerOrderItem.exchangeRateSell);
       // Type assertion to handle API response format
       customerOrderItem.exchangeRateSell = orderItem.exchangeRateSell as any;
-      console.log('After update:', customerOrderItem.exchangeRateSell);
     }
-    
+
   } catch (error) {
-    console.error('Error fetching order item image:', error);
+    // Error fetching order item image
   }
 };
 
@@ -748,7 +711,6 @@ const getOrderItemData = (customerOrderItem: any) => {
   if (customerOrderItem.orderItemId) {
     const itemWithPrice = { ...customerOrderItem } as any;
     itemWithPrice.formattedPrice = formatCustomerOrderItemPrice(customerOrderItem.orderItemId);
-    console.log(`getOrderItemData: Using customerOrderItems data for orderItemId ${customerOrderItem.orderItemId}`);
     return itemWithPrice;
   }
   
@@ -771,9 +733,8 @@ const getOrderItemData = (customerOrderItem: any) => {
       if (!currencyCode) {
         currencyCode = 'LAK';
       }
-      
+
       itemWithPrice.formattedPrice = `${formatAmount(totalFromSkus)} ${currencySymbol(currencyCode)}`;
-      console.log(`getOrderItemData: Calculated price from SKUs: ${totalFromSkus} ${currencyCode}`);
     }
     return itemWithPrice;
   }
@@ -822,13 +783,7 @@ const getQuantityFromCustomerOrderItems = (orderItemId: number) => {
   
   const itemsWithSameOrderItemId = props.order.customerOrderItems.filter((item: any) => item.orderItemId === orderItemId);
   const totalQuantity = itemsWithSameOrderItemId.reduce((sum, item: any) => sum + (item.quantity || 0), 0);
-  
-  console.log(`getQuantityFromCustomerOrderItems for orderItemId ${orderItemId}:`, {
-    totalQuantity,
-    itemsCount: itemsWithSameOrderItemId.length,
-    items: itemsWithSameOrderItemId.map((item: any) => ({ id: item.id, quantity: item.quantity }))
-  });
-  
+
   return totalQuantity;
 };
 
@@ -837,13 +792,7 @@ const getTotalPriceFromCustomerOrderItems = (orderItemId: number) => {
   
   const itemsWithSameOrderItemId = props.order.customerOrderItems.filter((item: any) => item.orderItemId === orderItemId);
   const totalSellingTotal = itemsWithSameOrderItemId.reduce((sum, item: any) => sum + parseFloat(item.sellingTotal || '0'), 0);
-  
-  console.log(`getTotalPriceFromCustomerOrderItems for orderItemId ${orderItemId}:`, {
-    totalSellingTotal,
-    itemsCount: itemsWithSameOrderItemId.length,
-    items: itemsWithSameOrderItemId.map((item: any) => ({ id: item.id, sellingTotal: item.sellingTotal }))
-  });
-  
+
   return totalSellingTotal;
 };
 
@@ -862,13 +811,7 @@ const formatCustomerOrderItemPrice = (orderItemId: number) => {
   }
   
   const formattedPrice = `${formatAmount(totalAmount)} ${currencySymbol(currencyCode)}`;
-  
-  console.log(`formatCustomerOrderItemPrice for orderItemId ${orderItemId}:`, {
-    totalAmount,
-    currencyCode,
-    formattedPrice
-  });
-  
+
   return formattedPrice;
 };
 
@@ -882,18 +825,15 @@ const getItemQuantity = (customerOrderItem: { orderItemId?: number | null; quant
   return customerOrderItem.quantity ?? 0;
 };
 
-watch(() => props.order.id, (newOrderId, oldOrderId) => {
-  console.log(`Order changed from ${oldOrderId} to ${newOrderId}, clearing cache`);
+watch(() => props.order.id, () => {
   paymentData.value = null;
   // Clear the order item images cache when switching orders
   orderItemImages.value.clear();
-  console.log('Cache cleared, current cache size:', orderItemImages.value.size);
   fetchPaymentData();
 });
 
 // Watch for order payment status changes to refresh payment data
 watch(() => [props.order.paymentStatus, props.order.hasPendingPayment], () => {
-  console.log('Order payment status changed, refreshing payment data');
   fetchPaymentData();
 }, { deep: true });
 
@@ -940,7 +880,7 @@ const fetchPaymentData = async () => {
     const payment = await paymentRepository.getByCustomerOrderId(props.order.id);
     paymentData.value = payment;
   } catch (error) {
-    console.error('Error fetching payment data:', error);
+    // Error fetching payment data
   } finally {
     paymentLoading.value = false;
   }

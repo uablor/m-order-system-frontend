@@ -299,8 +299,6 @@ const nonLakCurrencies = computed(() =>
 );
 const lakCurrencyTarget = computed(() => {
   const found = allCurrencies.value.find((c) => (c.targetCurrency || '').toUpperCase() === 'LAK');
-  console.log('All currencies:', allCurrencies.value);
-  console.log('Found LAK currency:', found);
   return found;
 });
 /* Financial Summary: show only when data exists */
@@ -309,14 +307,11 @@ const displaySummaryLakCurrency = computed(() => lakCurrencyTarget.value ?? null
 const safeFetchDashboard = async () => {
   error.value = null;
   try {
-    console.log('Fetching dashboard data...');
     const result = await fetchDashboard();
-    console.log('Dashboard fetch result:', result);
     if (!result) {
       error.value = 'Failed to fetch dashboard data';
     }
   } catch (err) {
-    console.error('Dashboard fetch error:', err);
     error.value = err instanceof Error ? err.message : 'Unknown error occurred';
   }
 };
@@ -332,7 +327,6 @@ const fetchWithTimeout = async () => {
   
   // Set a timeout to stop loading after 10 seconds
   loadingTimeout.value = window.setTimeout(() => {
-    console.log('Dashboard loading timeout reached');
     error.value = 'Loading timeout - Please check your connection';
   }, 10000);
   

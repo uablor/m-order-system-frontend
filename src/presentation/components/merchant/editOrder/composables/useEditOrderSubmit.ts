@@ -132,6 +132,22 @@ export function useEditOrderSubmit(
     if (!validate()) return;
     submitting.value = true;
     try {
+      // Check localStorage for new exchange rate IDs created via modal
+      const storageKey = `edit_order_${editOrderId}_exchange_rates`;
+      let buyRateId = getBuyRateId();
+      let sellRateId = getSellRateId();
+      
+      try {
+        const storedRates = localStorage.getItem(storageKey);
+        if (storedRates) {
+          const { buyRateId: storedBuyId, sellRateId: storedSellId } = JSON.parse(storedRates);
+          if (storedBuyId) buyRateId = storedBuyId;
+          if (storedSellId) sellRateId = storedSellId;
+        }
+      } catch (error) {
+        // Failed to read stored exchange rates
+      }
+
       const customerMap = new Map<number, { orderItemIndex: number; skuIndex: number; quantity: number; sellingPriceForeign: number }[]>();
       const customerDiscountMap = new Map<number, { discountType?: 'PERCENT' | 'FIX'; discountValue?: number }>();
       const customerOrderIdMap = new Map<number, number>(); // customerId → customerOrderId
@@ -204,8 +220,8 @@ export function useEditOrderSubmit(
                 quantity: variantTotalQty,
                 purchasePrice: variant.purchasePrice,
                 sellingPriceForeign: variant.sellingPriceForeign,
-                exchangeRateBuyId: getBuyRateId(),
-                exchangeRateSellId: getSellRateId(),
+                exchangeRateBuyId: buyRateId,
+                exchangeRateSellId: sellRateId,
               };
             })
             .filter((s): s is NonNullable<typeof s> => s !== null);
@@ -229,8 +245,8 @@ export function useEditOrderSubmit(
               quantity: item.customers.reduce((sum, c) => sum + (c.qty || 0), 0),
               purchasePrice: item.purchasePrice,
               sellingPriceForeign: item.sellingPriceForeign,
-              exchangeRateBuyId: getBuyRateId(),
-              exchangeRateSellId: getSellRateId(),
+              exchangeRateBuyId: buyRateId,
+              exchangeRateSellId: sellRateId,
             }],
             ...(item.imageId && { imageId: item.imageId }),
           });
@@ -265,9 +281,9 @@ export function useEditOrderSubmit(
         }
       });
 
-      const shippingExchangeRateId = shippingCurrency.value === 'sell' ? getSellRateId() : getBuyRateId();
-      const exchangeRateBuyId = getBuyRateId();
-      const exchangeRateSellId = getSellRateId();
+      const shippingExchangeRateId = shippingCurrency.value === 'sell' ? sellRateId : buyRateId;
+      const exchangeRateBuyId = buyRateId;
+      const exchangeRateSellId = sellRateId;
 
       const payload: CreateFullOrderDto = {
         orderCode: orderCode.value.trim(),
@@ -306,8 +322,6 @@ export function useEditOrderSubmit(
         }),
       };
 
-      console.log('🚀 Patching order payload:', JSON.stringify(payload, null, 2));
-
       await orderRepository.patchFull(editOrderId, payload);
       const toastMsg = t('merchant.orders.toast.updateSuccess');
       message.success(toastMsg === 'merchant.orders.toast.updateSuccess' ? 'Order updated successfully!' : toastMsg);
@@ -318,6 +332,8 @@ export function useEditOrderSubmit(
         try { localStorage.removeItem(`order-item-${item.uid}-variant-index`); } catch { /* ignore */ }
       });
       try { localStorage.removeItem('stock_order_active_item'); } catch { /* ignore */ }
+      // Clear stored exchange rate IDs after successful submission
+      try { localStorage.removeItem(`edit_order_${editOrderId}_exchange_rates`); } catch { /* ignore */ }
       items.value = [];
       onSuccess();
     } catch (err: unknown) {

@@ -284,13 +284,6 @@ export function useOrderSubmit(
         }),
       };
 
-      console.log('🚀 Submitting order payload:', JSON.stringify(payload, null, 2));
-      console.log('📸 Items with imageId:', expandedItems.map(item => ({ 
-        productName: item.productName, 
-        imageId: item.imageId,
-        hasImage: !!item.imageId 
-      })));
-
       if (editOrderId !== undefined) {
         await orderRepository.updateFull(editOrderId, payload);
         message.success(t('merchant.orders.toast.updateSuccess') || 'ບັນທຶກການແກ້ໄຂສຳເລັດ');

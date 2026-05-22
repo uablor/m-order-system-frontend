@@ -122,7 +122,6 @@ const filteredOrders = computed(() => {
   
   // Defensive check to ensure we always have an array
   if (!Array.isArray(list)) {
-    console.warn('Orders is not an array:', list);
     return [];
   }
   
@@ -193,7 +192,6 @@ const fetchOrders = async (pageNum?: number, limitNum?: number) => {
     
     // Defensive check to prevent DOM issues
     if (!Array.isArray(rawOrders)) {
-      console.warn('Invalid orders data received:', ordersRes);
       orders.value = [];
     } else {
       orders.value = rawOrders;
@@ -220,8 +218,6 @@ const fetchOrders = async (pageNum?: number, limitNum?: number) => {
       selectedOrder.value = orders.value[0] ?? null;
     }
   } catch (error: any) {
-    console.error('Failed to fetch customer orders:', error);
-    
     // Check for specific database errors
     if (error?.message?.includes('Unknown column') || error?.message?.includes('image_id')) {
       errorMsg.value = 'Database is being updated. Please try again in a few minutes.';

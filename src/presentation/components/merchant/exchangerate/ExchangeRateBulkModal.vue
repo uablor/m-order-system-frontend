@@ -193,10 +193,15 @@ const CURRENCY_OPTIONS = ['CNY', 'USDT', 'LAK', 'THB', 'JPY', 'KRW'];
 /** mode กำหนดว่าจะแสดงฟอร์มไหน */
 type ModalMode = 'both' | 'buy-only' | 'sell-only';
 
-const emit = defineEmits<{ (e: 'submitted'): void; (e: 'skipped'): void }>();
+const emit = defineEmits<{ 
+  (e: 'submitted', data?: { buyId?: number; sellId?: number }): void; 
+  (e: 'skipped'): void 
+}>();
+
+const props = defineProps<{ forEdit?: boolean }>();
 
 const { isMobile } = useIsMobile();
-const { loading, createBulkRates } = useMerchantExchangeRates();
+const { loading, createBulkRates, createRateForEdit } = useMerchantExchangeRates();
 
 const isOpen = ref(false);
 const mode = ref<ModalMode>('both');
@@ -289,10 +294,30 @@ const handleSubmit = async () => {
     items.push({ baseCurrency: sellForm.baseCurrency, targetCurrency: sellForm.targetCurrency, rateType: 'SELL', rate: sellForm.rate! });
   }
 
-  const ok = await createBulkRates(items as any);
+  let ok = false;
+  const result: { buyId?: number; sellId?: number } = {};
+  
+  if (props.forEdit) {
+    // For edit orders, create each rate individually with isActive=false
+    for (const item of items) {
+      const id = await createRateForEdit(item as any);
+      if (id) {
+        if (item.rateType === 'BUY') result.buyId = id;
+        if (item.rateType === 'SELL') result.sellId = id;
+        ok = true;
+      } else {
+        ok = false;
+        break;
+      }
+    }
+  } else {
+    // For create orders, use bulk create with isActive=true
+    ok = await createBulkRates(items as any);
+  }
+  
   if (ok) {
     close();
-    emit('submitted');
+    emit('submitted', result);
   }
 };
 
