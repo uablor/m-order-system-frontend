@@ -24,18 +24,32 @@
         </a-statistic>
       </div>
 
-      <!-- Currency Filter: Checkable Tags -->
+      <!-- Currency Filter: Base Currencies -->
       <div class="chart-filter">
         <span class="filter-label">{{ $t('merchant.dashboard.filterByCurrency') }}:</span>
         <a-space :size="[8, 8]" wrap >
           <a-tag
-            v-for="curr in currencyOptions"
+            v-for="curr in baseCurrencyOptions"
             :key="curr"
             :color="selectedCurrency === curr ? 'blue' : 'default'"
             class="filter-tag"
             @click="selectedCurrency = curr"
           >
             {{ curr }}
+          </a-tag>
+        </a-space>
+      </div>
+
+      <!-- Currency Filter: Target Currency Summary Total -->
+      <div v-if="targetCurrencyOption" class="chart-filter">
+        <span class="filter-label">{{ $t('merchant.arrivalDetail.filterByCurrencySummaryTotal') }}:</span>
+        <a-space :size="[8, 8]" wrap >
+          <a-tag
+            :color="selectedCurrency === targetCurrencyOption ? 'blue' : 'default'"
+            class="filter-tag"
+            @click="selectedCurrency = targetCurrencyOption"
+          >
+            {{ targetCurrencyOption }}
           </a-tag>
         </a-space>
       </div>
@@ -79,22 +93,25 @@ function getDefaultRange(): [Dayjs, Dayjs] {
   return [now.startOf('year'), now.endOf('year')];
 }
 
-/* รายการสกุลเงิน: LAK (รวมทั้งหมด) + CNY, USDT, THB ฯลฯ จากข้อมูล */
-const currencyOptions = computed(() => {
+/* รายการสกุลเงิน: base currencies (exclude targetCurrency since it's shown separately) */
+const baseCurrencyOptions = computed(() => {
   const months = chartData.value?.months ?? [];
   const set = new Set<string>();
+  const targetCurr = months[0]?.summary?.targetCurrency;
   months.forEach((m) => {
     (m.currencies ?? []).forEach((c) => {
-      if (c?.baseCurrency) set.add(c.baseCurrency);
+      if (c?.baseCurrency && c.baseCurrency !== targetCurr) set.add(c.baseCurrency);
     });
   });
-  // Always include LAK as first option, but don't duplicate if already in set
-  const currencies = Array.from(set).sort();
-  if (!currencies.includes('LAK')) {
-    return ['LAK', ...currencies];
-  } else {
-    return currencies;
+  return Array.from(set).sort();
+});
+
+const targetCurrencyOption = computed(() => {
+  const months = chartData.value?.months ?? [];
+  for (const m of months) {
+    if (m.summary?.targetCurrency) return m.summary.targetCurrency;
   }
+  return null;
 });
 
 /* Total สำหรับ Statistic ด้านบน */

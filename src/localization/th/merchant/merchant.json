@@ -680,6 +680,8 @@
     "createdAt": "สร้างเมื่อ",
     "updatedAt": "อัปเดตเมื่อ",
     "arrivalItems": "รายการที่มาถึง",
+    "summaryAllCurrencyToLak": "สรุปสกุลเงินทั้งหมดเป็นกีบ",
+    "filterByCurrencySummaryTotal": "กรองตามสกุลเงินสรุปทั้งหมด",
     "noItems": "ไม่มีรายการ",
     "colOrderItem": "สินค้า",
     "arrivedQty": "จำนวนที่มาถึง",

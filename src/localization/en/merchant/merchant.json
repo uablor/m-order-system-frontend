@@ -680,6 +680,8 @@
     "createdAt": "Created At",
     "updatedAt": "Updated At",
     "arrivalItems": "Arrival Items",
+    "summaryAllCurrencyToLak": "Summary All Currency to LAK",
+    "filterByCurrencySummaryTotal": "Filter by Currency Summary Total",
     "noItems": "No arrival items",
     "colOrderItem": "Order Item",
     "arrivedQty": "Arrived Qty",

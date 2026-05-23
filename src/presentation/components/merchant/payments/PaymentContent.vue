@@ -37,41 +37,76 @@
       </div>
     </div>
      -->
-    <!-- Row: Price by Currency — CSS Grid layout -->
-    <div class="currency-grid !mt-3">
+    <!-- Row: Price by Currency (base currencies) — CSS Grid layout -->
+    <div v-if="displayBaseCurrencies.length > 0" class="currency-grid !mt-3">
       <a-card 
-        v-for="(currency, i) in displayCurrencies" 
-        :key="currency ? (currency.baseCurrency || currency.targetCurrency || 'unknown') : `placeholder-${i}`"
+        v-for="currency in displayBaseCurrencies" 
+        :key="currency.baseCurrency || 'unknown'"
         :bordered="false" 
         class="panel-card currency-card" 
-        :class="currency ? `currency-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'currency-placeholder'"
+        :class="`currency-${(currency.baseCurrency || 'unknown').toLowerCase()}`"
       >
         <div class="currency-header">
           <span>{{ $t('merchant.dashboard.currency') }}</span>
-          <span class="currency-badge" :class="currency ? `badge-${(currency.baseCurrency || currency.targetCurrency || 'unknown').toLowerCase()}` : 'badge-placeholder'">{{ currency ? (currency.baseCurrency || currency.targetCurrency || 'Unknown') : '—' }}</span>
+          <span class="currency-badge" :class="`badge-${(currency.baseCurrency || 'unknown').toLowerCase()}`">{{ currency.baseCurrency || 'Unknown' }}</span>
         </div>
         <div class="currency-rows">
           <div class="currency-row">
             <span class="c-label">{{ $t('merchant.dashboard.totalPrice') }}</span>
-            <a-tooltip :title="currency ? fmtCurrency(parseCurrencyString(currency.totalAll)) : fmtCurrency(0)" placement="top" overlay-class-name="blue-tooltip">
-              <span class="c-val truncated-text">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalAll)) : fmtCurrency(0) }}</span>
+            <a-tooltip :title="fmtCurrency(parseCurrencyString(currency.totalAll))" placement="top" overlay-class-name="blue-tooltip">
+              <span class="c-val truncated-text">{{ fmtCurrency(parseCurrencyString(currency.totalAll)) }}</span>
             </a-tooltip>
           </div>
           <div class="currency-row">
             <span class="c-label">{{ $t('merchant.dashboard.pricePaid') }}</span>
-            <a-tooltip :title="currency ? fmtCurrency(parseCurrencyString(currency.totalPaid)) : fmtCurrency(0)" placement="top" overlay-class-name="blue-tooltip">
-              <span class="c-val text-green truncated-text">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalPaid)) : fmtCurrency(0) }}</span>
+            <a-tooltip :title="fmtCurrency(parseCurrencyString(currency.totalPaid))" placement="top" overlay-class-name="blue-tooltip">
+              <span class="c-val text-green truncated-text">{{ fmtCurrency(parseCurrencyString(currency.totalPaid)) }}</span>
             </a-tooltip>
           </div>
           <div class="currency-row">
             <span class="c-label">{{ $t('merchant.dashboard.priceUnpaid') }}</span>
-            <a-tooltip :title="currency ? fmtCurrency(parseCurrencyString(currency.totalUnpaid)) : fmtCurrency(0)" placement="top" overlay-class-name="blue-tooltip">
-              <span class="c-val text-red truncated-text">{{ currency ? fmtCurrency(parseCurrencyString(currency.totalUnpaid)) : fmtCurrency(0) }}</span>
+            <a-tooltip :title="fmtCurrency(parseCurrencyString(currency.totalUnpaid))" placement="top" overlay-class-name="blue-tooltip">
+              <span class="c-val text-red truncated-text">{{ fmtCurrency(parseCurrencyString(currency.totalUnpaid)) }}</span>
             </a-tooltip>
           </div>
         </div>
       </a-card>
     </div>
+    <!-- No data message for base currencies -->
+    <a-card v-else :bordered="false" class="panel-card no-data-card mb-4">
+      <div class="no-data-message">{{ $t('merchant.dashboard.noFinancialData') || 'No financial data available' }}</div>
+    </a-card>
+
+    <!-- Target currency summary card — full width -->
+    <a-card :bordered="false" class="panel-card currency-card currency-card--full currency-lak mb-4" :class="{ 'currency-placeholder': !displayTargetCurrency }">
+      <div class="currency-header">
+        <span>{{ $t('merchant.arrivalDetail.summaryAllCurrencyToLak') }}</span>
+        <span class="currency-badge" :class="displayTargetCurrency ? 'badge-lak' : 'badge-placeholder'">{{ displayTargetCurrency ? (displayTargetCurrency.targetCurrency || 'LAK') : 'LAK' }}</span>
+      </div>
+      <div class="currency-rows">
+        <div class="currency-row">
+          <span class="c-label">{{ $t('merchant.dashboard.totalPrice') }}</span>
+          <a-tooltip v-if="displayTargetCurrency" :title="fmtCurrency(parseCurrencyString(displayTargetCurrency.totalAll))" placement="top" overlay-class-name="blue-tooltip">
+            <span class="c-val truncated-text">{{ fmtCurrency(parseCurrencyString(displayTargetCurrency.totalAll)) }}</span>
+          </a-tooltip>
+          <span v-else class="c-val">{{ fmtCurrency(0) }}</span>
+        </div>
+        <div class="currency-row">
+          <span class="c-label">{{ $t('merchant.dashboard.pricePaid') }}</span>
+          <a-tooltip v-if="displayTargetCurrency" :title="fmtCurrency(parseCurrencyString(displayTargetCurrency.totalPaid))" placement="top" overlay-class-name="blue-tooltip">
+            <span class="c-val text-green truncated-text">{{ fmtCurrency(parseCurrencyString(displayTargetCurrency.totalPaid)) }}</span>
+          </a-tooltip>
+          <span v-else class="c-val text-green">{{ fmtCurrency(0) }}</span>
+        </div>
+        <div class="currency-row">
+          <span class="c-label">{{ $t('merchant.dashboard.priceUnpaid') }}</span>
+          <a-tooltip v-if="displayTargetCurrency" :title="fmtCurrency(parseCurrencyString(displayTargetCurrency.totalUnpaid))" placement="top" overlay-class-name="blue-tooltip">
+            <span class="c-val text-red truncated-text">{{ fmtCurrency(parseCurrencyString(displayTargetCurrency.totalUnpaid)) }}</span>
+          </a-tooltip>
+          <span v-else class="c-val text-red">{{ fmtCurrency(0) }}</span>
+        </div>
+      </div>
+    </a-card>
     <!-- <div class="search-filter-container">
       <a-input
         v-model:value="filters.search"
@@ -413,18 +448,12 @@ const activeStatusTab = ref('all');
 const allCurrencies = computed(() =>
   (dashboard.value?.priceCurrencySummary ?? []).filter((c) => c?.baseCurrency || c?.targetCurrency)
 );
-const displayCurrencies = computed(() => {
-  const list = allCurrencies.value;
-  if (!list.length) return [];
-  
-  // Separate baseCurrency and targetCurrency items
-  const baseCurrencies = list.filter(c => c.baseCurrency);
-  const targetCurrencies = list.filter(c => c.targetCurrency);
-  
-  // Combine: baseCurrencies first, then targetCurrencies
-  const combined = [...baseCurrencies, ...targetCurrencies];
-  
-  return combined;
+const displayBaseCurrencies = computed(() =>
+  allCurrencies.value.filter((c) => c?.baseCurrency)
+);
+const displayTargetCurrency = computed(() => {
+  const found = allCurrencies.value.find((c) => c?.targetCurrency);
+  return found || null;
 });
 
 const showFilterToggle = computed(() => isMobile.value);
