@@ -107,10 +107,20 @@
         <div class="page-titlek">{{ $t('merchant.dashboard.sectionFinancialOverview') }}</div>
         <div class="page-subtitle">{{ $t('merchant.dashboard.sectionPriceByCurrencyDesc') }}</div>
       </div>
-      <!-- Row 2a: Price by Currency (base currencies) — show only when data exists -->
-      <a-row v-if="displayBaseCurrencies.length > 0" :gutter="[16, 16]" class="stats-row">
-        <a-col :xs="24" :sm="8" :md="8" v-for="currency in displayBaseCurrencies" :key="currency.baseCurrency || 'unknown'">
-          <a-card :bordered="false" class="panel-card currency-card" :class="`currency-${(currency.baseCurrency || 'unknown').toLowerCase()}`">
+      <!-- Row 2a: BUY Rates -->
+      <div v-if="buyRates.length > 0" class="rate-section">
+        <div class="rate-section-title">
+          <span class="rate-badge rate-badge-buy">BUY</span>
+          <span>{{ $t('merchant.dashboard.buyRates') || 'Buy Rates' }}</span>
+        </div>
+        <div class="currency-grid">
+          <a-card 
+            v-for="currency in buyRates" 
+            :key="currency.baseCurrency || 'unknown'"
+            :bordered="false" 
+            class="panel-card currency-card" 
+            :class="`currency-${(currency.baseCurrency || 'unknown').toLowerCase()}`"
+          >
             <div class="currency-header">
               <span>{{ $t('merchant.dashboard.currency') }}</span>
               <span class="currency-badge" :class="`badge-${(currency.baseCurrency || 'unknown').toLowerCase()}`">{{ currency.baseCurrency || 'Unknown' }}</span>
@@ -118,22 +128,69 @@
             <div class="currency-rows">
               <div class="currency-row">
                 <span class="c-label">{{ $t('merchant.dashboard.totalPrice') }}</span>
-                <span class="c-val">{{ fmtCurrency(parseCurrencyString(currency.totalAll)) }}</span>
+                <a-tooltip :title="fmtCurrency(parseCurrencyString(currency.totalAll))" overlay-class-name="blue-tooltip">
+                  <span class="c-val num-truncate">{{ fmtCurrency(parseCurrencyString(currency.totalAll)) }}</span>
+                </a-tooltip>
               </div>
               <div class="currency-row">
                 <span class="c-label">{{ $t('merchant.dashboard.pricePaid') }}</span>
-                <span class="c-val text-green">{{ fmtCurrency(parseCurrencyString(currency.totalPaid)) }}</span>
+                <a-tooltip :title="fmtCurrency(parseCurrencyString(currency.totalPaid))" overlay-class-name="blue-tooltip">
+                  <span class="c-val text-green num-truncate">{{ fmtCurrency(parseCurrencyString(currency.totalPaid)) }}</span>
+                </a-tooltip>
               </div>
               <div class="currency-row">
                 <span class="c-label">{{ $t('merchant.dashboard.priceUnpaid') }}</span>
-                <span class="c-val text-red">{{ fmtCurrency(parseCurrencyString(currency.totalUnpaid)) }}</span>
+                <a-tooltip :title="fmtCurrency(parseCurrencyString(currency.totalUnpaid))" overlay-class-name="blue-tooltip">
+                  <span class="c-val text-red num-truncate">{{ fmtCurrency(parseCurrencyString(currency.totalUnpaid)) }}</span>
+                </a-tooltip>
               </div>
             </div>
           </a-card>
-        </a-col>
-      </a-row>
-      <!-- No data message for base currencies -->
-      <a-row v-else :gutter="[16, 16]" class="stats-row">
+        </div>
+      </div>
+      <!-- Row 2b: SELL Rates -->
+      <div v-if="sellRates.length > 0" class="rate-section">
+        <div class="rate-section-title">
+          <span class="rate-badge rate-badge-sell">SELL</span>
+          <span>{{ $t('merchant.dashboard.sellRates') || 'Sell Rates' }}</span>
+        </div>
+        <div class="currency-grid">
+          <a-card 
+            v-for="currency in sellRates" 
+            :key="currency.baseCurrency || 'unknown'"
+            :bordered="false" 
+            class="panel-card currency-card" 
+            :class="`currency-${(currency.baseCurrency || 'unknown').toLowerCase()}`"
+          >
+            <div class="currency-header">
+              <span>{{ $t('merchant.dashboard.currency') }}</span>
+              <span class="currency-badge" :class="`badge-${(currency.baseCurrency || 'unknown').toLowerCase()}`">{{ currency.baseCurrency || 'Unknown' }}</span>
+            </div>
+            <div class="currency-rows">
+              <div class="currency-row">
+                <span class="c-label">{{ $t('merchant.dashboard.totalPrice') }}</span>
+                <a-tooltip :title="fmtCurrency(parseCurrencyString(currency.totalAll))" overlay-class-name="blue-tooltip">
+                  <span class="c-val num-truncate">{{ fmtCurrency(parseCurrencyString(currency.totalAll)) }}</span>
+                </a-tooltip>
+              </div>
+              <div class="currency-row">
+                <span class="c-label">{{ $t('merchant.dashboard.pricePaid') }}</span>
+                <a-tooltip :title="fmtCurrency(parseCurrencyString(currency.totalPaid))" overlay-class-name="blue-tooltip">
+                  <span class="c-val text-green num-truncate">{{ fmtCurrency(parseCurrencyString(currency.totalPaid)) }}</span>
+                </a-tooltip>
+              </div>
+              <div class="currency-row">
+                <span class="c-label">{{ $t('merchant.dashboard.priceUnpaid') }}</span>
+                <a-tooltip :title="fmtCurrency(parseCurrencyString(currency.totalUnpaid))" overlay-class-name="blue-tooltip">
+                  <span class="c-val text-red num-truncate">{{ fmtCurrency(parseCurrencyString(currency.totalUnpaid)) }}</span>
+                </a-tooltip>
+              </div>
+            </div>
+          </a-card>
+        </div>
+      </div>
+      <!-- No data message for both buy and sell rates -->
+      <a-row v-if="buyRates.length === 0 && sellRates.length === 0" :gutter="[16, 16]" class="stats-row">
         <a-col :xs="24">
           <a-card :bordered="false" class="panel-card no-data-card">
             <div class="no-data-message">{{ $t('merchant.dashboard.noFinancialData') || 'No financial data available' }}</div>
@@ -271,7 +328,7 @@ import {
 } from '@ant-design/icons-vue';
 import { useMerchantDashboard } from '../../../composables/merchant/useMerchantDashboard';
 import { orderItemRepository } from '@/infrastructure/repositories/order-item.repository';
-import type { OrderItem } from '@/domain/entities/user.entity';
+import type { OrderItem, CurrencyGroupDto, MerchantPriceCurrencySummaryDto } from '@/domain/entities/user.entity';
 import PriceCurrencyChart from './PriceCurrencyChart.vue';
 
 const router = useRouter();
@@ -286,15 +343,25 @@ const error = ref<string | null>(null);
 const latestOrderItems = ref<OrderItem[]>([]);
 const latestOrderItemsLoading = ref(false);
 
-/* Financial Summary: separate base currencies and target currency */
-const allCurrencies = computed(() =>
-  (dashboard.value?.priceCurrencySummary ?? []).filter((c) => c?.baseCurrency || c?.targetCurrency)
-);
-const displayBaseCurrencies = computed(() =>
-  allCurrencies.value.filter((c) => c?.baseCurrency)
-);
+/* Financial Summary: separate BUY and SELL rates and target currency */
+const buyRates = computed(() => {
+  const group = (dashboard.value?.priceCurrencySummary ?? []).find(
+    (item): item is CurrencyGroupDto => 'type' in item && item.type === 'BUY'
+  );
+  return group?.currencies ?? [];
+});
+
+const sellRates = computed(() => {
+  const group = (dashboard.value?.priceCurrencySummary ?? []).find(
+    (item): item is CurrencyGroupDto => 'type' in item && item.type === 'SELL'
+  );
+  return group?.currencies ?? [];
+});
+
 const displayTargetCurrency = computed(() => {
-  const found = allCurrencies.value.find((c) => c?.targetCurrency);
+  const found = (dashboard.value?.priceCurrencySummary ?? []).find(
+    (item): item is MerchantPriceCurrencySummaryDto => 'totalPaid' in item
+  );
   return found || null;
 });
 const safeFetchDashboard = async () => {
@@ -441,6 +508,12 @@ function parseCurrencyString(val: string | number): number {
 .panel-title { font-size: 16px; font-weight: 600; color: #0f172a; margin-bottom: 16px; }
 
 /* ===== Currency Cards ===== */
+.currency-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
 .currency-card { height: 100%; }
 .currency-card--full { height: auto; }
 .currency-card--full .currency-header { margin-bottom: 16px; }
@@ -470,6 +543,27 @@ function parseCurrencyString(val: string | number): number {
 }
 .c-label { font-size: 12px; color: #64748b; }
 .c-val { font-size: 14px; font-weight: 700; color: #0f172a; }
+
+/* ===== Rate Sections ===== */
+.rate-section { margin-bottom: 24px; }
+.rate-section-title {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px;
+  font-size: 15px; font-weight: 600; color: #0f172a;
+}
+.rate-badge {
+  padding: 4px 12px; border-radius: 8px;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.rate-badge-buy {
+  background: rgba(34, 197, 94, 0.15); color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+.rate-badge-sell {
+  background: rgba(239, 68, 68, 0.15); color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
 
 /* ===== Top Customers ===== */
 .customers-grid {

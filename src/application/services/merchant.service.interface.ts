@@ -10,4 +10,9 @@ export interface IMerchantService {
   update(id: number, data: MerchantUpdateDto): Promise<void>;
   setActive(id: number, isActive: boolean): Promise<void>;
   delete(id: number): Promise<void>;
+  getAdminPriceCurrencySummary(merchantId: number): Promise<any>;
+  getPriceCurrencySummaryByDate(
+    merchantId: number,
+    body?: { startDate?: string; endDate?: string }
+  ): Promise<any>;
 }

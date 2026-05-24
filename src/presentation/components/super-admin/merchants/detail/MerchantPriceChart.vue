@@ -25,18 +25,32 @@
         </a-statistic>
       </div>
 
-      <!-- Currency Filter: Checkable Tags -->
+      <!-- Currency Filter: Base Currencies -->
       <div class="chart-filter">
-        <span class="filter-label">{{ $t('merchants.detail.filterByCurrency') }}:</span>
+        <span class="filter-label">{{ $t('merchant.dashboard.filterByCurrency') }}:</span>
         <a-space :size="[8, 8]" wrap >
           <a-tag
-            v-for="curr in currencyOptions"
+            v-for="curr in baseCurrencyOptions"
             :key="curr"
             :color="selectedCurrency === curr ? 'blue' : 'default'"
             class="filter-tag"
             @click="selectedCurrency = curr"
           >
             {{ curr }}
+          </a-tag>
+        </a-space>
+      </div>
+
+      <!-- Currency Filter: Target Currency Summary Total -->
+      <div v-if="targetCurrencyOption" class="chart-filter">
+        <span class="filter-label">{{ $t('merchant.arrivalDetail.filterByCurrencySummaryTotal') }}:</span>
+        <a-space :size="[8, 8]" wrap >
+          <a-tag
+            :color="selectedCurrency === targetCurrencyOption ? 'blue' : 'default'"
+            class="filter-tag"
+            @click="selectedCurrency = targetCurrencyOption"
+          >
+            {{ targetCurrencyOption }}
           </a-tag>
         </a-space>
       </div>
@@ -55,6 +69,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type { Dayjs } from 'dayjs';
+import * as dayjsModule from 'dayjs';
+const dayjs = ((dayjsModule as { default?: unknown }).default ?? dayjsModule) as typeof import('dayjs');
 import 'echarts';
 import VChart from 'vue-echarts';
 import { merchantService } from '@/infrastructure/services/merchant.service';
@@ -69,27 +86,37 @@ interface Props {
 const props = defineProps<Props>();
 const { t } = useI18n();
 const { windowWidth, isMobile, isTablet } = useIsMobile(768);
+const dateRange = ref<[Dayjs, Dayjs] | null>(null);
 const chartLoading = ref(false);
 const chartError = ref<string | null>(null);
 const chartData = ref<PriceCurrencySummaryByDateResponseDto | null>(null);
 const selectedCurrency = ref<string>('LAK');
 
-/* รายการสกุลเงิน: LAK (รวมทั้งหมด) + CNY, USDT, THB ฯลฯ จากข้อมูล */
-const currencyOptions = computed(() => {
+/* ค่าเริ่มต้น: ปีปัจจุบัน */
+function getDefaultRange(): [Dayjs, Dayjs] {
+  const now = dayjs();
+  return [now.startOf('year'), now.endOf('year')];
+}
+
+/* รายการสกุลเงิน: base currencies (exclude targetCurrency since it's shown separately) */
+const baseCurrencyOptions = computed(() => {
   const months = chartData.value?.months ?? [];
   const set = new Set<string>();
+  const targetCurr = months[0]?.summary?.targetCurrency;
   months.forEach((m) => {
     (m.currencies ?? []).forEach((c) => {
-      if (c?.baseCurrency) set.add(c.baseCurrency);
+      if (c?.baseCurrency && c.baseCurrency !== targetCurr) set.add(c.baseCurrency);
     });
   });
-  // Always include LAK as first option, but don't duplicate if already in set
-  const currencies = Array.from(set).sort();
-  if (!currencies.includes('LAK')) {
-    return ['LAK', ...currencies];
-  } else {
-    return currencies;
+  return Array.from(set).sort();
+});
+
+const targetCurrencyOption = computed(() => {
+  const months = chartData.value?.months ?? [];
+  for (const m of months) {
+    if (m.summary?.targetCurrency) return m.summary.targetCurrency;
   }
+  return null;
 });
 
 /* Total สำหรับ Statistic ด้านบน */
@@ -140,12 +167,12 @@ const chartOption = computed(() => {
 
   const monthLabelsFull = months.map((m) => {
     const d = new Date(m.year, m.month - 1, 1);
-    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return dayjs(d).format('MMM YYYY');
   });
   const monthLabels = layout.shortMonth
     ? months.map((m) => {
         const d = new Date(m.year, m.month - 1, 1);
-        return d.toLocaleDateString('en-US', { month: 'short' });
+        return dayjs(d).format('MMM');
       })
     : monthLabelsFull;
 
@@ -249,11 +276,17 @@ function formatCompact(n: number): string {
 
 async function fetchChartData() {
   if (!props.merchantId) return;
+  const range = dateRange.value ?? getDefaultRange();
+  const startDate = range[0].format('YYYY-MM-DD');
+  const endDate = range[1].format('YYYY-MM-DD');
 
   chartLoading.value = true;
   chartError.value = null;
   try {
-    const res = await merchantService.getPriceCurrencySummaryByDate(props.merchantId);
+    const res = await merchantService.getPriceCurrencySummaryByDate(props.merchantId, {
+      startDate,
+      endDate,
+    });
     const data = extractSingleResult(res) as PriceCurrencySummaryByDateResponseDto | null;
     if (data) {
       chartData.value = data;
@@ -278,6 +311,7 @@ watch(() => props.merchantId, (newId) => {
 }, { immediate: true });
 
 onMounted(() => {
+  dateRange.value = getDefaultRange();
   if (props.merchantId) {
     fetchChartData();
   }

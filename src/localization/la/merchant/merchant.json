@@ -6,6 +6,8 @@
     "title": "ແຜງຄວບຄຸມ",
     "subtitle": "ຍິນດີຕ້ອນຮັບ. ນີ້ແມ່ນພາບລວມຮ້ານຂອງທ່ານ.",
     "sectionOrderStats": "ສະຫຼຸບການສັ່ງຊື້",
+    "sellRates":"ອັດຕາຂາຍ",
+    "buyRates":"ອັດຕາຊື້",
     "sectionOrderStatsDesc": "ພາບລວມອໍເດີ, ລູກຄ້າ ແລະ ເຄື່ອງມາຮອດ",
     "sectionPriceByCurrency": "ສະຫຼຸບການເງີນທັງໝົດ",
     "sectionPriceByCurrencyDesc": "ລາຍຮັບແຍກຕາມສະກຸນເງິນ (THB, USDT, LAK)",

@@ -260,7 +260,7 @@
             <template #title>
               <div class="card-title-row">
                 <DollarOutlined class="card-icon fin-icon" />
-                <span>{{ $t('merchants.detail.financialSummary') }}</span>
+                <span>{{ $t('merchant.arrivalDetail.summaryAllCurrencyToLak') }}</span>
                 <a-tag color="blue" style="margin-left: 8px; font-weight: 700;">LAK</a-tag>
               </div>
             </template>

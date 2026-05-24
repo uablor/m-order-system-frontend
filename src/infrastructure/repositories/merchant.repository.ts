@@ -53,8 +53,15 @@ export class MerchantRepository {
     return await this.apiClient.post<any>('/dashboard/admin/merchant-price-currency-summary', { merchantId });
   }
 
-  async getPriceCurrencySummaryByDate(merchantId: number): Promise<any> {
-    return await this.apiClient.post<any>('/merchants/price-currency-summary-by-date', { merchantId });
+  async getPriceCurrencySummaryByDate(
+    merchantId: number,
+    body?: { startDate?: string; endDate?: string }
+  ): Promise<any> {
+    return await this.apiClient.post<any>('/merchants/price-currency-summary-by-date', {
+      merchantId,
+      ...(body?.startDate && { startDate: body.startDate }),
+      ...(body?.endDate && { endDate: body.endDate }),
+    });
   }
 }
 

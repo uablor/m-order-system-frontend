@@ -5,13 +5,13 @@ import { handleApiError } from '@/shared/utils/error';
 import { extractSingleResult, extractArrayResult } from '@/shared/types/backend-response.types';
 import type {
   MerchantSummary,
-  MerchantPriceCurrencySummaryDto,
   TopCustomersResponseDto,
+  PriceCurrencySummaryResponse,
 } from '@/domain/entities/user.entity';
 
 export interface MerchantDashboard {
   summary: MerchantSummary;
-  priceCurrencySummary: MerchantPriceCurrencySummaryDto[];
+  priceCurrencySummary: PriceCurrencySummaryResponse;
   topCustomers: TopCustomersResponseDto;
 }
 
@@ -19,7 +19,7 @@ export function useMerchantDashboard() {
   const { t } = useI18n();
   const loading = ref(false);
   const summary = ref<MerchantSummary | null>(null);
-  const priceCurrencySummary = ref<MerchantPriceCurrencySummaryDto[] | null>(null);
+  const priceCurrencySummary = ref<PriceCurrencySummaryResponse | null>(null);
   const topCustomers = ref<TopCustomersResponseDto | null>(null);
 
   const dashboard = computed((): MerchantDashboard => {
@@ -31,22 +31,28 @@ export function useMerchantDashboard() {
       },
       priceCurrencySummary: priceCurrencySummary.value ?? [
         {
-          baseCurrency: 'USDT',
-          totalAll: 0,
-          totalUnpaid: 0,
-          totalPaid: 0,
-          totalAllConverted: 0,
-          totalUnpaidConverted: 0,
-          totalPaidConverted: 0,
+          type: 'BUY',
+          currencies: [
+            {
+              type: 'BUY',
+              baseCurrency: 'USDT',
+              totalAll: 0,
+              totalUnpaid: 0,
+              totalPaid: 0,
+            },
+          ],
         },
         {
-          baseCurrency: 'THB',
-          totalAll: 0,
-          totalUnpaid: 0,
-          totalPaid: 0,
-          totalAllConverted: 0,
-          totalUnpaidConverted: 0,
-          totalPaidConverted: 0,
+          type: 'SELL',
+          currencies: [
+            {
+              type: 'SELL',
+              baseCurrency: 'THB',
+              totalAll: 0,
+              totalUnpaid: 0,
+              totalPaid: 0,
+            },
+          ],
         },
         {
           targetCurrency: 'LAK',
@@ -65,7 +71,7 @@ export function useMerchantDashboard() {
   const fetchDashboard = async () => {
     loading.value = true;
     try {
-      
+
       // Fetch summary first (most important)
       try {
         const summaryRes = await dashboardService.getMerchantSummary();
@@ -75,18 +81,18 @@ export function useMerchantDashboard() {
         }
       } catch (error) {
       }
-      
+
       // Fetch price currency summary
       try {
         const priceCurrencyRes = await dashboardService.getMerchantPriceCurrencySummary();
-        const raw = extractArrayResult<MerchantPriceCurrencySummaryDto[] | MerchantPriceCurrencySummaryDto>(priceCurrencyRes);
-        const priceCurrencyData = (raw.length === 1 && Array.isArray(raw[0])) ? raw[0] : raw as MerchantPriceCurrencySummaryDto[];
+        const raw = extractArrayResult<PriceCurrencySummaryResponse | PriceCurrencySummaryResponse[0]>(priceCurrencyRes);
+        const priceCurrencyData = (raw.length === 1 && Array.isArray(raw[0])) ? raw[0] : raw as PriceCurrencySummaryResponse;
         if (priceCurrencyData && Array.isArray(priceCurrencyData)) {
           priceCurrencySummary.value = priceCurrencyData;
         }
       } catch (error) {
       }
-      
+
       // Fetch top customers
       try {
         const topCustomersRes = await dashboardService.getTopCustomers();
@@ -96,7 +102,7 @@ export function useMerchantDashboard() {
         }
       } catch (error) {
       }
-      
+
       return true;
     } catch (error) {
       handleApiError(error, t);
