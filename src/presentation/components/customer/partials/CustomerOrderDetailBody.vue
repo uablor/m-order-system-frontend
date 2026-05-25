@@ -87,10 +87,16 @@
   </div>
 
   <!-- Total due -->
+  <div v-if="order.discountAmount && order.discountAmount > 0" class="detail-discount-row">
+    <span class="detail-discount-label">{{ $t('customer.detail.discount') }}</span>
+    <span class="detail-discount-amount">-{{ formatDiscount(order) }}</span>
+  </div>
   <div class="detail-total-row">
     <span class="detail-total-label">{{ $t('customer.detail.totalDue') }}</span>
     <span class="detail-total-amount">{{ formatTotalDue(order) }}</span>
   </div>
+
+  <!-- Discount -->
 
   <!-- Payment status -->
   <div class="detail-status-row">
@@ -521,17 +527,22 @@ const formatItemPrice = (customerOrderItem: {
   return `${formatAmount(amount)} ${sym}`;
 };
 
-const formatTotalDue = (o: CustomerOrder & { 
-  customerOrderItems?: Array<{ 
-    sellingTotal: string; 
+const formatTotalDue = (o: CustomerOrder & {
+  customerOrderItems?: Array<{
+    sellingTotal: string;
     exchangeRateSell?: { baseCurrency: string } | null;
   }>;
+  discountAmount?: number;
 }) => {
   // Calculate total from sellingTotal of all items
   const totalAmount = o.customerOrderItems?.reduce((sum, item) => {
     return sum + parseFloat(item.sellingTotal || '0');
   }, 0) || 0;
-  
+
+  // Subtract discount if present
+  const discount = parseFloat(String(o.discountAmount || 0));
+  const finalAmount = totalAmount - discount;
+
   // Use exchangeRateSell.baseCurrency from first item for currency symbol
   const firstItem = o.customerOrderItems?.[0];
   let currencyCode = firstItem?.exchangeRateSell?.baseCurrency ?? null;
@@ -539,10 +550,26 @@ const formatTotalDue = (o: CustomerOrder & {
   if (!currencyCode) {
     currencyCode = orderCurrencyCache.value.get(o.id) ?? null;
   }
-  
+
   const sym = currencySymbol(currencyCode);
-  
-  return `${formatAmount(totalAmount)} ${sym}`;
+
+  return `${formatAmount(finalAmount)} ${sym}`;
+};
+
+const formatDiscount = (o: CustomerOrder) => {
+  const discount = parseFloat(String(o.discountAmount || 0));
+
+  // Use exchangeRateSell.baseCurrency from first item for currency symbol
+  const firstItem = o.customerOrderItems?.[0];
+  let currencyCode = firstItem?.exchangeRateSell?.baseCurrency ?? null;
+  // If no exchange rate data, try to use cached currency
+  if (!currencyCode) {
+    currencyCode = orderCurrencyCache.value.get(o.id) ?? null;
+  }
+
+  const sym = currencySymbol(currencyCode);
+
+  return `${formatAmount(discount)} ${sym}`;
 };
 
 /** สถานะที่แสดง: ถ้ามี payment รอตรวจสอบ ให้แสดง PENDING_VERIFICATION แทน UNPAID/PARTIAL */
@@ -913,7 +940,7 @@ const getPaymentProofUrl = () => {
 };
 
 const formatAmount = (val: number) =>
-  val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0, useGrouping: true });
 
 const getOrderTitle = (order: CustomerOrder): string => {
   const first = order.customerOrderItems?.[0];
@@ -1180,6 +1207,17 @@ const statusClass = (status: string) => {
 }
 .detail-total-label { font-size: 14px; color: #64748b; font-weight: 500; }
 .detail-total-amount { font-size: 22px; font-weight: 800; color: #1d4ed8; }
+
+/* Discount row */
+.detail-discount-row {
+  background: #fff; border-radius: 14px; padding: 12px 18px;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  border: 1px solid #10b981;
+}
+.detail-discount-label { font-size: 14px; color: #10b981; font-weight: 500; }
+.detail-discount-amount { font-size: 18px; font-weight: 700; color: #10b981; }
 
 /* Status row */
 .detail-status-row {
@@ -1886,10 +1924,6 @@ const statusClass = (status: string) => {
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-}
-
-.summary-row:not(:last-child) {
-  /* border-bottom: 1px solid #e2e8f0; */
 }
 
 .summary-row.total {

@@ -5,7 +5,7 @@
   "statusPending": "ລໍຖ້າຊຳລະເງິນ",
   "greetingSub": "ກວດສອບລາຍການສິນຄ້າ ແລະ ແຈ້ງໂອນເງິນທີ່ນີ້",
   "balanceLabel": "ຍອດຄ້າງຊຳລະທັງໝົດ",
-  "currencyAll": "ທັງໝົດ",
+  "currencyAll": "ລວມທັງໝົດທຸກສະກຸນເງີນເປັນກີບ",
   "totalProducts": "ຍອດລວມສິນຄ້າ",
   "paid": "ຊຳລະແລ້ວ",
   "sectionTitle": "ສິນຄ້າທີ່ມາຮອດແລ້ວ",
@@ -35,6 +35,7 @@
   },
   "detail": {
     "title": "ລາຍລະອຽດອໍເດີ",
+     "discount": "ສ່ວນຫຼຸດ",
     "arrived": "ມາຮອດແລ້ວ",
     "totalDue": "ຍອດຊຳລະ",
     "paymentStatus": "ສະຖານະການຊຳລະເງິນ",

@@ -266,6 +266,7 @@ export interface CurrencySummaryItemDto {
   totalAll: number;
   totalUnpaid: number;
   totalPaid: number;
+  totalProfit?: number;
 }
 
 export interface CurrencyGroupDto {
@@ -284,7 +285,23 @@ export interface MerchantPriceCurrencySummaryDto {
   totalPaidConverted?: number;
 }
 
-export type PriceCurrencySummaryResponse = (CurrencyGroupDto | MerchantPriceCurrencySummaryDto)[];
+export interface TargetCurrencySectionDto {
+  targetCurrencyForBuyRate?: string;
+  targetCurrencyForSellRate?: string;
+  targetCurrency?: string;
+  totalAll: number;
+  totalPaid: number;
+  totalUnpaid: number;
+}
+
+export interface SeparatedTargetCurrencySummaryDto {
+  buyRateSection: TargetCurrencySectionDto;
+  sellRateSection: TargetCurrencySectionDto;
+  totalSummary: TargetCurrencySectionDto;
+  profitAll: number;
+}
+
+export type PriceCurrencySummaryResponse = (CurrencyGroupDto | MerchantPriceCurrencySummaryDto | SeparatedTargetCurrencySummaryDto)[];
 
 /** Response from POST /dashboard/merchant/price-currency-summary-by-date */
 export interface PriceCurrencySummaryByDateMonthDto {

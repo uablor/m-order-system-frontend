@@ -37,6 +37,7 @@
     "title": "Order Details",
     "arrived": "Arrived",
     "totalDue": "Amount Due",
+    "discount": "Discount",
     "paymentStatus": {
       "PAID": "Paid",
       "PARTIAL": "Partial", 

@@ -44,6 +44,9 @@ export interface CustomerOrder {
   targetCurrencyTotalPaid: string | null;
   targetCurrencyRemainingAmount: string | null;
   hasPendingPayment: boolean;
+  discountType?: string | null;
+  discountValue?: number | null;
+  discountAmount?: number;
   customerOrderItems: CustomerOrderItem[];
   createdAt: string;
   updatedAt: string;
