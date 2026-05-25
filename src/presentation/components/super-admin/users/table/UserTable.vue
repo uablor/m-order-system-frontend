@@ -245,7 +245,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import type { TableColumnsType, TablePaginationConfig } from 'ant-design-vue';
@@ -294,6 +295,7 @@ const props = defineProps<{
 
 const { isMobile } = useIsMobile();
 const { t: $t } = useI18n();
+const route = useRoute();
 
 const formatDate = (value: string) => dayjs(value).format('YYYY-MM-DD HH:mm');
 
@@ -367,6 +369,16 @@ watch(() => props.pagination.page, (v) => { mobilePage.value = v; });
 const handleTableChange = (p: TablePaginationConfig) => {
   if (p.current && p.pageSize) emit('page-change', p.current, p.pageSize);
 };
+
+// Set UI state from query parameter (parent handles the actual fetch)
+onMounted(() => {
+  const emailQuery = route.query.email as string | undefined;
+  if (emailQuery) {
+    filterVisible.value = true; // Ensure filter panel is open
+    q.value = emailQuery;
+    searchField.value = 'email';
+  }
+});
 
 /* ===== Columns ===== */
 const columns = computed<TableColumnsType>(() => [

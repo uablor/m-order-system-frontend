@@ -97,7 +97,8 @@
               <div
                 v-for="u in recentLogins"
                 :key="u.id"
-                class="login-row"
+                class="login-row login-row-clickable"
+                @click="goToUserWithEmail(u.email)"
               >
                 <a-avatar :style="{ backgroundColor: avatarColor(u.fullName), flexShrink: 0 }">
                   {{ initials(u.fullName) }}
@@ -121,10 +122,12 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { ShopOutlined, TeamOutlined, UserOutlined, ShoppingCartOutlined } from '@ant-design/icons-vue';
 import { useSuperAdminDashboard } from '@/presentation/composables/super-admin/useSuperAdminDashboard';
 import dayjs from 'dayjs';
 
+const router = useRouter();
 const { loading, dashboard, fetchDashboard } = useSuperAdminDashboard();
 
 const windowWidth = ref(window.innerWidth);
@@ -156,6 +159,13 @@ function initials(name: string) {
   if (!name) return '?';
   return name.trim().split(/\s+/).slice(0, 2).map(x => x[0]).join('').toUpperCase();
 }
+
+const goToUserWithEmail = (email: string | null) => {
+  router.push({
+    name: 'super-admin-users',
+    query: email ? { email } : undefined,
+  });
+};
 </script>
 
 <style scoped>
@@ -254,6 +264,14 @@ function initials(name: string) {
   border-radius: 10px;
   background: #f8fafc;
   border: 1px solid rgba(148, 163, 184, 0.12);
+}
+.login-row-clickable {
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.login-row-clickable:hover {
+  background: #eff6ff;
+  border-color: rgba(29, 78, 216, 0.25);
 }
 .login-info { flex: 1; min-width: 0; }
 .login-name { font-size: 14px; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

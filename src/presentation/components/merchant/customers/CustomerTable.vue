@@ -273,7 +273,7 @@ import {
 import type { TablePaginationConfig } from 'ant-design-vue';
 import type { Customer } from '@/domain/entities/user.entity';
 import { useMerchantCustomers } from '@/presentation/composables/merchant/useMerchantCustomers';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const q = ref('');
 const filterType = ref<'CUSTOMER' | 'AGENT' | undefined>(undefined);
@@ -283,6 +283,7 @@ const showMobileFilter = ref(false);
 const { t } = useI18n();
 const { isMobile } = useIsMobile();
 const router = useRouter();
+const route = useRoute();
 
 const {
   loading,
@@ -395,7 +396,14 @@ watch(q, () => {
 });
 
 onMounted(async () => {
-  await fetchCustomers();
+  // Check for search query parameter from dashboard navigation
+  const searchQuery = route.query.q as string | undefined;
+  if (searchQuery) {
+    q.value = searchQuery;
+    await searchCustomers(searchQuery);
+  } else {
+    await fetchCustomers();
+  }
 });
 </script>
 

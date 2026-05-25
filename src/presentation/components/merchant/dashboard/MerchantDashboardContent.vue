@@ -375,7 +375,12 @@
               {{ $t('merchant.dashboard.topCustomers') }}
             </div>
             <div v-if="dashboard?.topCustomers?.customers?.length" class="customers-grid">
-              <div v-for="customer in dashboard.topCustomers.customers.filter(c => c?.customerId)" :key="customer.customerId" class="customer-item">
+              <div
+                v-for="customer in dashboard.topCustomers.customers.filter(c => c?.customerId)"
+                :key="customer.customerId"
+                class="customer-item customer-item-clickable"
+                @click="goToCustomerWithSearch(customer.customerEmail)"
+              >
                 <div class="customer-rank">#{{ customer.rank || 0 }}</div>
                 <div class="customer-info">
                   <div class="customer-name">{{ customer.customerName || 'Unknown Customer' }}</div>
@@ -459,6 +464,12 @@ const goToOrders = () => router.push({ name: 'merchant-orders' });
 const goToCustomers = () => router.push({ name: 'merchant-customers' });
 const goToArrivals = () => router.push({ name: 'merchant-arrivals' });
 const goToTeam = () => router.push({ name: 'merchant-team' });
+const goToCustomerWithSearch = (phone: string | null) => {
+  router.push({
+    name: 'merchant-customers',
+    query: phone ? { q: phone } : undefined,
+  });
+};
 const error = ref<string | null>(null);
 const latestOrderItems = ref<OrderItem[]>([]);
 const latestOrderItemsLoading = ref(false);
@@ -707,6 +718,9 @@ function parseCurrencyString(val: string | number): number {
   border-radius: 12px;
   border: 1px solid #e2e8f0;
   transition: all 0.2s ease;
+}
+.customer-item-clickable {
+  cursor: pointer;
 }
 .customer-item:hover {
   background: #f1f5f9;

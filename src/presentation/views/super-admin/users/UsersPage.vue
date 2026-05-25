@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import UserTable from '@/presentation/components/super-admin/users/table/UserTable.vue';
 import UserFormModal from '@/presentation/components/super-admin/users/modal/UserFormModal.vue';
 import ChangePasswordModal from '@/presentation/components/super-admin/users/ChangePasswordModal.vue';
@@ -43,6 +43,7 @@ import type { UserCreateDto, UserListQueryDto } from '@/application/dto/user.dto
 import type { UserFilterPayload } from '@/presentation/components/super-admin/users/table/UserTable.vue';
 
 const router = useRouter();
+const route = useRoute();
 
 const {
   loading,
@@ -119,7 +120,13 @@ const handlePageChange = async (page: number, pageSize: number) => {
 };
 
 onMounted(async () => {
-  await Promise.allSettled([fetchRoles(), fetchUsers()]);
+  // Check for email query parameter from dashboard navigation
+  const emailQuery = route.query.email as string | undefined;
+  const initialQuery: Partial<UserListQueryDto> = emailQuery
+    ? { search: emailQuery, searchField: 'email', page: 1 }
+    : {};
+
+  await Promise.allSettled([fetchRoles(), fetchUsers(initialQuery)]);
 });
 </script>
 

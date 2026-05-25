@@ -11,7 +11,7 @@
       <a-alert type="warning" :message="chartError" show-icon />
     </div>
     <template v-else-if="chartData?.months?.length">
-      <!-- Total Statistic -->
+      <!-- Total Statistic
       <div class="chart-statistic">
         <a-statistic
           :title="$t('merchant.dashboard.totalRevenue')"
@@ -22,7 +22,7 @@
             {{ selectedCurrency }}
           </template>
         </a-statistic>
-      </div>
+      </div> -->
 
       <!-- Currency Filter: Base Currencies -->
       <div class="chart-filter">
@@ -114,23 +114,6 @@ const targetCurrencyOption = computed(() => {
   return null;
 });
 
-/* Total สำหรับ Statistic ด้านบน */
-const displayTotal = computed(() => {
-  const data = chartData.value;
-  if (!data) return 0;
-  if (selectedCurrency.value === 'LAK') {
-    return data.totalSummary?.totalAll ?? 0;
-  }
-  const months = data.months ?? [];
-  let sum = 0;
-  months.forEach((m) => {
-    const items = (m.currencies ?? []).filter((c) => c.baseCurrency === selectedCurrency.value);
-    items.forEach((c) => {
-      sum += (c.totalPaid ?? 0) + (c.totalUnpaid ?? 0);
-    });
-  });
-  return sum;
-});
 
 /* Responsive: grid และ font ตามขนาดจอ (mobile ลด left/right ให้กราฟกว้างเต็ม) */
 const chartLayout = computed(() => {
@@ -164,11 +147,13 @@ const chartOption = computed(() => {
 
   let paidData: number[];
   let unpaidData: number[];
+  let profitData: number[];
   const unit = curr;
 
   if (curr === 'LAK') {
     paidData = months.map((m) => Math.round(m.summary?.totalPaid ?? 0));
     unpaidData = months.map((m) => Math.round(m.summary?.totalUnpaid ?? 0));
+    profitData = months.map((m) => Math.round(m.summary?.totalProfit ?? 0));
   } else {
     paidData = months.map((m) => {
       const items = (m.currencies ?? []).filter((c) => c.baseCurrency === curr);
@@ -177,6 +162,10 @@ const chartOption = computed(() => {
     unpaidData = months.map((m) => {
       const items = (m.currencies ?? []).filter((c) => c.baseCurrency === curr);
       return items.reduce((s, c) => s + (c.totalUnpaid ?? 0), 0);
+    });
+    profitData = months.map((m) => {
+      const items = (m.currencies ?? []).filter((c) => c.baseCurrency === curr);
+      return items.reduce((s, c) => s + (c.totalProfit ?? 0), 0);
     });
   }
 
@@ -189,11 +178,13 @@ const chartOption = computed(() => {
         const idx = params[0].dataIndex;
         const paid = paidData[idx] ?? 0;
         const unpaid = unpaidData[idx] ?? 0;
+        const profit = profitData[idx] ?? 0;
         const total = paid + unpaid;
         return `<div style="padding:6px 10px 3px 4px !important; font-size:${Math.max(12, layout.fontSize + 2)}px">
           <strong>${monthLabelsFull[idx]}</strong><br/>
           ${params[0].marker} ${params[0].seriesName}: ${formatNum(paid)} ${unit}<br/>
           ${params[1].marker} ${params[1].seriesName}: ${formatNum(unpaid)} ${unit}<br/>
+          ${params[2].marker} ${params[2].seriesName}: ${formatNum(profit)} ${unit}<br/>
           <strong>${t('merchant.dashboard.totalPrice')}: ${formatNum(total)} ${unit}</strong>
         </div>`;
       },
@@ -202,6 +193,7 @@ const chartOption = computed(() => {
       data: [
         { name: t('merchant.dashboard.pricePaid'), itemStyle: { color: '#52c41a' } },
         { name: t('merchant.dashboard.priceUnpaid'), itemStyle: { color: '#ff4d4f' } },
+        { name: t('merchant.dashboard.totalProfit'), itemStyle: { color: '#1890ff' } },
       ],
       bottom: 0,
       itemWidth: layout.fontSize < 12 ? 12 : 14,
@@ -244,6 +236,14 @@ const chartOption = computed(() => {
         barGap: '20%',
         data: unpaidData,
         itemStyle: { color: '#ff4d4f' },
+      },
+      {
+        name: t('merchant.dashboard.totalProfit'),
+        type: 'bar',
+        barWidth: '28%',
+        barGap: '20%',
+        data: profitData,
+        itemStyle: { color: '#1890ff' },
       },
     ],
   };

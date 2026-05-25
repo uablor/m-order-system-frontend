@@ -313,12 +313,14 @@ export interface PriceCurrencySummaryByDateMonthDto {
     totalAll: number;
     totalUnpaid: number;
     totalPaid: number;
+    totalProfit: number;
   }>;
   summary: {
     targetCurrency: string;
     totalAll: number;
     totalUnpaid: number;
     totalPaid: number;
+    totalProfit: number;
   };
 }
 
@@ -331,6 +333,7 @@ export interface PriceCurrencySummaryByDateResponseDto {
     totalAll: number;
     totalUnpaid: number;
     totalPaid: number;
+    totalProfit: number;
   };
 }
 
